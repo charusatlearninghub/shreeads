@@ -13,6 +13,7 @@ interface CourseProgress {
   id: string;
   title: string;
   category: string | null;
+  thumbnail_url?: string | null;
   totalLessons: number;
   completedLessons: number;
   completed_at: string | null;
@@ -44,7 +45,8 @@ const Certificates = () => {
           courses (
             id,
             title,
-            category
+            category,
+            thumbnail_url
           )
         `)
         .eq('user_id', user.id);
@@ -63,7 +65,7 @@ const Certificates = () => {
         const coursesWithProgress: CourseProgress[] = [];
 
         for (const enrollment of enrollments) {
-          const course = enrollment.courses as { id: string; title: string; category: string | null };
+          const course = enrollment.courses as { id: string; title: string; category: string | null; thumbnail_url?: string | null };
           
           // Get lessons for this course
           const { data: lessons } = await supabase
@@ -97,6 +99,7 @@ const Certificates = () => {
             id: course.id,
             title: course.title,
             category: course.category,
+            thumbnail_url: course.thumbnail_url ?? null,
             totalLessons,
             completedLessons,
             completed_at: lastCompletedAt,
@@ -377,136 +380,141 @@ const Certificates = () => {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      ) : courses.length === 0 ? (
-        <Card className="p-8 text-center">
-          <Award className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="font-display font-bold text-lg mb-2">No Courses Enrolled</h3>
-          <p className="text-muted-foreground">
-            Enroll in a course to start earning certificates
-          </p>
-        </Card>
       ) : (
-        <div className="space-y-8">
-          {/* Completed Courses - Certificates */}
-          {completedCourses.length > 0 && (
-            <div>
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <div className="p-3 sm:p-4 pb-20 w-full max-w-full overflow-hidden">
+          {completedCourses.length === 0 ? (
+            <div className="bg-white rounded-xl shadow p-4 text-center">
+              <Award className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+              <h3 className="text-sm sm:text-base font-semibold">Your certificates will appear here</h3>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                Complete a course to unlock your certificate.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-4">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                Earned Certificates ({completedCourses.length})
-              </h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-sensitive="true">
+                <h2 className="text-sm sm:text-base font-semibold">
+                  Earned Certificates ({completedCourses.length})
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-sensitive="true">
                 {completedCourses.map((course, index) => (
                   <motion.div
                     key={course.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="w-full max-w-full overflow-hidden"
                   >
-                    <Card className="overflow-hidden">
-                      <div className="bg-gradient-to-br from-primary via-purple-600 to-pink-500 p-8 text-white text-center relative">
-                        <div className="absolute inset-0 opacity-10">
-                          <div className="absolute inset-0" style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.3' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-                          }} />
+                    <div className="bg-white rounded-xl shadow p-4 flex flex-col gap-3 w-full max-w-full overflow-hidden">
+                      {course.thumbnail_url ? (
+                        <img
+                          src={course.thumbnail_url}
+                          alt={course.title}
+                          className="w-full h-32 object-cover rounded-lg"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-32 rounded-lg bg-gradient-to-br from-primary/10 to-purple-500/10 flex items-center justify-center">
+                          <Award className="w-10 h-10 text-muted-foreground" />
                         </div>
-                        <Award className="w-16 h-16 mx-auto mb-4" />
-                        <p className="text-sm opacity-80 mb-2">Certificate of Completion</p>
-                        <h3 className="font-display font-bold text-xl mb-4">{course.title}</h3>
-                        <p className="text-lg">{displayName}</p>
-                        {course.certificate ? (
-                          <>
-                            <Badge variant="secondary" className="mt-3 bg-white/20 text-white border-0">
-                              #{course.certificate.certificate_number}
-                            </Badge>
-                            <p className="text-sm opacity-80 mt-2">
-                              Issued on {new Date(course.certificate.issued_at).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </p>
-                          </>
-                        ) : (
-                          <p className="text-sm opacity-80 mt-2">
-                            Completed on {course.completed_at && new Date(course.completed_at).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })}
+                      )}
+
+                      <div className="min-w-0">
+                        <h3 className="text-sm sm:text-base font-semibold truncate">{course.title}</h3>
+                        <p className="text-xs sm:text-sm text-gray-500">
+                          {course.category || "Course"}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2">
+                        {course.certificate?.certificate_number && (
+                          <Badge variant="secondary" className="text-xs">
+                            #{course.certificate.certificate_number}
+                          </Badge>
+                        )}
+                        {course.certificate?.issued_at && (
+                          <p className="text-xs text-gray-500 truncate">
+                            {new Date(course.certificate.issued_at).toLocaleDateString()}
                           </p>
                         )}
                       </div>
-                      <CardContent className="p-4">
-                        {course.certificate ? (
-                          <Button 
-                            variant="outline" 
-                            className="w-full"
-                            onClick={() => downloadCertificate(course)}
-                          >
+
+                      <Button
+                        className="w-full text-sm py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                        onClick={() =>
+                          course.certificate ? downloadCertificate(course) : generateCertificate(course.id)
+                        }
+                        disabled={!course.certificate && generatingCertId === course.id}
+                      >
+                        {!course.certificate && generatingCertId === course.id ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Generating...
+                          </>
+                        ) : course.certificate ? (
+                          <>
                             <Download className="w-4 h-4 mr-2" />
                             Download Certificate
-                          </Button>
+                          </>
                         ) : (
-                          <Button 
-                            className="w-full"
-                            onClick={() => generateCertificate(course.id)}
-                            disabled={generatingCertId === course.id}
-                          >
-                            {generatingCertId === course.id ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Generating...
-                              </>
-                            ) : (
-                              <>
-                                <Award className="w-4 h-4 mr-2" />
-                                Generate Certificate
-                              </>
-                            )}
-                          </Button>
+                          <>
+                            <Award className="w-4 h-4 mr-2" />
+                            Generate Certificate
+                          </>
                         )}
-                      </CardContent>
-                    </Card>
+                      </Button>
+                    </div>
                   </motion.div>
                 ))}
               </div>
-            </div>
+            </>
           )}
 
-          {/* In Progress Courses */}
           {inProgressCourses.length > 0 && (
-            <div>
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <div className="mt-8">
+              <div className="flex items-center gap-2 mb-4">
                 <AlertCircle className="w-5 h-5 text-amber-500" />
-                In Progress ({inProgressCourses.length})
-              </h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <h2 className="text-sm sm:text-base font-semibold">
+                  In Progress ({inProgressCourses.length})
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {inProgressCourses.map((course) => {
-                  const progress = course.totalLessons > 0 
-                    ? Math.round((course.completedLessons / course.totalLessons) * 100) 
+                  const progress = course.totalLessons > 0
+                    ? Math.round((course.completedLessons / course.totalLessons) * 100)
                     : 0;
-                  
+
                   return (
-                    <Card key={course.id} className="p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                          <Award className="w-5 h-5 text-muted-foreground" />
+                    <div
+                      key={course.id}
+                      className="bg-white rounded-xl shadow p-4 flex flex-col gap-3 w-full max-w-full overflow-hidden"
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                          <Award className="w-5 h-5 text-gray-500" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-sm truncate">{course.title}</h3>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <h3 className="text-sm sm:text-base font-semibold truncate">{course.title}</h3>
+                          <p className="text-xs sm:text-sm text-gray-500 mt-1">
                             {course.completedLessons} of {course.totalLessons} lessons completed
                           </p>
-                          <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-primary rounded-full transition-all"
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">{progress}% complete</p>
                         </div>
                       </div>
-                    </Card>
+
+                      <div className="w-full">
+                        <div className="mt-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-600 rounded-full transition-all"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <p className="text-xs sm:text-sm text-gray-500 mt-1">{progress}% complete</p>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
