@@ -1,0 +1,28 @@
+project_id = "djdptyebbwidcnhrtrkc"
+
+[functions.redeem-promo-code]
+verify_jwt = false
+
+[functions.check-device]
+verify_jwt = false
+
+[functions.register-device]
+verify_jwt = false
+
+[functions.admin-device-management]
+verify_jwt = false
+
+[functions.generate-promo-codes]
+verify_jwt = false
+
+[functions.redeem-software-promo]
+verify_jwt = false
+
+[functions.get-software-download]
+verify_jwt = false
+
+[functions.delete-promo-code]
+verify_jwt = false
+
+[functions.get-video-url]
+verify_jwt = false

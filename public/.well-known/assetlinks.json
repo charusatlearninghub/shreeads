@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.shreeadslearnx.app",
+      "sha256_cert_fingerprints": [
+        "00:F5:9C:18:13:9F:E3:87:08:F2:AD:A8:AD:37:16:4C:BA:2C:F0:99:E6:55:79:D2:F9:33:AC:88:FB:45:4B:7D"
+      ]
+    }
+  }
+]
