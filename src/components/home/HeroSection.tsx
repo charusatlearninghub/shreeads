@@ -1,9 +1,17 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Play, Sparkles, Users, BookOpen, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const HeroSection = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleStartLearning = () => {
+    navigate(user ? "/dashboard/courses" : "/login");
+  };
+
   const stats = [
     { icon: Users, value: "10,000+", label: "Active Students" },
     { icon: BookOpen, value: "500+", label: "Video Lessons" },
@@ -56,10 +64,8 @@ export const HeroSection = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-              <Button variant="hero" size="xl" asChild>
-                <Link to="/register">
-                  Start Learning Free
-                </Link>
+              <Button variant="hero" size="xl" onClick={handleStartLearning}>
+                Start Learning Free
               </Button>
               <Button variant="outline" size="xl" asChild>
                 <Link to="/courses" className="gap-3">

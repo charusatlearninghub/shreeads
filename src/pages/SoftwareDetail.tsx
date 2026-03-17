@@ -147,6 +147,13 @@ const SoftwareDetail = () => {
     }
 
     try {
+      // Free software: skip edge function and open direct file URL
+      if (isFree) {
+        window.open(fileUrl, '_blank');
+        toast.success('Download started!');
+        return;
+      }
+
       // Log download only when there is a purchase record (paid software)
       if (purchase) {
         await supabase.from('software_downloads').insert({

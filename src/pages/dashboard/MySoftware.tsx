@@ -69,18 +69,32 @@ const MySoftware = () => {
     enabled: !!purchases?.length,
   });
 
-  const handleDownload = async (versionId: string, productId: string, purchaseId: string) => {
+  const handleDownload = async (
+    version: any,
+    product: any,
+    productId: string,
+    purchaseId: string
+  ) => {
     try {
+      const isFree = product?.is_free === true || (product?.price != null && product.price === 0);
+
+      // Free software: skip edge function and open direct file URL
+      if (isFree) {
+        window.open(version.file_url, '_blank');
+        toast.success('Download started!');
+        return;
+      }
+
       // Log download
       await supabase.from('software_downloads').insert({
         user_id: user!.id,
         purchase_id: purchaseId,
-        version_id: versionId,
+        version_id: version.id,
       });
 
       // Get signed URL
       const { data, error } = await supabase.functions.invoke('get-software-download', {
-        body: { versionId, productId },
+        body: { versionId: version.id, productId },
       });
 
       if (error) throw error;
@@ -178,7 +192,7 @@ const MySoftware = () => {
                             key={version.id}
                             size="sm"
                             variant="secondary"
-                            onClick={() => handleDownload(version.id, purchase.product_id, purchase.id)}
+                            onClick={() => handleDownload(version, product, purchase.product_id, purchase.id)}
                           >
                             <Download className="w-3 h-3 mr-1" />
                             {platformLabels[version.platform]}

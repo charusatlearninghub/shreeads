@@ -1,10 +1,18 @@
 import { forwardRef } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Sparkles, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const CTASection = forwardRef<HTMLElement>((_, ref) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleGetStarted = () => {
+    navigate(user ? "/dashboard/courses" : "/login");
+  };
+
   return (
     <section ref={ref} className="py-20 lg:py-32 relative overflow-hidden">
       <div className="container mx-auto px-4">
@@ -56,12 +64,12 @@ export const CTASection = forwardRef<HTMLElement>((_, ref) => {
                 <Button 
                   size="xl" 
                   className="bg-white text-primary hover:bg-white/90 shadow-xl"
-                  asChild
+                  onClick={handleGetStarted}
                 >
-                  <Link to="/register">
+                  <span className="inline-flex items-center gap-2">
                     <Sparkles className="w-5 h-5" />
                     Get Started Free
-                  </Link>
+                  </span>
                 </Button>
                 <Button 
                   size="xl" 

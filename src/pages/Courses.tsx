@@ -435,7 +435,7 @@ const Courses = () => {
                     <Link to="/login">Login</Link>
                   </Button>
                   <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white/10" asChild>
-                    <Link to="/register">Sign Up Free</Link>
+                    <Link to="/login">Start Learning Free</Link>
                   </Button>
                 </div>
               </CardContent>
