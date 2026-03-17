@@ -6,12 +6,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { UniversalVideoPlayer } from "@/components/video/UniversalVideoPlayer";
 
 interface YouTubeVideo {
   id: string;
   title: string;
   description: string | null;
-  video_id: string;
+  youtube_url: string;
   thumbnail_url: string | null;
 }
 
@@ -23,7 +24,7 @@ export const VideoGalleryPreview = () => {
     const fetchVideos = async () => {
       const { data } = await supabase
         .from("youtube_videos")
-        .select("id, title, description, video_id, thumbnail_url")
+        .select("id, title, description, youtube_url, thumbnail_url")
         .eq("is_published", true)
         .order("order_index", { ascending: true })
         .limit(6);
@@ -107,13 +108,7 @@ export const VideoGalleryPreview = () => {
           {selectedVideo && (
             <div>
               <div className="aspect-video">
-                <iframe
-                  src={`https://www.youtube.com/embed/${selectedVideo.video_id}?autoplay=1&rel=0`}
-                  className="w-full h-full"
-                  allowFullScreen
-                  allow="autoplay; encrypted-media"
-                  title={selectedVideo.title}
-                />
+                <UniversalVideoPlayer url={selectedVideo.youtube_url} title={selectedVideo.title} className="w-full h-full" />
               </div>
               <div className="p-4 bg-card">
                 <h2 className="font-display font-bold text-lg">{selectedVideo.title}</h2>

@@ -12,6 +12,14 @@ export const HeroSection = () => {
     navigate(user ? "/dashboard/courses" : "/login");
   };
 
+  const handleHowToAccess = () => {
+    navigate("/videos");
+  };
+
+  const handleExploreCourses = () => {
+    navigate("/courses");
+  };
+
   const stats = [
     { icon: Users, value: "10,000+", label: "Active Students" },
     { icon: BookOpen, value: "500+", label: "Video Lessons" },
@@ -63,17 +71,31 @@ export const HeroSection = () => {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-              <Button variant="hero" size="xl" onClick={handleStartLearning}>
+            <div className="flex flex-col gap-2 mt-4 mb-12 w-full max-w-md mx-auto lg:mx-0">
+              <Button
+                onClick={handleStartLearning}
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-95"
+              >
                 Start Learning Free
               </Button>
-              <Button variant="outline" size="xl" asChild>
-                <Link to="/courses" className="gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Play className="w-4 h-4 text-primary" />
-                  </div>
+
+              <Button
+                onClick={handleHowToAccess}
+                variant="secondary"
+                className="w-full py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-medium shadow hover:opacity-95 active:scale-95 transition"
+              >
+                How to access the course/software
+              </Button>
+
+              <Button
+                onClick={handleExploreCourses}
+                variant="outline"
+                className="w-full py-2 rounded-lg border border-gray-300 text-gray-700 text-sm hover:bg-gray-50"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Play className="w-4 h-4" />
                   Explore Courses
-                </Link>
+                </span>
               </Button>
             </div>
 

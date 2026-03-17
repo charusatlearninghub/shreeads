@@ -10,12 +10,13 @@ import { Footer } from "@/components/layout/Footer";
 import { SeoHead } from "@/components/common/SeoHead";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { UniversalVideoPlayer } from "@/components/video/UniversalVideoPlayer";
 
 interface YouTubeVideo {
   id: string;
   title: string;
   description: string | null;
-  video_id: string;
+  youtube_url: string;
   thumbnail_url: string | null;
   order_index: number;
 }
@@ -30,7 +31,7 @@ const Videos = () => {
     const fetchVideos = async () => {
       const { data, error } = await supabase
         .from("youtube_videos")
-        .select("id, title, description, video_id, thumbnail_url, order_index")
+        .select("id, title, description, youtube_url, thumbnail_url, order_index")
         .eq("is_published", true)
         .order("order_index", { ascending: true });
 
@@ -147,12 +148,10 @@ const Videos = () => {
                     </Button>
                   </div>
                 ) : (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${selectedVideo.video_id}?autoplay=1&rel=0&enablejsapi=1`}
-                    className="w-full h-full"
-                    allowFullScreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  <UniversalVideoPlayer
+                    url={selectedVideo.youtube_url}
                     title={selectedVideo.title}
+                    className="w-full h-full"
                   />
                 )}
               </div>
@@ -162,12 +161,12 @@ const Videos = () => {
                   <p className="text-sm text-muted-foreground mt-1">{selectedVideo.description}</p>
                 )}
                 <a
-                  href={selectedVideo ? `https://www.youtube.com/watch?v=${selectedVideo.video_id}` : '#'}
+                  href={selectedVideo?.youtube_url || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block mt-2 text-sm text-primary hover:underline"
                 >
-                  Open in YouTube
+                  Open source link
                 </a>
               </div>
             </div>

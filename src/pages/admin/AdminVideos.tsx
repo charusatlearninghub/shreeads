@@ -14,7 +14,9 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { getYouTubeVideoId, isValidYouTubeUrl, getYouTubeThumbnailUrl } from "@/lib/youtube";
+import { getYouTubeThumbnailUrl } from "@/lib/youtube";
+import { getPlayableUrl, getVideoIdentifier, getVideoType } from "@/lib/video-sources";
+import { UniversalVideoPlayer } from "@/components/video/UniversalVideoPlayer";
 
 interface YouTubeVideo {
   id: string;
@@ -85,11 +87,23 @@ const AdminVideos = () => {
 
   const handleUrlChange = (url: string) => {
     setFormData((prev) => ({ ...prev, youtube_url: url }));
-    if (url.trim() && !isValidYouTubeUrl(url)) {
-      setUrlError("Invalid YouTube URL");
-    } else {
+    if (!url.trim()) {
       setUrlError("");
+      return;
     }
+    try {
+      // validate URL format
+      new URL(url.trim());
+    } catch {
+      setUrlError("Please enter a valid URL");
+      return;
+    }
+    const { playableUrl } = getPlayableUrl(url);
+    if (!playableUrl) {
+      setUrlError("Unsupported video format");
+      return;
+    }
+    setUrlError("");
   };
 
   const handleSave = async () => {
@@ -97,14 +111,19 @@ const AdminVideos = () => {
       toast({ title: "Error", description: "Title is required", variant: "destructive" });
       return;
     }
-    const videoId = getYouTubeVideoId(formData.youtube_url);
-    if (!videoId) {
-      toast({ title: "Error", description: "Valid YouTube URL is required", variant: "destructive" });
+    if (!formData.youtube_url.trim()) {
+      toast({ title: "Error", description: "Video URL is required", variant: "destructive" });
+      return;
+    }
+    if (urlError) {
+      toast({ title: "Error", description: urlError, variant: "destructive" });
       return;
     }
 
     setIsSaving(true);
-    const thumbnail = getYouTubeThumbnailUrl(formData.youtube_url, "high");
+    const type = getVideoType(formData.youtube_url);
+    const thumbnail = type === "youtube" ? getYouTubeThumbnailUrl(formData.youtube_url, "high") : null;
+    const videoId = getVideoIdentifier(formData.youtube_url);
 
     if (editingVideo) {
       const { error } = await supabase
@@ -185,11 +204,11 @@ const AdminVideos = () => {
     fetchVideos();
   };
 
-  const previewVideoId = getYouTubeVideoId(formData.youtube_url);
+  const previewType = getVideoType(formData.youtube_url);
 
   return (
     <AdminLayout
-      title="YouTube Videos"
+      title="Videos"
       subtitle="Manage videos displayed on the website"
       actions={
         <Button onClick={openAddDialog} size="sm">
@@ -206,7 +225,7 @@ const AdminVideos = () => {
         <Card className="p-8 text-center">
           <Youtube className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="font-display font-bold text-lg mb-2">No Videos Yet</h3>
-          <p className="text-muted-foreground mb-4">Add YouTube videos to display on your website</p>
+          <p className="text-muted-foreground mb-4">Add videos to display on your website</p>
           <Button onClick={openAddDialog}>
             <Plus className="w-4 h-4 mr-2" />
             Add First Video
@@ -251,7 +270,14 @@ const AdminVideos = () => {
                         {video.description && (
                           <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{video.description}</p>
                         )}
-                        <p className="text-xs text-muted-foreground mt-1">ID: {video.video_id}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary" className="text-[10px]">
+                            {getVideoType(video.youtube_url)}
+                          </Badge>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {video.youtube_url}
+                          </p>
+                        </div>
                       </div>
 
                       {/* Actions */}
@@ -299,28 +325,35 @@ const AdminVideos = () => {
       <Dialog open={showDialog} onOpenChange={(open) => { if (!open) resetForm(); setShowDialog(open); }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingVideo ? "Edit Video" : "Add YouTube Video"}</DialogTitle>
+            <DialogTitle>{editingVideo ? "Edit Video" : "Add Video"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>YouTube URL *</Label>
+              <Label>Enter video URL *</Label>
               <Input
-                placeholder="https://www.youtube.com/watch?v=..."
+                placeholder="YouTube, MP4, Drive, Vimeo, Instagram..."
                 value={formData.youtube_url}
                 onChange={(e) => handleUrlChange(e.target.value)}
               />
               {urlError && <p className="text-sm text-destructive">{urlError}</p>}
             </div>
 
-            {previewVideoId && (
-              <div className="rounded-lg overflow-hidden border">
-                <div className="aspect-video">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${previewVideoId}`}
-                    className="w-full h-full"
-                    allowFullScreen
-                    title="Preview"
-                  />
+            {formData.youtube_url.trim() && !urlError && (
+              <div className="rounded-lg overflow-hidden border bg-black/5 p-2">
+                <UniversalVideoPlayer url={formData.youtube_url} title="Preview" />
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {previewType}
+                  </Badge>
+                  <a
+                    href={formData.youtube_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Open link
+                  </a>
                 </div>
               </div>
             )}
