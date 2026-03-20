@@ -203,16 +203,16 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
         </div>
 
         {/* Grouped Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+        <nav className="flex-1 overflow-y-auto px-3 pt-3 pb-20 lg:pb-3 space-y-3">
           {sidebarGroups.map((group) => (
             <SidebarGroupItem key={group.label} group={group} location={location} onNavigate={closeSidebar} />
           ))}
         </nav>
 
         {/* User Section */}
-        <div className="p-3 border-t border-border shrink-0">
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50 mb-2">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+        <div className="border-t border-border bg-card p-3 shrink-0 mt-3 flex flex-col gap-2">
+          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
               {initials}
             </div>
             <div className="flex-1 min-w-0">
