@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { GraduationCap, Lock, Eye, EyeOff, ArrowRight, CheckCircle } from "lucide-react";
+import { Lock, Eye, EyeOff, ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import logo from "@/assets/new-logo.png";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -167,13 +168,8 @@ const ResetPassword = () => {
         className="w-full max-w-md relative z-10"
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-8 justify-center">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/25">
-            <GraduationCap className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="font-display font-bold text-lg">SHREE ADS</h2>
-          </div>
+        <div className="mb-8 flex justify-center">
+          <img src={logo} alt="SHREE ADS" className="h-14 w-auto object-contain drop-shadow-md" />
         </div>
 
         <Card className="border-0 shadow-2xl">

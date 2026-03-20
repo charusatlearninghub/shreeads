@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { GraduationCap, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { lovable } from "@/integrations/lovable";
 import { isNativePlatform, handleNativeOAuth } from "@/lib/native-oauth";
+import logo from "@/assets/new-logo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -176,14 +177,8 @@ const Login = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <Link to="/" className="flex items-center gap-3 mb-12">
-              <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <GraduationCap className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="font-display font-bold text-xl">SHREE ADS</h2>
-                <p className="text-sm opacity-80">Learning Platform</p>
-              </div>
+            <Link to="/" className="mb-12 inline-flex">
+              <img src={logo} alt="SHREE ADS" className="h-16 w-auto object-contain drop-shadow-lg" />
             </Link>
 
             <h1 className="font-display text-4xl font-bold mb-6 leading-tight">
@@ -226,13 +221,8 @@ const Login = () => {
           className="w-full max-w-md"
         >
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/25">
-              <GraduationCap className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="font-display font-bold text-lg">SHREE ADS</h2>
-            </div>
+          <div className="lg:hidden mb-8 flex justify-center">
+            <img src={logo} alt="SHREE ADS" className="h-14 w-auto object-contain drop-shadow-md" />
           </div>
 
           <Card className="border-0 shadow-2xl">
