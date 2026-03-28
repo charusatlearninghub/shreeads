@@ -14,13 +14,23 @@ import {
   Clock,
   Loader2,
   Pencil,
-  Trash2
+  Trash2,
+  Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -29,10 +39,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
+interface PromoCodeUsageRow {
+  id: string;
+  user_id?: string;
+  user_name: string | null;
+  user_email: string | null;
+  course_name: string;
+  used_at: string;
+  paid_amount?: number | string | null;
+  final_price_paid?: number | string | null;
+  promo_price?: number | string | null;
+  original_price_at_purchase?: number | string | null;
+}
+
 interface PromoCode {
   id: string;
   code: string;
   course_id: string;
+  promo_price?: number | null;
   is_used: boolean;
   used_by: string | null;
   used_at: string | null;
@@ -41,11 +65,204 @@ interface PromoCode {
   courses?: {
     title: string;
   };
+  promo_code_usage?: PromoCodeUsageRow[];
 }
 
 interface Course {
   id: string;
   title: string;
+  price?: number | null;
+  discount_price?: number | null;
+  is_free?: boolean | null;
+}
+
+function getSortedCourseUsage(code: PromoCode): PromoCodeUsageRow[] {
+  const rows = code.promo_code_usage ?? [];
+  return [...rows].sort(
+    (a, b) => new Date(b.used_at).getTime() - new Date(a.used_at).getTime()
+  );
+}
+
+function getCourseUsageSummary(code: PromoCode) {
+  const rows = getSortedCourseUsage(code);
+  const count = rows.length;
+  const latest = rows[0];
+  return { rows, count, latest };
+}
+
+function formatInrCell(n: number | null | undefined): string {
+  if (n === null || n === undefined || !Number.isFinite(Number(n))) return '—';
+  return `₹${Number(n).toLocaleString('en-IN')}`;
+}
+
+/** Paid (₹): paid_amount → enrollment.final_price_paid (merged on row) → usage promo_price → code promo_price. */
+function getPaidDisplayForPromoCode(code: PromoCode): string {
+  const rows = getSortedCourseUsage(code);
+  for (const r of rows) {
+    const fromPaid = r.paid_amount;
+    if (fromPaid !== null && fromPaid !== undefined && fromPaid !== '' && Number.isFinite(Number(fromPaid))) {
+      return formatInrCell(Number(fromPaid));
+    }
+  }
+  for (const r of rows) {
+    const ef = r.final_price_paid;
+    if (ef !== null && ef !== undefined && ef !== '' && Number.isFinite(Number(ef))) {
+      return formatInrCell(Number(ef));
+    }
+  }
+  for (const r of rows) {
+    const pa = r.promo_price;
+    if (pa !== null && pa !== undefined && pa !== '' && Number.isFinite(Number(pa))) {
+      return formatInrCell(Number(pa));
+    }
+  }
+  if (code.promo_price != null && Number.isFinite(Number(code.promo_price))) {
+    return formatInrCell(Number(code.promo_price));
+  }
+  return '—';
+}
+
+type ProfileRow = { id: string; full_name: string | null; email: string | null };
+
+function displayNameFromProfile(p: ProfileRow | undefined): string {
+  const n = p?.full_name?.trim();
+  if (n) return n;
+  const e = p?.email?.trim();
+  if (e) return e.split('@')[0] || e;
+  return 'User';
+}
+
+/** Merge promo_code_usage rows with enrollments + profiles so Used By / Used Date always populate. */
+function mergeUsageWithEnrollments(
+  codes: PromoCode[],
+  usageRows: Array<{
+    id: string;
+    promo_code_id: string;
+    user_id: string;
+    user_name: string | null;
+    user_email: string | null;
+    course_name: string;
+    used_at: string;
+    paid_amount?: number | string | null;
+    final_price_paid?: number | string | null;
+    promo_price?: number | string | null;
+    original_price_at_purchase?: number | string | null;
+  }>,
+  enrollments: Array<{
+    id: string;
+    promo_code_id: string | null;
+    user_id: string;
+    enrolled_at: string;
+    final_price_paid?: number | string | null;
+    promo_price?: number | string | null;
+    original_price?: number | string | null;
+    promo_code?: string | null;
+    courses: { title: string } | null;
+    promo_codes?: { promo_price: number | string | null } | null;
+  }>,
+  profilesById: Map<string, ProfileRow>
+): PromoCode[] {
+  const byPromoId = new Map<string, PromoCodeUsageRow[]>();
+
+  for (const row of usageRows) {
+    const prof = profilesById.get(row.user_id);
+    const name =
+      row.user_name?.trim() ||
+      (prof ? displayNameFromProfile(prof) : '') ||
+      row.user_email?.split('@')[0] ||
+      'User';
+    const slice: PromoCodeUsageRow = {
+      id: row.id,
+      user_id: row.user_id,
+      user_name: name,
+      user_email: row.user_email || prof?.email || '',
+      course_name: row.course_name,
+      used_at: row.used_at,
+      paid_amount: row.paid_amount ?? null,
+      final_price_paid: row.final_price_paid ?? null,
+      promo_price: row.promo_price ?? null,
+      original_price_at_purchase: row.original_price_at_purchase ?? null,
+    };
+    const list = byPromoId.get(row.promo_code_id) ?? [];
+    list.push(slice);
+    byPromoId.set(row.promo_code_id, list);
+  }
+
+  for (const e of enrollments) {
+    if (!e.promo_code_id) continue;
+    const list = byPromoId.get(e.promo_code_id) ?? [];
+    const prof = profilesById.get(e.user_id);
+    const courseTitle = e.courses?.title ?? 'Course';
+    const idx = list.findIndex((r) => r.user_id === e.user_id);
+    if (idx >= 0) {
+      const cur = list[idx];
+      const mergedNames = !cur.user_name?.trim()
+        ? {
+            user_name: displayNameFromProfile(prof) || cur.user_email?.split('@')[0] || 'User',
+            user_email: (cur.user_email || prof?.email || '').trim() || null,
+            course_name: cur.course_name || courseTitle,
+          }
+        : { course_name: cur.course_name || courseTitle };
+      const ep = e.final_price_paid;
+      const pp = e.promo_price;
+      const pcPrice = e.promo_codes?.promo_price;
+      list[idx] = {
+        ...cur,
+        ...mergedNames,
+        paid_amount:
+          cur.paid_amount ?? ep ?? cur.final_price_paid ?? pp ?? pcPrice ?? null,
+        final_price_paid: cur.final_price_paid ?? ep ?? pp ?? pcPrice ?? null,
+        promo_price: cur.promo_price ?? pp ?? pcPrice ?? null,
+        original_price_at_purchase: cur.original_price_at_purchase ?? e.original_price ?? null,
+      };
+    } else {
+      const ep = e.final_price_paid;
+      const pp = e.promo_price;
+      const pcPrice = e.promo_codes?.promo_price;
+      list.push({
+        id: `enrollment-${e.id}`,
+        user_id: e.user_id,
+        user_name: displayNameFromProfile(prof),
+        user_email: prof?.email ?? '',
+        course_name: courseTitle,
+        used_at: e.enrolled_at,
+        paid_amount: ep ?? pp ?? pcPrice ?? null,
+        final_price_paid: ep ?? pp ?? pcPrice ?? null,
+        promo_price: pp ?? pcPrice ?? null,
+        original_price_at_purchase: e.original_price ?? null,
+      });
+    }
+    byPromoId.set(e.promo_code_id, list);
+  }
+
+  for (const [, list] of byPromoId) {
+    list.sort((a, b) => new Date(b.used_at).getTime() - new Date(a.used_at).getTime());
+  }
+
+  return codes.map((c) => {
+    let usage = byPromoId.get(c.id) ?? [];
+    if (c.is_used && c.used_by && usage.length === 0) {
+      const prof = profilesById.get(c.used_by);
+      const legacyPaid =
+        c.promo_price != null && Number.isFinite(Number(c.promo_price))
+          ? Number(c.promo_price)
+          : null;
+      usage = [
+        {
+          id: `legacy-${c.id}`,
+          user_id: c.used_by,
+          user_name: displayNameFromProfile(prof),
+          user_email: prof?.email ?? '',
+          course_name: c.courses?.title ?? 'Course',
+          used_at: c.used_at ?? c.created_at,
+          paid_amount: legacyPaid,
+          final_price_paid: legacyPaid,
+          promo_price: legacyPaid,
+        },
+      ];
+    }
+    return { ...c, promo_code_usage: usage };
+  });
 }
 
 const AdminPromoCodes = () => {
@@ -64,12 +281,16 @@ const AdminPromoCodes = () => {
   const [showResultsDialog, setShowResultsDialog] = useState(false);
   const [editingCode, setEditingCode] = useState<PromoCode | null>(null);
   const [editExpiresAt, setEditExpiresAt] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [codeToDelete, setCodeToDelete] = useState<PromoCode | null>(null);
+  const [usageDetailCode, setUsageDetailCode] = useState<PromoCode | null>(null);
 
   const [generateForm, setGenerateForm] = useState({
     courseId: '',
     quantity: 1,
     prefix: '',
     expiresAt: '',
+    promoPrice: '',
   });
 
   useEffect(() => {
@@ -80,7 +301,9 @@ const AdminPromoCodes = () => {
   const fetchPromoCodes = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // Load codes without embedding usage: nested selects fail if the usage table or FK
+      // is missing (migration not applied) or PostgREST cannot resolve the relationship.
+      const { data: codes, error } = await supabase
         .from('promo_codes')
         .select(`
           *,
@@ -89,7 +312,56 @@ const AdminPromoCodes = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPromoCodes(data || []);
+
+      let merged: PromoCode[] = (codes || []) as PromoCode[];
+
+      const ids = merged.map((c) => c.id);
+      if (ids.length > 0) {
+        const { data: usageRows, error: usageError } = await supabase
+          .from('promo_code_usage')
+          .select(
+            'id, promo_code_id, user_id, user_name, user_email, course_name, used_at, paid_amount, final_price_paid, promo_price, original_price_at_purchase'
+          )
+          .in('promo_code_id', ids);
+
+        const { data: enrollRows, error: enrollError } = await supabase
+          .from('enrollments')
+          .select(
+            'id, promo_code_id, user_id, enrolled_at, final_price_paid, promo_price, original_price, promo_code, payment_type, courses(title), promo_codes(promo_price)'
+          )
+          .in('promo_code_id', ids)
+          .not('promo_code_id', 'is', null);
+
+        if (usageError) {
+          console.warn('promo_code_usage fetch skipped:', usageError.message);
+        }
+        if (enrollError) {
+          console.warn('enrollments (promo) fetch skipped:', enrollError.message);
+        }
+
+        const uRows = usageError ? [] : usageRows ?? [];
+        const eRows = enrollError ? [] : enrollRows ?? [];
+
+        const userIdSet = new Set<string>();
+        for (const r of uRows) userIdSet.add(r.user_id);
+        for (const r of eRows) userIdSet.add(r.user_id);
+        for (const c of merged) {
+          if (c.used_by) userIdSet.add(c.used_by);
+        }
+
+        let profilesById = new Map<string, ProfileRow>();
+        if (userIdSet.size > 0) {
+          const { data: profs } = await supabase
+            .from('profiles')
+            .select('id, full_name, email')
+            .in('id', [...userIdSet]);
+          profilesById = new Map((profs ?? []).map((p) => [p.id, p]));
+        }
+
+        merged = mergeUsageWithEnrollments(merged, uRows, eRows, profilesById);
+      }
+
+      setPromoCodes(merged);
     } catch (error) {
       console.error('Error fetching promo codes:', error);
       toast({ title: 'Error', description: 'Failed to fetch promo codes', variant: 'destructive' });
@@ -102,7 +374,7 @@ const AdminPromoCodes = () => {
     try {
       const { data, error } = await supabase
         .from('courses')
-        .select('id, title')
+        .select('id, title, price, discount_price, is_free')
         .order('title');
 
       if (error) throw error;
@@ -118,6 +390,21 @@ const AdminPromoCodes = () => {
       return;
     }
 
+    const selected = courses.find((c) => c.id === generateForm.courseId);
+    const listPrice = selected
+      ? Number(selected.discount_price ?? selected.price ?? 0) || 0
+      : 0;
+    const promoAmt = Math.max(0, Number(generateForm.promoPrice) || 0);
+    if (listPrice > 0 && promoAmt <= 0) {
+      toast({
+        title: 'Error',
+        description:
+          'For paid courses, enter a "Price paid on redeem" greater than 0. Codes with ₹0 cannot be redeemed on paid courses.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsGenerating(true);
     try {
       const response = await supabase.functions.invoke('generate-promo-codes', {
@@ -126,6 +413,7 @@ const AdminPromoCodes = () => {
           quantity: generateForm.quantity,
           prefix: generateForm.prefix || undefined,
           expiresAt: generateForm.expiresAt || undefined,
+          promoPrice: Math.max(0, Number(generateForm.promoPrice) || 0),
         },
       });
 
@@ -199,19 +487,32 @@ const AdminPromoCodes = () => {
     }
   };
 
-  const handleDeleteCode = async (code: PromoCode) => {
-    if (!confirm(`Delete promo code "${code.code}"? ${code.is_used ? 'This will also remove the student\'s enrollment, progress, and certificates for this course.' : ''}`)) return;
-    
+  const openDeleteDialog = (code: PromoCode) => {
+    setCodeToDelete(code);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteDialogOpenChange = (open: boolean) => {
+    if (!open && isDeleting) return;
+    setShowDeleteDialog(open);
+    if (!open) setCodeToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!codeToDelete) return;
+
     setIsDeleting(true);
     try {
       const { data, error } = await supabase.functions.invoke('delete-promo-code', {
-        body: { codeId: code.id, type: 'course' },
+        body: { codeId: codeToDelete.id, type: 'course' },
       });
 
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
 
       toast({ title: 'Success', description: data?.message || 'Promo code deleted' });
+      setShowDeleteDialog(false);
+      setCodeToDelete(null);
       fetchPromoCodes();
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -252,7 +553,7 @@ const AdminPromoCodes = () => {
           variant="hero" 
           size="sm"
           onClick={() => {
-            setGenerateForm({ courseId: '', quantity: 1, prefix: '', expiresAt: '' });
+            setGenerateForm({ courseId: '', quantity: 1, prefix: '', expiresAt: '', promoPrice: '' });
             setShowGenerateDialog(true);
           }}
         >
@@ -339,19 +640,35 @@ const AdminPromoCodes = () => {
                     <TableHead>Code</TableHead>
                     <TableHead className="hidden sm:table-cell">Course</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="hidden md:table-cell">Expires</TableHead>
+                    <TableHead className="hidden lg:table-cell text-center w-[72px]">Uses</TableHead>
+                    <TableHead className="hidden md:table-cell min-w-[120px]">Used By</TableHead>
+                    <TableHead className="hidden md:table-cell">Used Date</TableHead>
+                    <TableHead className="hidden xl:table-cell text-right">Paid (₹)</TableHead>
+                    <TableHead className="hidden lg:table-cell">Expires</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedCodes.map((code) => {
                     const status = getCodeStatus(code);
+                    const { count: usageCount, latest } = getCourseUsageSummary(code);
+                    const usedByDisplay =
+                      usageCount === 0
+                        ? '—'
+                        : usageCount === 1
+                          ? latest?.user_name?.trim() || latest?.user_email || '—'
+                          : `${latest?.user_name?.trim() || latest?.user_email || 'User'} · +${usageCount - 1}`;
                     return (
                       <TableRow key={code.id}>
                         <TableCell>
-                          <code className="font-mono text-sm bg-secondary px-2 py-1 rounded">
+                          <button
+                            type="button"
+                            className="font-mono text-sm bg-secondary px-2 py-1 rounded text-left hover:bg-muted transition-colors max-w-[140px] truncate"
+                            title="View usage details"
+                            onClick={() => setUsageDetailCode(code)}
+                          >
                             {code.code}
-                          </code>
+                          </button>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
                           <span className="text-sm truncate max-w-[200px] block">
@@ -367,7 +684,21 @@ const AdminPromoCodes = () => {
                             <Badge variant="destructive">Expired</Badge>
                           )}
                         </TableCell>
-                        <TableCell className="hidden md:table-cell">
+                        <TableCell className="hidden lg:table-cell text-center tabular-nums">
+                          {usageCount}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm max-w-[160px] truncate" title={usedByDisplay}>
+                          {usedByDisplay}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                          {latest
+                            ? format(new Date(latest.used_at), 'MMM d, yyyy')
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="hidden xl:table-cell text-right tabular-nums text-sm">
+                          {getPaidDisplayForPromoCode(code)}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           {code.expires_at ? (
                             format(new Date(code.expires_at), 'MMM d, yyyy')
                           ) : (
@@ -399,7 +730,7 @@ const AdminPromoCodes = () => {
                               variant="ghost" 
                               size="icon" 
                               className="h-8 w-8"
-                              onClick={() => handleDeleteCode(code)}
+                              onClick={() => openDeleteDialog(code)}
                               disabled={isDeleting}
                               title="Delete code"
                             >
@@ -481,6 +812,22 @@ const AdminPromoCodes = () => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="promo-price">Price paid on redeem (₹) *</Label>
+              <Input
+                id="promo-price"
+                type="number"
+                min={0}
+                step={1}
+                placeholder="e.g. 1000"
+                value={generateForm.promoPrice}
+                onChange={(e) => setGenerateForm({ ...generateForm, promoPrice: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Revenue is recorded as this amount when a student uses the code.
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="expires">Expiration Date (optional)</Label>
               <Input
                 id="expires"
@@ -553,6 +900,103 @@ const AdminPromoCodes = () => {
               Done
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={handleDeleteDialogOpenChange}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Promo Code</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2 text-left">
+              <span className="block">
+                Are you sure you want to delete this promo code?
+              </span>
+              <span className="block">
+                This action will also remove the student&apos;s enrollment, progress, and certificates for this course.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={!!usageDetailCode} onOpenChange={(open) => !open && setUsageDetailCode(null)}>
+        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col overflow-hidden sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 shrink-0" />
+              Promo code usage
+            </DialogTitle>
+            <DialogDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <code className="font-mono bg-secondary px-2 py-0.5 rounded text-foreground">
+                {usageDetailCode?.code}
+              </code>
+              {usageDetailCode && (
+                <span className="text-muted-foreground">
+                  {getCourseUsageSummary(usageDetailCode).count}{' '}
+                  {getCourseUsageSummary(usageDetailCode).count === 1 ? 'use' : 'uses'} total
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="overflow-y-auto flex-1 min-h-0 -mx-4 px-4 sm:mx-0 sm:px-0">
+            {usageDetailCode &&
+              (() => {
+                const rows = getSortedCourseUsage(usageDetailCode);
+                if (rows.length === 0) {
+                  return (
+                    <p className="text-sm text-muted-foreground py-8 text-center">
+                      This code has not been used yet.
+                    </p>
+                  );
+                }
+                return (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>User name</TableHead>
+                        <TableHead className="hidden sm:table-cell">Email</TableHead>
+                        <TableHead className="hidden md:table-cell">Course</TableHead>
+                        <TableHead>Date used</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {rows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell className="font-medium">
+                            {row.user_name?.trim() || '—'}
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+                            {row.user_email || '—'}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell text-sm">{row.course_name}</TableCell>
+                          <TableCell className="text-sm whitespace-nowrap">
+                            {format(new Date(row.used_at), 'MMM d, yyyy · HH:mm')}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                );
+              })()}
+          </div>
         </DialogContent>
       </Dialog>
 

@@ -73,35 +73,43 @@ Deno.serve(async (req) => {
         );
       }
 
-      // If code was used, delete the enrollment and related progress/certificates
-      if (promoCode.is_used && promoCode.used_by) {
-        // Delete lesson progress for this course
-        const { data: lessons } = await supabase
-          .from('lessons')
-          .select('id')
-          .eq('course_id', promoCode.course_id);
+      // Revoke access for every user recorded in usage (or legacy used_by)
+      const { data: usageRows } = await supabase
+        .from('promo_code_usage')
+        .select('user_id')
+        .eq('promo_code_id', codeId);
 
-        if (lessons && lessons.length > 0) {
-          const lessonIds = lessons.map(l => l.id);
+      let userIds = [...new Set((usageRows ?? []).map((r) => r.user_id))];
+      if (userIds.length === 0 && promoCode.is_used && promoCode.used_by) {
+        userIds = [promoCode.used_by];
+      }
+
+      const { data: lessons } = await supabase
+        .from('lessons')
+        .select('id')
+        .eq('course_id', promoCode.course_id);
+
+      const lessonIds = lessons?.map((l) => l.id) ?? [];
+
+      for (const uid of userIds) {
+        if (lessonIds.length > 0) {
           await supabase
             .from('lesson_progress')
             .delete()
-            .eq('user_id', promoCode.used_by)
+            .eq('user_id', uid)
             .in('lesson_id', lessonIds);
         }
 
-        // Delete certificates for this course
         await supabase
           .from('certificates')
           .delete()
-          .eq('user_id', promoCode.used_by)
+          .eq('user_id', uid)
           .eq('course_id', promoCode.course_id);
 
-        // Delete enrollment
         await supabase
           .from('enrollments')
           .delete()
-          .eq('user_id', promoCode.used_by)
+          .eq('user_id', uid)
           .eq('course_id', promoCode.course_id);
       }
 
@@ -138,27 +146,28 @@ Deno.serve(async (req) => {
         );
       }
 
-      // If code was used, delete the software purchase
-      if (promoCode.is_used && promoCode.used_by) {
-        // Delete software downloads first (FK constraint)
+      const { data: usageRows } = await supabase
+        .from('software_promo_code_usage')
+        .select('user_id')
+        .eq('software_promo_code_id', codeId);
+
+      let userIds = [...new Set((usageRows ?? []).map((r) => r.user_id))];
+      if (userIds.length === 0 && promoCode.is_used && promoCode.used_by) {
+        userIds = [promoCode.used_by];
+      }
+
+      for (const uid of userIds) {
         const { data: purchases } = await supabase
           .from('software_purchases')
           .select('id')
-          .eq('user_id', promoCode.used_by)
+          .eq('user_id', uid)
           .eq('product_id', promoCode.product_id)
           .eq('payment_method', 'promo_code');
 
         if (purchases && purchases.length > 0) {
-          const purchaseIds = purchases.map(p => p.id);
-          await supabase
-            .from('software_downloads')
-            .delete()
-            .in('purchase_id', purchaseIds);
-
-          await supabase
-            .from('software_purchases')
-            .delete()
-            .in('id', purchaseIds);
+          const purchaseIds = purchases.map((p) => p.id);
+          await supabase.from('software_downloads').delete().in('purchase_id', purchaseIds);
+          await supabase.from('software_purchases').delete().in('id', purchaseIds);
         }
       }
 

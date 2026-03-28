@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { courseId, quantity, expiresAt, prefix } = await req.json();
+    const { courseId, quantity, expiresAt, prefix, promoPrice } = await req.json();
 
     if (!courseId) {
       return new Response(
@@ -70,6 +70,8 @@ Deno.serve(async (req) => {
     }
 
     const count = Math.min(Math.max(parseInt(quantity) || 1, 1), 100); // Max 100 at a time
+    const promoPriceNum = Math.max(0, Number(promoPrice));
+    const safePromoPrice = Number.isFinite(promoPriceNum) ? promoPriceNum : 0;
     const codes: string[] = [];
     const createdCodes: any[] = [];
     
@@ -93,6 +95,7 @@ Deno.serve(async (req) => {
       expires_at: expiresAt || null,
       is_used: false,
       created_by: userId,
+      promo_price: safePromoPrice,
     }));
 
     const { data: insertedCodes, error: insertError } = await supabaseClient

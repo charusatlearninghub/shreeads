@@ -88,6 +88,22 @@ Deno.serve(async (req) => {
       );
     }
 
+    const { data: productRow } = await supabase
+      .from('software_products')
+      .select('title, price, discount_price, is_free')
+      .eq('id', productId)
+      .maybeSingle();
+
+    const isFreeProduct = productRow?.is_free === true;
+    const originalSoftwarePrice = isFreeProduct
+      ? 0
+      : Number(productRow?.discount_price ?? productRow?.price ?? 0) || 0;
+    const rawSwPromo = (promoCode as { promo_price?: number | string | null }).promo_price;
+    const softwarePromoPaid = Math.max(
+      0,
+      Number(rawSwPromo) === Number(rawSwPromo) ? Number(rawSwPromo) : 0,
+    );
+
     // Mark code as used
     const { error: updateError } = await supabase
       .from('software_promo_codes')
@@ -113,7 +129,7 @@ Deno.serve(async (req) => {
         user_id: user.id,
         product_id: productId,
         payment_method: 'promo_code',
-        amount_paid: 0,
+        amount_paid: softwarePromoPaid,
       });
 
     if (purchaseError) {
@@ -126,6 +142,70 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ error: 'Failed to complete purchase' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name, email')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    let authEmail = authUser.email ?? '';
+    let meta: Record<string, unknown> = (authUser.user_metadata ?? {}) as Record<string, unknown>;
+    try {
+      const { data: adminData, error: adminErr } = await supabase.auth.admin.getUserById(user.id);
+      if (!adminErr && adminData?.user) {
+        authEmail = adminData.user.email ?? authEmail;
+        meta = { ...meta, ...(adminData.user.user_metadata ?? {}) };
+      }
+    } catch {
+      // ignore
+    }
+
+    const metaFull =
+      (typeof meta.full_name === 'string' && meta.full_name) ||
+      (typeof meta.name === 'string' && meta.name) ||
+      (typeof meta.display_name === 'string' && meta.display_name) ||
+      '';
+
+    const userEmail = (profile?.email || authEmail || '').trim();
+    const userName = (
+      profile?.full_name?.trim() ||
+      metaFull ||
+      userEmail.split('@')[0] ||
+      'User'
+    ).trim();
+
+    const { error: usageError } = await supabase.from('software_promo_code_usage').insert({
+      software_promo_code_id: promoCode.id,
+      promo_code: promoCode.code,
+      user_id: user.id,
+      user_name: userName || 'User',
+      user_email: userEmail,
+      product_id: productId,
+      product_name: productRow?.title ?? 'Software',
+      original_price_at_purchase: originalSoftwarePrice,
+      promo_price: softwarePromoPaid,
+      final_price_paid: softwarePromoPaid,
+    });
+
+    if (usageError) {
+      console.error('Failed to record software promo usage:', usageError);
+      await supabase
+        .from('software_purchases')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('product_id', productId)
+        .eq('payment_method', 'promo_code');
+      await supabase
+        .from('software_promo_codes')
+        .update({ is_used: false, used_by: null, used_at: null })
+        .eq('id', promoCode.id);
+
+      return new Response(
+        JSON.stringify({ error: 'Failed to record promo code usage' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

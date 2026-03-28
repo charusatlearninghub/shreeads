@@ -7,10 +7,13 @@ interface RedeemResult {
   message: string;
   enrollment?: {
     id: string;
-    course: {
+    course?: {
       id: string;
       title: string;
-    };
+    } | null;
+    final_price_paid?: number;
+    promo_price?: number;
+    original_price?: number;
   };
 }
 
@@ -66,6 +69,13 @@ export function usePromoCode() {
       }
 
       if (result?.success) {
+        if (import.meta.env.DEV && result.enrollment) {
+          console.debug('[redeem-promo-code] enrollment snapshot', {
+            final_price_paid: result.enrollment.final_price_paid,
+            promo_price: result.enrollment.promo_price,
+            original_price: result.enrollment.original_price,
+          });
+        }
         toast({
           title: 'Success!',
           description: result.message,

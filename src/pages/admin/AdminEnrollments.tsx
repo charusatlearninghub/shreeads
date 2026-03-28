@@ -37,6 +37,13 @@ import {
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 
+function formatEnrollmentRupee(n: unknown): string {
+  if (n === null || n === undefined || n === "") return "—";
+  const num = Number(n);
+  if (!Number.isFinite(num)) return "—";
+  return `₹${num.toLocaleString("en-IN")}`;
+}
+
 const AdminEnrollments = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCourse, setSelectedCourse] = useState<string>("all");
@@ -92,11 +99,14 @@ const AdminEnrollments = () => {
 
     // Search filter
     const searchLower = searchQuery.toLowerCase();
+    const promoLabel =
+      typeof enrollment.promo_code === "string" ? enrollment.promo_code : "";
     const matchesSearch =
       !searchQuery ||
       profile?.full_name?.toLowerCase().includes(searchLower) ||
       profile?.email?.toLowerCase().includes(searchLower) ||
-      course?.title?.toLowerCase().includes(searchLower);
+      course?.title?.toLowerCase().includes(searchLower) ||
+      promoLabel.toLowerCase().includes(searchLower);
 
     // Course filter
     const matchesCourse =
@@ -308,7 +318,10 @@ const AdminEnrollments = () => {
                       <TableRow>
                         <TableHead>Student</TableHead>
                         <TableHead className="hidden sm:table-cell">Course</TableHead>
-                        <TableHead className="hidden md:table-cell">Enrollment Type</TableHead>
+                        <TableHead className="hidden lg:table-cell text-right">Original</TableHead>
+                        <TableHead className="hidden md:table-cell">Promo Code</TableHead>
+                        <TableHead className="hidden lg:table-cell text-right">Paid</TableHead>
+                        <TableHead className="hidden md:table-cell">Type</TableHead>
                         <TableHead className="hidden lg:table-cell">Enrolled Date</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -316,6 +329,17 @@ const AdminEnrollments = () => {
                       {paginatedEnrollments.map((enrollment) => {
                         const profile = profileMap.get(enrollment.user_id);
                         const course = courseMap.get(enrollment.course_id);
+                        const row = enrollment as {
+                          course_name?: string | null;
+                          original_price?: number | null;
+                          final_price_paid?: number | null;
+                          promo_code?: string | null;
+                        };
+                        const courseTitle =
+                          row.course_name || course?.title || "Unknown Course";
+                        const originalSnap = row.original_price;
+                        const paidSnap = row.final_price_paid;
+                        const codeSnap = row.promo_code || "";
                         return (
                           <TableRow key={enrollment.id}>
                             <TableCell>
@@ -331,7 +355,7 @@ const AdminEnrollments = () => {
                             <TableCell className="hidden sm:table-cell">
                               <div className="flex items-center gap-2">
                                 <span className="font-medium truncate max-w-[200px]">
-                                  {course?.title || "Unknown Course"}
+                                  {courseTitle}
                                 </span>
                                 {course?.is_free && (
                                   <Badge variant="secondary" className="text-xs">
@@ -339,6 +363,21 @@ const AdminEnrollments = () => {
                                   </Badge>
                                 )}
                               </div>
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell text-right tabular-nums text-sm">
+                              {formatEnrollmentRupee(originalSnap)}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {enrollment.promo_code_id ? (
+                                <code className="text-xs bg-secondary px-2 py-1 rounded font-mono">
+                                  {codeSnap || "—"}
+                                </code>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell text-right tabular-nums text-sm font-medium">
+                              {formatEnrollmentRupee(paidSnap)}
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
                               {enrollment.promo_code_id ? (
@@ -359,7 +398,7 @@ const AdminEnrollments = () => {
                                 </Badge>
                               )}
                             </TableCell>
-                            <TableCell className="hidden lg:table-cell">
+                            <TableCell className="hidden lg:table-cell text-sm">
                               {format(new Date(enrollment.enrolled_at), "PPP")}
                             </TableCell>
                           </TableRow>

@@ -50,6 +50,24 @@ interface RevenueData {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
+function promoEnrollmentRevenue(e: {
+  final_price_paid?: number | string | null;
+  promo_price?: number | string | null;
+  promo_codes?: { promo_price?: number | string | null } | null;
+}): number {
+  const pick = (v: unknown) => {
+    if (v === null || v === undefined || v === '') return NaN;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : NaN;
+  };
+  const a = pick(e.final_price_paid);
+  if (Number.isFinite(a)) return a;
+  const b = pick(e.promo_price);
+  if (Number.isFinite(b)) return b;
+  const c = pick(e.promo_codes?.promo_price);
+  return Number.isFinite(c) ? c : 0;
+}
+
 const AdminRevenue = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState("30");
@@ -81,6 +99,9 @@ const AdminRevenue = () => {
           enrolled_at,
           course_id,
           promo_code_id,
+          final_price_paid,
+          promo_price,
+          promo_codes (promo_price),
           courses (
             id,
             title,
@@ -114,19 +135,34 @@ const AdminRevenue = () => {
 
       // Course revenue (estimated from prices - since we use promo codes)
       const courseRevenueMap: Record<string, { name: string; revenue: number; enrollments: number }> = {};
-      enrollments?.forEach(e => {
-        const course = e.courses as any;
-        if (course && !course.is_free) {
-          // Promo code enrollments = ₹0 revenue (free access)
-          const revenue = e.promo_code_id ? 0 : (course.discount_price || course.price || 0);
-          totalCourseRevenue += revenue;
-          
-          if (!courseRevenueMap[course.id]) {
-            courseRevenueMap[course.id] = { name: course.title, revenue: 0, enrollments: 0 };
-          }
-          courseRevenueMap[course.id].revenue += revenue;
-          courseRevenueMap[course.id].enrollments += 1;
+      enrollments?.forEach((e) => {
+        const course = e.courses as {
+          id: string;
+          title: string;
+          price: number | null;
+          discount_price: number | null;
+          is_free: boolean | null;
+        } | null;
+        if (!course) return;
+
+        let revenue = 0;
+        if (e.promo_code_id) {
+          revenue = promoEnrollmentRevenue(e);
+        } else {
+          if (course.is_free) return;
+          revenue = Number(course.discount_price ?? course.price ?? 0) || 0;
         }
+
+        if (!Number.isFinite(revenue)) revenue = 0;
+        if (revenue === 0) return;
+
+        totalCourseRevenue += revenue;
+
+        if (!courseRevenueMap[course.id]) {
+          courseRevenueMap[course.id] = { name: course.title, revenue: 0, enrollments: 0 };
+        }
+        courseRevenueMap[course.id].revenue += revenue;
+        courseRevenueMap[course.id].enrollments += 1;
       });
 
       // Software revenue
@@ -148,13 +184,23 @@ const AdminRevenue = () => {
       // Revenue by date
       const dateMap: Record<string, { courses: number; software: number }> = {};
       
-      enrollments?.forEach(e => {
+      enrollments?.forEach((e) => {
         const date = format(new Date(e.enrolled_at), 'yyyy-MM-dd');
-        const course = e.courses as any;
+        const course = e.courses as {
+          price: number | null;
+          discount_price: number | null;
+          is_free: boolean | null;
+        } | null;
+        if (!course) return;
         if (!dateMap[date]) dateMap[date] = { courses: 0, software: 0 };
-        if (course && !course.is_free && !e.promo_code_id) {
-          dateMap[date].courses += course.discount_price || course.price || 0;
+
+        let rev = 0;
+        if (e.promo_code_id) {
+          rev = promoEnrollmentRevenue(e);
+        } else if (!course.is_free) {
+          rev = Number(course.discount_price ?? course.price ?? 0) || 0;
         }
+        if (Number.isFinite(rev) && rev > 0) dateMap[date].courses += rev;
       });
 
       purchases?.forEach(p => {
