@@ -31,6 +31,7 @@ import { CourseReviewForm } from '@/components/course/CourseReviewForm';
 import { CourseReviews } from '@/components/course/CourseReviews';
 import { CoursePriceDisplay } from '@/components/course/CoursePriceDisplay';
 import { PromotionalBanner } from '@/components/promotions/PromotionalBanner';
+import { LegalAgreementNote } from '@/components/common/LegalAgreementNote';
 
 interface Course {
   id: string;
@@ -393,6 +394,7 @@ const CourseDetail = () => {
                             Contact admin for enrollment
                           </p>
                         </div>
+                        <LegalAgreementNote className="mt-5 px-1" />
                       </>
                     )}
 
@@ -598,6 +600,7 @@ const CourseDetail = () => {
                   disabled={isRedeeming}
                 />
               </div>
+              <LegalAgreementNote className="mb-2 px-1" />
               <DialogFooter className="flex-col sm:flex-row gap-2">
                 <Button variant="outline" onClick={() => setShowPromoDialog(false)} disabled={isRedeeming} className="w-full sm:w-auto">
                   Browse Course First

@@ -121,11 +121,11 @@ const Contact = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <Header />
 
-      {/* Hero Section */}
-      <section className="relative pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12 lg:pb-16 bg-gradient-to-br from-primary/10 via-background to-accent/10">
+      {/* Hero Section — padding clears fixed header (logo row h-16 / lg:h-20) */}
+      <section className="relative pt-28 sm:pt-32 lg:pt-32 pb-8 sm:pb-12 lg:pb-16 bg-gradient-to-br from-primary/10 via-background to-accent/10">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

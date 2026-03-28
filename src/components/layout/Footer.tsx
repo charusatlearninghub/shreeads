@@ -1,6 +1,24 @@
 import { forwardRef } from "react";
 import { Link } from "react-router-dom";
-import { GraduationCap, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+import {
+  GraduationCap,
+  Mail,
+  Phone,
+  MapPin,
+  MessageCircle,
+  Home,
+  BookOpen,
+  BadgeCheck,
+  UserRound,
+  HelpCircle,
+  MessagesSquare,
+  Headphones,
+  Shield,
+  FileText,
+  RotateCcw,
+  AlertTriangle,
+  LucideIcon,
+} from "lucide-react";
 
 const socialLinks = [
   {
@@ -41,26 +59,63 @@ const socialLinks = [
   }
 ];
 
+function FooterNavLink({
+  to,
+  icon: Icon,
+  children,
+}: {
+  to: string;
+  icon: LucideIcon;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-center gap-2.5 min-h-[44px] sm:min-h-0 py-2 sm:py-1.5 -mx-1 px-1.5 rounded-lg text-[13px] sm:text-sm text-muted-foreground transition-colors hover:text-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+    >
+      <Icon className="h-4 w-4 shrink-0 text-primary/70 transition-colors group-hover:text-primary" aria-hidden />
+      <span className="leading-snug">{children}</span>
+    </Link>
+  );
+}
+
+function FooterColumnHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h4 className="font-display text-xs font-semibold uppercase tracking-[0.12em] text-foreground/90 mb-4 sm:mb-5">
+      {children}
+    </h4>
+  );
+}
+
 export const Footer = forwardRef<HTMLElement>((_, ref) => {
   return (
-    <footer ref={ref} className="bg-card border-t border-border/50">
-      <div className="container mx-auto px-4 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-          {/* Brand */}
-          <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg shadow-primary/25">
+    <footer ref={ref} className="border-t border-border/60 bg-muted/25">
+      <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-14 lg:py-16">
+        <div
+          className="
+          grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5
+          gap-0
+          divide-y divide-border/50
+          sm:divide-y-0 sm:gap-x-8 sm:gap-y-10
+          xl:gap-x-0 xl:divide-y-0
+        "
+        >
+          {/* Column 1 – About */}
+          <div className="pb-10 pt-2 sm:pb-0 sm:pt-0 xl:pr-8 xl:border-r xl:border-border/50">
+            <Link to="/" className="inline-flex items-center gap-3 group mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-md shadow-primary/15 group-hover:shadow-primary/25 transition-shadow">
                 <GraduationCap className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="font-display font-bold text-lg">SHREE ADS</h3>
-                <p className="text-xs text-muted-foreground">Digital Marketing Platform</p>
+                <h3 className="font-display font-bold text-base tracking-tight text-foreground">SHREE ADS</h3>
+                <p className="text-[11px] sm:text-xs text-muted-foreground">Digital marketing learning platform</p>
               </div>
             </Link>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Empowering learners with high-quality digital marketing courses and tools to grow their skills and business.
+            <p className="text-[13px] sm:text-sm text-muted-foreground leading-relaxed max-w-xs">
+              SHREE ADS is a digital marketing learning platform helping you build real skills through courses, tools, and
+              practical training.
             </p>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-2 pt-4">
               {socialLinks.map((social) => {
                 const IconComponent = social.icon;
                 return (
@@ -70,7 +125,7 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     title={social.name}
-                    className={`w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground ${social.hoverColor} hover:text-white transition-all duration-200`}
+                    className={`w-10 h-10 min-w-[40px] min-h-[40px] rounded-lg bg-background/80 border border-border/60 flex items-center justify-center text-muted-foreground ${social.hoverColor} hover:text-white hover:border-transparent transition-all duration-200`}
                   >
                     <IconComponent className="w-4 h-4" />
                   </a>
@@ -79,103 +134,131 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-display font-semibold text-lg mb-4">Quick Links</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/courses" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  Courses
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link to="/verify-certificate" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  Verify Certificate
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Support */}
-          <div>
-            <h4 className="font-display font-semibold text-lg mb-4">Support</h4>
-            <ul className="space-y-3">
-              {[
-                { name: "Help Center", path: "/help-center" },
-                { name: "FAQs", path: "/faqs" },
-                { name: "Privacy Policy", path: "/privacy-policy" },
-                { name: "Terms of Service", path: "/terms-of-service" },
-                { name: "Refund Policy", path: "/refund-policy" },
-              ].map((item) => (
-                <li key={item.name}>
-                  <Link
-                    to={item.path}
-                    className="text-muted-foreground hover:text-primary text-sm transition-colors"
-                  >
-                    {item.name}
-                  </Link>
+          {/* Column 2 – Quick Links */}
+          <div className="pb-10 sm:pb-0 xl:px-8 xl:border-r xl:border-border/50">
+            <FooterColumnHeading>Quick Links</FooterColumnHeading>
+            <nav aria-label="Quick links">
+              <ul className="flex flex-col gap-0.5">
+                <li>
+                  <FooterNavLink to="/" icon={Home}>
+                    Home
+                  </FooterNavLink>
                 </li>
-              ))}
-            </ul>
+                <li>
+                  <FooterNavLink to="/courses" icon={BookOpen}>
+                    Courses
+                  </FooterNavLink>
+                </li>
+                <li>
+                  <FooterNavLink to="/verify-certificate" icon={BadgeCheck}>
+                    Verify Certificate
+                  </FooterNavLink>
+                </li>
+                <li>
+                  <FooterNavLink to="/contact" icon={UserRound}>
+                    Contact Us
+                  </FooterNavLink>
+                </li>
+              </ul>
+            </nav>
           </div>
 
-          {/* Contact */}
-          <div>
-            <h4 className="font-display font-semibold text-lg mb-4">Contact Us</h4>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                <span className="text-muted-foreground text-sm">
-                  Mahuva, Bhavnagar, Gujarat, 364290
-                </span>
+          {/* Column 3 – Support */}
+          <div className="pb-10 sm:pb-0 xl:px-8 xl:border-r xl:border-border/50">
+            <FooterColumnHeading>Support</FooterColumnHeading>
+            <nav aria-label="Support">
+              <ul className="flex flex-col gap-0.5">
+                <li>
+                  <FooterNavLink to="/help-center" icon={HelpCircle}>
+                    Help Center
+                  </FooterNavLink>
+                </li>
+                <li>
+                  <FooterNavLink to="/faqs" icon={MessagesSquare}>
+                    FAQs
+                  </FooterNavLink>
+                </li>
+                <li>
+                  <FooterNavLink to="/contact" icon={Headphones}>
+                    Contact Support
+                  </FooterNavLink>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+          {/* Column 4 – Legal */}
+          <div className="pb-10 sm:pb-0 xl:px-8 xl:border-r xl:border-border/50">
+            <FooterColumnHeading>Legal</FooterColumnHeading>
+            <nav aria-label="Legal">
+              <ul className="flex flex-col gap-0.5">
+                <li>
+                  <FooterNavLink to="/privacy-policy" icon={Shield}>
+                    Privacy Policy
+                  </FooterNavLink>
+                </li>
+                <li>
+                  <FooterNavLink to="/terms-of-service" icon={FileText}>
+                    Terms of Service
+                  </FooterNavLink>
+                </li>
+                <li>
+                  <FooterNavLink to="/refund-policy" icon={RotateCcw}>
+                    Refund Policy
+                  </FooterNavLink>
+                </li>
+                <li>
+                  <FooterNavLink to="/disclaimer" icon={AlertTriangle}>
+                    Disclaimer
+                  </FooterNavLink>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+          {/* Column 5 – Contact */}
+          <div className="pb-2 sm:pb-0 xl:pl-8">
+            <FooterColumnHeading>Contact</FooterColumnHeading>
+            <ul className="space-y-4 text-[13px] sm:text-sm">
+              <li className="flex gap-3 text-muted-foreground">
+                <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" aria-hidden />
+                <div>
+                  <span className="font-medium text-foreground/85 text-xs uppercase tracking-wide block mb-1">
+                    Address
+                  </span>
+                  <span className="leading-relaxed">Mahuva, Bhavnagar, Gujarat – 364290</span>
+                </div>
               </li>
-              <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-primary" />
-                <a 
-                  href="tel:+919265106657" 
-                  className="text-muted-foreground text-sm hover:text-primary transition-colors"
-                >
-                  +91 9265106657
-                </a>
+              <li className="flex gap-3">
+                <Phone className="w-4 h-4 text-primary shrink-0 mt-0.5" aria-hidden />
+                <div>
+                  <span className="font-medium text-foreground/85 text-xs uppercase tracking-wide block mb-1">Phone</span>
+                  <a
+                    href="tel:+919265106657"
+                    className="inline-block py-1 -my-1 text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    +91 9265106657
+                  </a>
+                </div>
               </li>
-              <li className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-primary" />
-                <a 
-                  href="mailto:shreeadsmall@gmail.com" 
-                  className="text-muted-foreground text-sm hover:text-primary transition-colors"
-                >
-                  shreeadsmall@gmail.com
-                </a>
+              <li className="flex gap-3">
+                <Mail className="w-4 h-4 text-primary shrink-0 mt-0.5" aria-hidden />
+                <div className="min-w-0">
+                  <span className="font-medium text-foreground/85 text-xs uppercase tracking-wide block mb-1">Email</span>
+                  <a
+                    href="mailto:shreeadsmall@gmail.com"
+                    className="text-muted-foreground hover:text-primary transition-colors break-all"
+                  >
+                    shreeadsmall@gmail.com
+                  </a>
+                </div>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-muted-foreground text-sm">
-            © 2024 SHREE ADS. All rights reserved.
-          </p>
-          <div className="flex gap-6">
-            <Link to="/privacy-policy" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-              Privacy
-            </Link>
-            <Link to="/terms-of-service" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-              Terms
-            </Link>
-            <Link to="/refund-policy" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-              Refund
-            </Link>
-          </div>
+        <div className="mt-12 sm:mt-14 pt-8 border-t border-border/60">
+          <p className="text-center text-muted-foreground text-xs sm:text-sm">© 2024 SHREE ADS. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -26,6 +26,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePromoCode } from "@/hooks/usePromoCode";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { LegalAgreementNote } from "@/components/common/LegalAgreementNote";
 
 interface Enrollment {
   id: string;
@@ -404,6 +405,7 @@ const StudentDashboard = () => {
               disabled={isRedeeming}
             />
           </div>
+          <LegalAgreementNote className="mb-2 px-1" />
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPromoDialog(false)} disabled={isRedeeming}>
               Cancel

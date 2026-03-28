@@ -149,6 +149,20 @@
   html {
     scroll-behavior: smooth;
     overflow-x: hidden;
+    /* Fixed header offset for in-page anchors */
+    scroll-padding-top: 5.5rem;
+  }
+
+  @media (min-width: 640px) {
+    html {
+      scroll-padding-top: 6.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      scroll-padding-top: 7rem;
+    }
   }
 
   body {

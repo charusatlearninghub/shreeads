@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePromoCode } from "@/hooks/usePromoCode";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { LegalAgreementNote } from "@/components/common/LegalAgreementNote";
 
 interface Enrollment {
   id: string;
@@ -266,6 +267,7 @@ const MyCourses = () => {
               disabled={isRedeeming}
             />
           </div>
+          <LegalAgreementNote className="mb-2 px-1" />
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPromoDialog(false)} disabled={isRedeeming}>
               Cancel

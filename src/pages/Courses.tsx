@@ -30,6 +30,7 @@ import { usePromoCode } from "@/hooks/usePromoCode";
 import { useAuth } from "@/contexts/AuthContext";
 import { CoursePriceDisplay } from "@/components/course/CoursePriceDisplay";
 import { PromotionalBanner } from "@/components/promotions/PromotionalBanner";
+import { LegalAgreementNote } from "@/components/common/LegalAgreementNote";
 
 interface Course {
   id: string;
@@ -361,6 +362,7 @@ const CoursesContent = ({ user }: { user: any }) => {
               disabled={isRedeeming}
             />
           </div>
+          <LegalAgreementNote className="mb-2 px-1" />
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPromoDialog(false)} disabled={isRedeeming}>
               Cancel
