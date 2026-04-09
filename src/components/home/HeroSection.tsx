@@ -90,7 +90,7 @@ export const HeroSection = () => {
               <Button
                 onClick={handleExploreCourses}
                 variant="outline"
-                className="w-full py-2 rounded-lg border border-gray-300 text-gray-700 text-sm hover:bg-gray-50"
+                className="w-full py-2 rounded-lg border border-border text-foreground text-sm hover:bg-muted"
               >
                 <span className="inline-flex items-center gap-2">
                   <Play className="w-4 h-4" />
