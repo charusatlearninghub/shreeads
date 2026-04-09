@@ -317,14 +317,14 @@ const AdminPromoCodes = () => {
 
       const ids = merged.map((c) => c.id);
       if (ids.length > 0) {
-        const { data: usageRows, error: usageError } = await supabase
+        const { data: usageRows, error: usageError } = await (supabase as any)
           .from('promo_code_usage')
           .select(
             'id, promo_code_id, user_id, user_name, user_email, course_name, used_at, paid_amount, final_price_paid, promo_price, original_price_at_purchase'
           )
           .in('promo_code_id', ids);
 
-        const { data: enrollRows, error: enrollError } = await supabase
+        const { data: enrollRows, error: enrollError } = await (supabase as any)
           .from('enrollments')
           .select(
             'id, promo_code_id, user_id, enrolled_at, final_price_paid, promo_price, original_price, promo_code, payment_type, courses(title), promo_codes(promo_price)'

@@ -119,7 +119,7 @@ const AdminSoftwarePromoCodes = () => {
       let merged = (codes || []) as SoftwarePromoCodeRow[];
       const ids = merged.map((c) => c.id);
       if (ids.length > 0) {
-        const { data: usageRows, error: usageError } = await supabase
+        const { data: usageRows, error: usageError } = await (supabase as any)
           .from('software_promo_code_usage')
           .select('id, software_promo_code_id, user_name, user_email, product_name, used_at')
           .in('software_promo_code_id', ids);

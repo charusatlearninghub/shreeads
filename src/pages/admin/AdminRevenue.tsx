@@ -92,7 +92,7 @@ const AdminRevenue = () => {
       const startDate = startOfDay(subDays(new Date(), days));
 
       // Fetch course enrollments with promo codes (to estimate revenue)
-      const { data: enrollments } = await supabase
+      const { data: enrollments } = await (supabase as any)
         .from('enrollments')
         .select(`
           id,
