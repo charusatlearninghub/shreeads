@@ -100,7 +100,7 @@ const AdminEnrollments = () => {
     // Search filter
     const searchLower = searchQuery.toLowerCase();
     const promoLabel =
-      typeof enrollment.promo_code === "string" ? enrollment.promo_code : "";
+      typeof (enrollment as any).promo_code === "string" ? (enrollment as any).promo_code : "";
     const matchesSearch =
       !searchQuery ||
       profile?.full_name?.toLowerCase().includes(searchLower) ||
