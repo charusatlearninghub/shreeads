@@ -74,7 +74,7 @@ export const HeroSection = () => {
             <div className="flex flex-col gap-2 mt-4 mb-12 w-full max-w-md mx-auto lg:mx-0">
               <Button
                 onClick={handleStartLearning}
-                className="w-full py-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-95"
+                className="w-full py-3 rounded-lg bg-gradient-primary text-primary-foreground font-semibold hover:opacity-95"
               >
                 Start Learning Free
               </Button>
@@ -82,7 +82,7 @@ export const HeroSection = () => {
               <Button
                 onClick={handleHowToAccess}
                 variant="secondary"
-                className="w-full py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-medium shadow hover:opacity-95 active:scale-95 transition"
+                className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium shadow hover:opacity-95 active:scale-95 transition"
               >
                 How to access the course/software
               </Button>
@@ -90,7 +90,7 @@ export const HeroSection = () => {
               <Button
                 onClick={handleExploreCourses}
                 variant="outline"
-                className="w-full py-2 rounded-lg border border-gray-300 text-gray-700 text-sm hover:bg-gray-50"
+                className="w-full py-2 rounded-lg border border-border text-foreground text-sm hover:bg-muted"
               >
                 <span className="inline-flex items-center gap-2">
                   <Play className="w-4 h-4" />

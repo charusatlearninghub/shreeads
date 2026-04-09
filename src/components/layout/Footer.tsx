@@ -257,7 +257,7 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
           </div>
         </div>
 
-        <div className="mt-12 sm:mt-14 pt-8 border-t border-border/60">
+        <div className="mt-12 sm:mt-14 pt-8 border-t border-border/60 pb-20 md:pb-0">
           <p className="text-center text-muted-foreground text-xs sm:text-sm">© 2024 SHREE ADS. All rights reserved.</p>
         </div>
       </div>
