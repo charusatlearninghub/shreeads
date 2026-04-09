@@ -55,7 +55,7 @@ export function LegalDocumentLayout({ pageId, watermarkSrc, children }: LegalDoc
         <main
           className="
             legal-document-main
-            flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 lg:pt-28 pb-10 sm:pb-14 lg:pb-20
+            flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 lg:pt-28 pb-24 md:pb-14 lg:pb-20
             text-base sm:text-[17px] leading-[1.7] text-foreground antialiased
             [&_h1]:font-display [&_h1]:font-bold [&_h1]:tracking-tight [&_h1]:text-foreground
             [&_h2]:font-display [&_h2]:font-semibold [&_h2]:text-foreground
