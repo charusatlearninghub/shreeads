@@ -3,6 +3,10 @@ import { Download } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 const FloatingDownloadApp = () => {
+  const location = useLocation();
+  
+  if (location.pathname !== '/') return null;
+
   return (
     <motion.a
       href="https://t.me/shree_ads"
