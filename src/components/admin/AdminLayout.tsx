@@ -210,7 +210,7 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
         </nav>
 
         {/* User Section */}
-        <div className="border-t border-border bg-card p-3 shrink-0 mt-3 flex flex-col gap-2">
+        <div className="border-t border-border bg-card p-3 pb-24 md:pb-3 shrink-0 mt-3 flex flex-col gap-2">
           <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
               {initials}
