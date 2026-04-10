@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import FloatingWhatsApp from "@/components/common/FloatingWhatsApp";
+import FloatingDownloadApp from "@/components/common/FloatingDownloadApp";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -283,6 +284,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
 
+            <FloatingDownloadApp />
             <FloatingWhatsApp />
             <MobileBottomNav />
           </div>
