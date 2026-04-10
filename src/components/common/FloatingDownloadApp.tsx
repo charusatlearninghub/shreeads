@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Download } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const FloatingDownloadApp = () => {
   return (
