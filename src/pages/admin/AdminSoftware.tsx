@@ -381,15 +381,43 @@ const AdminSoftware = () => {
                 <p className="text-muted-foreground">No software added yet</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              {/* Mobile Card View */}
+              <MobileCardList>
+                {products?.map((product) => {
+                  const versions = versionCounts?.[product.id];
+                  return (
+                    <MobileDataCard
+                      key={product.id}
+                      fields={[
+                        { label: 'Software', value: <span className="font-medium">{product.title}</span> },
+                        { label: 'Category', value: product.category || '—' },
+                        { label: 'Platforms', value: versions?.platforms.length ? versions.platforms.join(', ') : 'None' },
+                        { label: 'Versions', value: versions?.total || 0 },
+                        { label: 'Price', value: product.is_free ? <Badge variant="secondary">Free</Badge> : <span>₹{product.discount_price || product.price}</span> },
+                        { label: 'Status', value: product.is_published ? <Badge className="bg-green-500/10 text-green-500">Published</Badge> : <Badge variant="secondary">Draft</Badge> },
+                      ]}
+                      actions={
+                        <>
+                          <Button variant="ghost" size="icon" onClick={() => setManageVersionsProduct(product)}><Upload className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => openEditDialog(product)}><Pencil className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => { if (confirm('Delete this software?')) deleteMutation.mutate(product.id); }}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                        </>
+                      }
+                    />
+                  );
+                })}
+              </MobileCardList>
+
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Software</TableHead>
-                    <TableHead className="hidden sm:table-cell">Category</TableHead>
-                    <TableHead className="hidden md:table-cell">Platforms</TableHead>
-                    <TableHead className="hidden lg:table-cell">Price</TableHead>
-                    <TableHead className="hidden sm:table-cell">Status</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Platforms</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -401,92 +429,33 @@ const AdminSoftware = () => {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-muted rounded flex items-center justify-center shrink-0">
-                              {product.thumbnail_url ? (
-                                <img
-                                  src={product.thumbnail_url}
-                                  alt={product.title}
-                                  className="w-full h-full object-cover rounded"
-                                />
-                              ) : (
-                                <Package className="w-5 h-5 text-muted-foreground" />
-                              )}
+                              {product.thumbnail_url ? <img src={product.thumbnail_url} alt={product.title} className="w-full h-full object-cover rounded" /> : <Package className="w-5 h-5 text-muted-foreground" />}
                             </div>
                             <div className="min-w-0">
-                              <p className="font-medium truncate max-w-[150px] sm:max-w-[200px]">{product.title}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {versions?.total || 0} version(s)
-                              </p>
+                              <p className="font-medium truncate max-w-[200px]">{product.title}</p>
+                              <p className="text-xs text-muted-foreground">{versions?.total || 0} version(s)</p>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {product.category ? (
-                            <Badge variant="secondary">{product.category}</Badge>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
+                        <TableCell>{product.category ? <Badge variant="secondary">{product.category}</Badge> : <span className="text-muted-foreground">—</span>}</TableCell>
+                        <TableCell>
                           <div className="flex gap-1">
                             {versions?.platforms.map((platform) => {
                               const Icon = platformIcons[platform] || Monitor;
-                              return (
-                                <Badge key={platform} variant="outline" className="p-1">
-                                  <Icon className="w-3 h-3" />
-                                </Badge>
-                              );
+                              return <Badge key={platform} variant="outline" className="p-1"><Icon className="w-3 h-3" /></Badge>;
                             })}
-                            {!versions?.platforms.length && (
-                              <span className="text-muted-foreground text-sm">None</span>
-                            )}
+                            {!versions?.platforms.length && <span className="text-muted-foreground text-sm">None</span>}
                           </div>
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {product.is_free ? (
-                            <Badge variant="secondary">Free</Badge>
-                          ) : (
-                            <span>₹{product.discount_price || product.price}</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {product.is_published ? (
-                            <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20">
-                              <Eye className="w-3 h-3 mr-1" /> Published
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary">
-                              <EyeOff className="w-3 h-3 mr-1" /> Draft
-                            </Badge>
-                          )}
+                        <TableCell>{product.is_free ? <Badge variant="secondary">Free</Badge> : <span>₹{product.discount_price || product.price}</span>}</TableCell>
+                        <TableCell>
+                          {product.is_published ? <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20"><Eye className="w-3 h-3 mr-1" /> Published</Badge> : <Badge variant="secondary"><EyeOff className="w-3 h-3 mr-1" /> Draft</Badge>}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setManageVersionsProduct(product)}
-                              title="Manage versions"
-                            >
-                              <Upload className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => openEditDialog(product)}
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                if (confirm('Are you sure you want to delete this software?')) {
-                                  deleteMutation.mutate(product.id);
-                                }
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => setManageVersionsProduct(product)} title="Manage versions"><Upload className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => openEditDialog(product)}><Pencil className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => { if (confirm('Delete this software?')) deleteMutation.mutate(product.id); }}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                           </div>
                         </TableCell>
                       </TableRow>

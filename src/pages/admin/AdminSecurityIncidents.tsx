@@ -165,23 +165,46 @@ const AdminSecurityIncidents = () => {
             </div>
           ) : (
             <>
-            <div className="overflow-x-auto">
+            {/* Mobile Card View */}
+            <MobileCardList>
+              {paginatedIncidents.map(incident => {
+                const profile = profileMap.get(incident.user_id);
+                const variant = incidentTypeColors[incident.incident_type] || 'secondary';
+                return (
+                  <MobileDataCard
+                    key={incident.id}
+                    fields={[
+                      { label: 'User', value: <span className="font-medium">{profile?.full_name || 'Unknown'}</span> },
+                      { label: 'Email', value: <span className="text-xs">{profile?.email || '—'}</span> },
+                      { label: 'Type', value: <Badge variant={variant as any} className="text-xs">{incident.incident_type.replace(/_/g, ' ')}</Badge> },
+                      { label: 'IP', value: incident.ip_address || '—' },
+                      { label: 'Details', value: incident.details ? <span className="text-xs truncate max-w-[150px] block">{JSON.stringify(incident.details)}</span> : '—' },
+                      { label: 'Time', value: incident.created_at ? format(new Date(incident.created_at), 'MMM d, HH:mm') : '—' },
+                    ]}
+                  />
+                );
+              })}
+              {paginatedIncidents.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground md:hidden">No security incidents found</div>
+              )}
+            </MobileCardList>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>User</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead className="hidden sm:table-cell">IP Address</TableHead>
-                    <TableHead className="hidden md:table-cell">Details</TableHead>
+                    <TableHead>IP Address</TableHead>
+                    <TableHead>Details</TableHead>
                     <TableHead>Time</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedIncidents.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                        No security incidents found
-                      </TableCell>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No security incidents found</TableCell>
                     </TableRow>
                   ) : (
                     paginatedIncidents.map(incident => {
@@ -191,30 +214,14 @@ const AdminSecurityIncidents = () => {
                         <TableRow key={incident.id}>
                           <TableCell>
                             <div className="min-w-0">
-                              <p className="font-medium text-sm truncate max-w-[150px] sm:max-w-none">
-                                {profile?.full_name || 'Unknown'}
-                              </p>
-                              <p className="text-xs text-muted-foreground truncate max-w-[150px] sm:max-w-none">
-                                {profile?.email}
-                              </p>
+                              <p className="font-medium text-sm truncate">{profile?.full_name || 'Unknown'}</p>
+                              <p className="text-xs text-muted-foreground truncate">{profile?.email}</p>
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <Badge variant={variant as any} className="text-xs whitespace-nowrap">
-                              {incident.incident_type.replace(/_/g, ' ')}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
-                            {incident.ip_address || '—'}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            <p className="text-xs text-muted-foreground max-w-[200px] truncate">
-                              {incident.details ? JSON.stringify(incident.details) : '—'}
-                            </p>
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                            {incident.created_at ? format(new Date(incident.created_at), 'MMM d, HH:mm') : '—'}
-                          </TableCell>
+                          <TableCell><Badge variant={variant as any} className="text-xs whitespace-nowrap">{incident.incident_type.replace(/_/g, ' ')}</Badge></TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{incident.ip_address || '—'}</TableCell>
+                          <TableCell><p className="text-xs text-muted-foreground max-w-[200px] truncate">{incident.details ? JSON.stringify(incident.details) : '—'}</p></TableCell>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{incident.created_at ? format(new Date(incident.created_at), 'MMM d, HH:mm') : '—'}</TableCell>
                         </TableRow>
                       );
                     })
