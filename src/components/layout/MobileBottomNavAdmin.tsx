@@ -252,7 +252,7 @@ export default function MobileBottomNavAdmin() {
             </button>
 
             {open === "analytics" && (
-              <div className={dropdownBase} role="menu">
+              <div className={dropdownBaseEnd} role="menu">
                 <Link to="/admin/revenue" className={dropdownItem} role="menuitem">
                   <DollarSign className="w-4 h-4" />
                   Revenue
