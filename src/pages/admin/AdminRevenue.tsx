@@ -147,14 +147,17 @@ const AdminRevenue = () => {
 
         let revenue = 0;
         if (e.promo_code_id) {
+          // Promo code enrollment: revenue = paid amount (could be 0)
           revenue = promoEnrollmentRevenue(e);
         } else {
-          if (course.is_free) return;
+          // Skip free courses entirely — no revenue
+          if (course.is_free || (Number(course.price ?? 0) === 0)) return;
           revenue = Number(course.discount_price ?? course.price ?? 0) || 0;
         }
 
         if (!Number.isFinite(revenue)) revenue = 0;
-        if (revenue === 0) return;
+        // Skip zero-revenue entries (free courses / ₹0 promo codes)
+        if (revenue <= 0) return;
 
         totalCourseRevenue += revenue;
 
@@ -197,7 +200,7 @@ const AdminRevenue = () => {
         let rev = 0;
         if (e.promo_code_id) {
           rev = promoEnrollmentRevenue(e);
-        } else if (!course.is_free) {
+        } else if (!course.is_free && Number(course.price ?? 0) > 0) {
           rev = Number(course.discount_price ?? course.price ?? 0) || 0;
         }
         if (Number.isFinite(rev) && rev > 0) dateMap[date].courses += rev;
