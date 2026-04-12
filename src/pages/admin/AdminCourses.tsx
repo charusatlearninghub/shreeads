@@ -825,15 +825,44 @@ const AdminCourses = () => {
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            {/* Mobile Card View */}
+            <MobileCardList>
+              {filteredCourses.map((course) => {
+                const priceInfo = getDisplayPrice(course.price, course.discount_price, course.is_free);
+                return (
+                  <MobileDataCard
+                    key={course.id}
+                    fields={[
+                      { label: 'Course', value: <span className="font-medium">{course.title}</span> },
+                      { label: 'Category', value: course.category || '—' },
+                      { label: 'Lessons', value: course._count?.lessons || 0 },
+                      { label: 'Students', value: course._count?.enrollments || 0 },
+                      { label: 'Price', value: <span>{priceInfo.current}{priceInfo.original && <span className="text-xs text-muted-foreground line-through ml-1">{priceInfo.original}</span>}</span> },
+                      { label: 'Status', value: course.is_published ? <Badge className="bg-green-500/10 text-green-500">Published</Badge> : <Badge variant="secondary">Draft</Badge> },
+                    ]}
+                    actions={
+                      <>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openLessonsDialog(course)}><Video className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditCourse(course)}><Edit className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicateCourse(course)}><Copy className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteCourse(course.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                      </>
+                    }
+                  />
+                );
+              })}
+            </MobileCardList>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Course</TableHead>
-                    <TableHead className="hidden sm:table-cell">Category</TableHead>
-                    <TableHead className="hidden md:table-cell">Lessons</TableHead>
-                    <TableHead className="hidden lg:table-cell">Price</TableHead>
-                    <TableHead className="hidden sm:table-cell">Status</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Lessons</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -844,98 +873,43 @@ const AdminCourses = () => {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-muted rounded flex items-center justify-center shrink-0">
                             {course.thumbnail_url ? (
-                              <img
-                                src={course.thumbnail_url}
-                                alt={course.title}
-                                className="w-full h-full object-cover rounded"
-                              />
+                              <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover rounded" />
                             ) : (
                               <GraduationCap className="w-5 h-5 text-muted-foreground" />
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-medium truncate max-w-[150px] sm:max-w-[200px]">{course.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {course._count?.enrollments || 0} students
-                            </p>
+                            <p className="font-medium truncate max-w-[200px]">{course.title}</p>
+                            <p className="text-xs text-muted-foreground">{course._count?.enrollments || 0} students</p>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        {course.category ? (
-                          <Badge variant="secondary">{course.category}</Badge>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <div className="flex items-center gap-1">
-                          <Video className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-sm">{course._count?.lessons || 0}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
+                      <TableCell>{course.category ? <Badge variant="secondary">{course.category}</Badge> : <span className="text-muted-foreground">—</span>}</TableCell>
+                      <TableCell><div className="flex items-center gap-1"><Video className="w-3 h-3 text-muted-foreground" /><span className="text-sm">{course._count?.lessons || 0}</span></div></TableCell>
+                      <TableCell>
                         {(() => {
                           const priceInfo = getDisplayPrice(course.price, course.discount_price, course.is_free);
                           return (
                             <div className="flex items-center gap-1">
-                              <span className={priceInfo.current === 'Free' ? 'text-green-600 font-medium' : ''}>
-                                {priceInfo.current}
-                              </span>
-                              {priceInfo.original && (
-                                <span className="text-xs text-muted-foreground line-through">
-                                  {priceInfo.original}
-                                </span>
-                              )}
+                              <span className={priceInfo.current === 'Free' ? 'text-green-600 font-medium' : ''}>{priceInfo.current}</span>
+                              {priceInfo.original && <span className="text-xs text-muted-foreground line-through">{priceInfo.original}</span>}
                             </div>
                           );
                         })()}
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell">
+                      <TableCell>
                         {course.is_published ? (
-                          <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20">
-                            <Eye className="w-3 h-3 mr-1" /> Published
-                          </Badge>
+                          <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20"><Eye className="w-3 h-3 mr-1" /> Published</Badge>
                         ) : (
-                          <Badge variant="secondary">
-                            <EyeOff className="w-3 h-3 mr-1" /> Draft
-                          </Badge>
+                          <Badge variant="secondary"><EyeOff className="w-3 h-3 mr-1" /> Draft</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openLessonsDialog(course)}
-                            title="Manage lessons"
-                          >
-                            <Video className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openEditCourse(course)}
-                            title="Edit course"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDuplicateCourse(course)}
-                            title="Duplicate course"
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteCourse(course.id)}
-                            title="Delete course"
-                          >
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => openLessonsDialog(course)} title="Manage lessons"><Video className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => openEditCourse(course)} title="Edit course"><Edit className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDuplicateCourse(course)} title="Duplicate course"><Copy className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteCourse(course.id)} title="Delete course"><Trash2 className="w-4 h-4 text-destructive" /></Button>
                         </div>
                       </TableCell>
                     </TableRow>
