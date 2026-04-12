@@ -200,7 +200,7 @@ const AdminRevenue = () => {
         let rev = 0;
         if (e.promo_code_id) {
           rev = promoEnrollmentRevenue(e);
-        } else if (!course.is_free) {
+        } else if (!course.is_free && Number(course.price ?? 0) > 0) {
           rev = Number(course.discount_price ?? course.price ?? 0) || 0;
         }
         if (Number.isFinite(rev) && rev > 0) dateMap[date].courses += rev;
