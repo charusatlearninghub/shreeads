@@ -95,27 +95,17 @@ function formatInrCell(n: number | null | undefined): string {
   return `₹${Number(n).toLocaleString('en-IN')}`;
 }
 
-/** Paid (₹): paid_amount → enrollment.final_price_paid (merged on row) → usage promo_price → code promo_price. */
+/** Paid (₹): paid_amount → final_price_paid → usage promo_price → code promo_price. Always show ₹0 instead of —. */
 function getPaidDisplayForPromoCode(code: PromoCode): string {
   const rows = getSortedCourseUsage(code);
+  // Check usage rows for paid amounts
   for (const r of rows) {
-    const fromPaid = r.paid_amount;
-    if (fromPaid !== null && fromPaid !== undefined && fromPaid !== '' && Number.isFinite(Number(fromPaid))) {
-      return formatInrCell(Number(fromPaid));
+    const v = r.paid_amount ?? r.final_price_paid ?? r.promo_price;
+    if (v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v))) {
+      return formatInrCell(Number(v));
     }
   }
-  for (const r of rows) {
-    const ef = r.final_price_paid;
-    if (ef !== null && ef !== undefined && ef !== '' && Number.isFinite(Number(ef))) {
-      return formatInrCell(Number(ef));
-    }
-  }
-  for (const r of rows) {
-    const pa = r.promo_price;
-    if (pa !== null && pa !== undefined && pa !== '' && Number.isFinite(Number(pa))) {
-      return formatInrCell(Number(pa));
-    }
-  }
+  // Fall back to promo_price on the code itself (always set at generation time)
   if (code.promo_price != null && Number.isFinite(Number(code.promo_price))) {
     return formatInrCell(Number(code.promo_price));
   }
