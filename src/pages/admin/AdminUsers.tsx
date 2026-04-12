@@ -291,80 +291,93 @@ const AdminUsers = () => {
             </div>
           ) : (
             <>
-            <div className="overflow-x-auto">
+            {/* Mobile Card View */}
+            <MobileCardList>
+              {paginatedUsers.map((user) => (
+                <MobileDataCard
+                  key={user.id}
+                  fields={[
+                    { label: 'Name', value: <span className="font-medium">{user.full_name || 'No name'}</span> },
+                    { label: 'Email', value: <span className="text-xs">{user.email}</span> },
+                    { label: 'Phone', value: user.phone || '—' },
+                    { label: 'Role', value: <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role === 'admin' ? 'Admin' : 'Student'}</Badge> },
+                    { label: 'Courses', value: user.enrollments_count },
+                    { label: 'Joined', value: format(new Date(user.created_at), 'MMM d, yyyy') },
+                  ]}
+                  actions={
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="w-4 h-4" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openDevicesDialog(user)}><Smartphone className="w-4 h-4 mr-2" /> View Devices</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleResetDevice(user.id)}><RefreshCw className="w-4 h-4 mr-2" /> Reset Device</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {user.role === 'student' ? (
+                          <DropdownMenuItem onClick={() => handleUpdateRole(user.id, 'admin')}><Shield className="w-4 h-4 mr-2" /> Make Admin</DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem onClick={() => handleUpdateRole(user.id, 'student')}><UserX className="w-4 h-4 mr-2" /> Remove Admin</DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  }
+                />
+              ))}
+            </MobileCardList>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
-                 <TableHeader>
-                   <TableRow>
-                     <TableHead>User</TableHead>
-                     <TableHead className="hidden sm:table-cell">Phone</TableHead>
-                     <TableHead className="hidden md:table-cell">Role</TableHead>
-                     <TableHead className="hidden lg:table-cell">Courses</TableHead>
-                     <TableHead className="hidden lg:table-cell">Joined</TableHead>
-                     <TableHead className="text-right">Actions</TableHead>
-                   </TableRow>
-                 </TableHeader>
-                 <TableBody>
-                   {paginatedUsers.map((user) => (
-                     <TableRow key={user.id}>
-                       <TableCell>
-                         <div className="flex items-center gap-3">
-                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-purple-600/20 flex items-center justify-center font-semibold text-primary text-sm">
-                             {user.full_name?.charAt(0) || user.email.charAt(0).toUpperCase()}
-                           </div>
-                           <div className="min-w-0">
-                             <p className="font-medium text-sm truncate">{user.full_name || 'No name'}</p>
-                             <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                           </div>
-                         </div>
-                       </TableCell>
-                       <TableCell className="hidden sm:table-cell">
-                         {user.phone ? (
-                           <span className="text-sm">{user.phone}</span>
-                         ) : (
-                           <span className="text-xs text-muted-foreground">—</span>
-                         )}
-                       </TableCell>
-                       <TableCell className="hidden md:table-cell">
-                         <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                           {user.role === 'admin' ? (
-                             <><Shield className="w-3 h-3 mr-1" /> Admin</>
-                           ) : (
-                             'Student'
-                           )}
-                         </Badge>
-                       </TableCell>
-                       <TableCell className="hidden lg:table-cell">
-                         {user.enrollments_count}
-                       </TableCell>
-                       <TableCell className="hidden lg:table-cell">
-                         <div>
-                           <p className="text-sm">{format(new Date(user.created_at), 'MMM d, yyyy')}</p>
-                           <p className="text-xs text-muted-foreground">{format(new Date(user.created_at), 'h:mm a')}</p>
-                         </div>
-                       </TableCell>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Courses</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-purple-600/20 flex items-center justify-center font-semibold text-primary text-sm">
+                            {user.full_name?.charAt(0) || user.email.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm truncate">{user.full_name || 'No name'}</p>
+                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{user.phone ? <span className="text-sm">{user.phone}</span> : <span className="text-xs text-muted-foreground">—</span>}</TableCell>
+                      <TableCell>
+                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                          {user.role === 'admin' ? <><Shield className="w-3 h-3 mr-1" /> Admin</> : 'Student'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{user.enrollments_count}</TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="text-sm">{format(new Date(user.created_at), 'MMM d, yyyy')}</p>
+                          <p className="text-xs text-muted-foreground">{format(new Date(user.created_at), 'h:mm a')}</p>
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="w-4 h-4" /></Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openDevicesDialog(user)}>
-                              <Smartphone className="w-4 h-4 mr-2" /> View Devices
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleResetDevice(user.id)}>
-                              <RefreshCw className="w-4 h-4 mr-2" /> Reset Device
-                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openDevicesDialog(user)}><Smartphone className="w-4 h-4 mr-2" /> View Devices</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleResetDevice(user.id)}><RefreshCw className="w-4 h-4 mr-2" /> Reset Device</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {user.role === 'student' ? (
-                              <DropdownMenuItem onClick={() => handleUpdateRole(user.id, 'admin')}>
-                                <Shield className="w-4 h-4 mr-2" /> Make Admin
-                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleUpdateRole(user.id, 'admin')}><Shield className="w-4 h-4 mr-2" /> Make Admin</DropdownMenuItem>
                             ) : (
-                              <DropdownMenuItem onClick={() => handleUpdateRole(user.id, 'student')}>
-                                <UserX className="w-4 h-4 mr-2" /> Remove Admin
-                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleUpdateRole(user.id, 'student')}><UserX className="w-4 h-4 mr-2" /> Remove Admin</DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>

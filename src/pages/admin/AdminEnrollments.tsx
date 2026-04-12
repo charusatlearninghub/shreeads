@@ -313,95 +313,78 @@ const AdminEnrollments = () => {
                 </div>
               ) : filteredEnrollments && filteredEnrollments.length > 0 ? (
                 <>
-                <div className="overflow-x-auto">
+                {/* Mobile Card View */}
+                <MobileCardList>
+                  {paginatedEnrollments.map((enrollment) => {
+                    const profile = profileMap.get(enrollment.user_id);
+                    const course = courseMap.get(enrollment.course_id);
+                    const row = enrollment as { course_name?: string | null; original_price?: number | null; final_price_paid?: number | null; promo_code?: string | null; };
+                    const courseTitle = row.course_name || course?.title || "Unknown Course";
+                    return (
+                      <MobileDataCard
+                        key={enrollment.id}
+                        fields={[
+                          { label: 'Student', value: <span className="font-medium">{profile?.full_name || "Unknown"}</span> },
+                          { label: 'Email', value: <span className="text-xs">{profile?.email || "N/A"}</span> },
+                          { label: 'Course', value: <span>{courseTitle}{course?.is_free && <Badge variant="secondary" className="text-xs ml-1">Free</Badge>}</span> },
+                          { label: 'Original', value: formatEnrollmentRupee(row.original_price) },
+                          { label: 'Promo Code', value: enrollment.promo_code_id ? <code className="text-xs bg-secondary px-2 py-1 rounded font-mono">{row.promo_code || "—"}</code> : '—' },
+                          { label: 'Paid', value: formatEnrollmentRupee(row.final_price_paid), className: 'font-medium' },
+                          { label: 'Type', value: enrollment.promo_code_id ? <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">Promo</Badge> : <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/30">Direct</Badge> },
+                          { label: 'Date', value: format(new Date(enrollment.enrolled_at), "PPP") },
+                        ]}
+                      />
+                    );
+                  })}
+                </MobileCardList>
+
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
                   <Table>
-                     <TableHeader>
+                    <TableHeader>
                       <TableRow>
                         <TableHead>Student</TableHead>
-                        <TableHead className="hidden sm:table-cell">Course</TableHead>
-                        <TableHead className="hidden lg:table-cell text-right">Original</TableHead>
-                        <TableHead className="hidden md:table-cell">Promo Code</TableHead>
-                        <TableHead className="hidden lg:table-cell text-right">Paid</TableHead>
-                        <TableHead className="hidden md:table-cell">Type</TableHead>
-                        <TableHead className="hidden lg:table-cell">Enrolled Date</TableHead>
+                        <TableHead>Course</TableHead>
+                        <TableHead className="text-right">Original</TableHead>
+                        <TableHead>Promo Code</TableHead>
+                        <TableHead className="text-right">Paid</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Enrolled Date</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedEnrollments.map((enrollment) => {
                         const profile = profileMap.get(enrollment.user_id);
                         const course = courseMap.get(enrollment.course_id);
-                        const row = enrollment as {
-                          course_name?: string | null;
-                          original_price?: number | null;
-                          final_price_paid?: number | null;
-                          promo_code?: string | null;
-                        };
-                        const courseTitle =
-                          row.course_name || course?.title || "Unknown Course";
-                        const originalSnap = row.original_price;
-                        const paidSnap = row.final_price_paid;
-                        const codeSnap = row.promo_code || "";
+                        const row = enrollment as { course_name?: string | null; original_price?: number | null; final_price_paid?: number | null; promo_code?: string | null; };
+                        const courseTitle = row.course_name || course?.title || "Unknown Course";
                         return (
                           <TableRow key={enrollment.id}>
                             <TableCell>
                               <div>
-                                <p className="font-medium">
-                                  {profile?.full_name || "Unknown"}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  {profile?.email || "N/A"}
-                                </p>
+                                <p className="font-medium">{profile?.full_name || "Unknown"}</p>
+                                <p className="text-sm text-muted-foreground">{profile?.email || "N/A"}</p>
                               </div>
                             </TableCell>
-                            <TableCell className="hidden sm:table-cell">
+                            <TableCell>
                               <div className="flex items-center gap-2">
-                                <span className="font-medium truncate max-w-[200px]">
-                                  {courseTitle}
-                                </span>
-                                {course?.is_free && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    Free
-                                  </Badge>
-                                )}
+                                <span className="font-medium truncate max-w-[200px]">{courseTitle}</span>
+                                {course?.is_free && <Badge variant="secondary" className="text-xs">Free</Badge>}
                               </div>
                             </TableCell>
-                            <TableCell className="hidden lg:table-cell text-right tabular-nums text-sm">
-                              {formatEnrollmentRupee(originalSnap)}
+                            <TableCell className="text-right tabular-nums text-sm">{formatEnrollmentRupee(row.original_price)}</TableCell>
+                            <TableCell>
+                              {enrollment.promo_code_id ? <code className="text-xs bg-secondary px-2 py-1 rounded font-mono">{row.promo_code || "—"}</code> : <span className="text-muted-foreground">—</span>}
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
+                            <TableCell className="text-right tabular-nums text-sm font-medium">{formatEnrollmentRupee(row.final_price_paid)}</TableCell>
+                            <TableCell>
                               {enrollment.promo_code_id ? (
-                                <code className="text-xs bg-secondary px-2 py-1 rounded font-mono">
-                                  {codeSnap || "—"}
-                                </code>
+                                <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30"><Ticket className="w-3 h-3 mr-1" />Promo Code</Badge>
                               ) : (
-                                <span className="text-muted-foreground">—</span>
+                                <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/30"><BookOpen className="w-3 h-3 mr-1" />Direct</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="hidden lg:table-cell text-right tabular-nums text-sm font-medium">
-                              {formatEnrollmentRupee(paidSnap)}
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell">
-                              {enrollment.promo_code_id ? (
-                                <Badge
-                                  variant="outline"
-                                  className="bg-green-500/10 text-green-600 border-green-500/30"
-                                >
-                                  <Ticket className="w-3 h-3 mr-1" />
-                                  Promo Code
-                                </Badge>
-                              ) : (
-                                <Badge
-                                  variant="outline"
-                                  className="bg-blue-500/10 text-blue-600 border-blue-500/30"
-                                >
-                                  <BookOpen className="w-3 h-3 mr-1" />
-                                  Direct
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell className="hidden lg:table-cell text-sm">
-                              {format(new Date(enrollment.enrolled_at), "PPP")}
-                            </TableCell>
+                            <TableCell className="text-sm">{format(new Date(enrollment.enrolled_at), "PPP")}</TableCell>
                           </TableRow>
                         );
                       })}
