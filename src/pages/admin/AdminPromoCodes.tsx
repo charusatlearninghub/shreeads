@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { usePagination } from '@/hooks/usePagination';
 import { TablePagination } from '@/components/admin/TablePagination';
 import { motion } from 'framer-motion';
@@ -623,18 +624,50 @@ const AdminPromoCodes = () => {
             </div>
           ) : (
             <>
-            <div className="overflow-x-auto">
+            {/* Mobile Card View */}
+            <MobileCardList>
+              {paginatedCodes.map((code) => {
+                const status = getCodeStatus(code);
+                const { count: usageCount, latest } = getCourseUsageSummary(code);
+                const usedByDisplay = usageCount === 0 ? '—' : usageCount === 1 ? latest?.user_name?.trim() || latest?.user_email || '—' : `${latest?.user_name?.trim() || latest?.user_email || 'User'} · +${usageCount - 1}`;
+                return (
+                  <MobileDataCard
+                    key={code.id}
+                    fields={[
+                      { label: 'Code', value: <code className="font-mono text-sm bg-secondary px-2 py-0.5 rounded">{code.code}</code> },
+                      { label: 'Course', value: code.courses?.title || 'Unknown' },
+                      { label: 'Status', value: status === 'active' ? <Badge className="bg-green-500/10 text-green-500">Available</Badge> : status === 'used' ? <Badge className="bg-blue-500/10 text-blue-500">Used</Badge> : <Badge variant="destructive">Expired</Badge> },
+                      { label: 'Uses', value: usageCount },
+                      { label: 'Used By', value: usedByDisplay },
+                      { label: 'Used Date', value: latest ? format(new Date(latest.used_at), 'MMM d, yyyy') : '—' },
+                      { label: 'Paid (₹)', value: getPaidDisplayForPromoCode(code) },
+                      { label: 'Expires', value: code.expires_at ? format(new Date(code.expires_at), 'MMM d, yyyy') : 'Never' },
+                    ]}
+                    actions={
+                      <>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditCode(code)} disabled={code.is_used}><Pencil className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleCopyCode(code.code)}><Copy className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openDeleteDialog(code)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                      </>
+                    }
+                  />
+                );
+              })}
+            </MobileCardList>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Code</TableHead>
-                    <TableHead className="hidden sm:table-cell">Course</TableHead>
+                    <TableHead>Course</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="hidden lg:table-cell text-center w-[72px]">Uses</TableHead>
-                    <TableHead className="hidden md:table-cell min-w-[120px]">Used By</TableHead>
-                    <TableHead className="hidden md:table-cell">Used Date</TableHead>
-                    <TableHead className="hidden xl:table-cell text-right">Paid (₹)</TableHead>
-                    <TableHead className="hidden lg:table-cell">Expires</TableHead>
+                    <TableHead className="text-center w-[72px]">Uses</TableHead>
+                    <TableHead className="min-w-[120px]">Used By</TableHead>
+                    <TableHead>Used Date</TableHead>
+                    <TableHead className="text-right">Paid (₹)</TableHead>
+                    <TableHead>Expires</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -642,90 +675,26 @@ const AdminPromoCodes = () => {
                   {paginatedCodes.map((code) => {
                     const status = getCodeStatus(code);
                     const { count: usageCount, latest } = getCourseUsageSummary(code);
-                    const usedByDisplay =
-                      usageCount === 0
-                        ? '—'
-                        : usageCount === 1
-                          ? latest?.user_name?.trim() || latest?.user_email || '—'
-                          : `${latest?.user_name?.trim() || latest?.user_email || 'User'} · +${usageCount - 1}`;
+                    const usedByDisplay = usageCount === 0 ? '—' : usageCount === 1 ? latest?.user_name?.trim() || latest?.user_email || '—' : `${latest?.user_name?.trim() || latest?.user_email || 'User'} · +${usageCount - 1}`;
                     return (
                       <TableRow key={code.id}>
                         <TableCell>
-                          <button
-                            type="button"
-                            className="font-mono text-sm bg-secondary px-2 py-1 rounded text-left hover:bg-muted transition-colors max-w-[140px] truncate"
-                            title="View usage details"
-                            onClick={() => setUsageDetailCode(code)}
-                          >
-                            {code.code}
-                          </button>
+                          <button type="button" className="font-mono text-sm bg-secondary px-2 py-1 rounded text-left hover:bg-muted transition-colors max-w-[140px] truncate" title="View usage details" onClick={() => setUsageDetailCode(code)}>{code.code}</button>
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <span className="text-sm truncate max-w-[200px] block">
-                            {code.courses?.title || 'Unknown'}
-                          </span>
-                        </TableCell>
+                        <TableCell><span className="text-sm truncate max-w-[200px] block">{code.courses?.title || 'Unknown'}</span></TableCell>
                         <TableCell>
-                          {status === 'active' ? (
-                            <Badge className="bg-green-500/10 text-green-500">Available</Badge>
-                          ) : status === 'used' ? (
-                            <Badge className="bg-blue-500/10 text-blue-500">Used</Badge>
-                          ) : (
-                            <Badge variant="destructive">Expired</Badge>
-                          )}
+                          {status === 'active' ? <Badge className="bg-green-500/10 text-green-500">Available</Badge> : status === 'used' ? <Badge className="bg-blue-500/10 text-blue-500">Used</Badge> : <Badge variant="destructive">Expired</Badge>}
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell text-center tabular-nums">
-                          {usageCount}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell text-sm max-w-[160px] truncate" title={usedByDisplay}>
-                          {usedByDisplay}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                          {latest
-                            ? format(new Date(latest.used_at), 'MMM d, yyyy')
-                            : '—'}
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell text-right tabular-nums text-sm">
-                          {getPaidDisplayForPromoCode(code)}
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {code.expires_at ? (
-                            format(new Date(code.expires_at), 'MMM d, yyyy')
-                          ) : (
-                            <span className="text-muted-foreground">Never</span>
-                          )}
-                        </TableCell>
+                        <TableCell className="text-center tabular-nums">{usageCount}</TableCell>
+                        <TableCell className="text-sm max-w-[160px] truncate" title={usedByDisplay}>{usedByDisplay}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{latest ? format(new Date(latest.used_at), 'MMM d, yyyy') : '—'}</TableCell>
+                        <TableCell className="text-right tabular-nums text-sm">{getPaidDisplayForPromoCode(code)}</TableCell>
+                        <TableCell>{code.expires_at ? format(new Date(code.expires_at), 'MMM d, yyyy') : <span className="text-muted-foreground">Never</span>}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8"
-                              onClick={() => handleEditCode(code)}
-                              disabled={code.is_used}
-                              title="Edit expiration"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8"
-                              onClick={() => handleCopyCode(code.code)}
-                              title="Copy code"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8"
-                              onClick={() => openDeleteDialog(code)}
-                              disabled={isDeleting}
-                              title="Delete code"
-                            >
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditCode(code)} disabled={code.is_used} title="Edit expiration"><Pencil className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleCopyCode(code.code)} title="Copy code"><Copy className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openDeleteDialog(code)} disabled={isDeleting} title="Delete code"><Trash2 className="w-4 h-4 text-destructive" /></Button>
                           </div>
                         </TableCell>
                       </TableRow>

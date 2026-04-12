@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { usePagination } from '@/hooks/usePagination';
 import { TablePagination } from '@/components/admin/TablePagination';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -304,13 +305,39 @@ export default function AdminPromotions() {
             </div>
           ) : promotions && promotions.length > 0 ? (
             <>
-            <div className="overflow-x-auto">
+            {/* Mobile Card View */}
+            <MobileCardList>
+              {paginatedPromos.map((promotion) => {
+                const { status, color } = getPromotionStatus(promotion);
+                return (
+                  <MobileDataCard
+                    key={promotion.id}
+                    fields={[
+                      { label: 'Name', value: <span className="font-medium">{promotion.name}</span> },
+                      { label: 'Discount', value: <Badge variant="outline" className="font-mono">{promotion.discount_percentage}% OFF</Badge> },
+                      { label: 'Start', value: format(parseISO(promotion.start_date), 'MMM d, yyyy') },
+                      { label: 'End', value: format(parseISO(promotion.end_date), 'MMM d, yyyy') },
+                      { label: 'Status', value: <Badge variant={color} className="capitalize">{status}</Badge> },
+                    ]}
+                    actions={
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(promotion)}><Edit className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(promotion.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                      </>
+                    }
+                  />
+                );
+              })}
+            </MobileCardList>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead className="hidden sm:table-cell">Discount</TableHead>
-                    <TableHead className="hidden md:table-cell">Duration</TableHead>
+                    <TableHead>Discount</TableHead>
+                    <TableHead>Duration</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -323,48 +350,21 @@ export default function AdminPromotions() {
                         <TableCell>
                           <div>
                             <p className="font-medium">{promotion.name}</p>
-                            {promotion.description && (
-                              <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-xs">
-                                {promotion.description}
-                              </p>
-                            )}
-                            <span className="sm:hidden text-xs font-mono text-primary">{promotion.discount_percentage}% OFF</span>
+                            {promotion.description && <p className="text-sm text-muted-foreground truncate max-w-xs">{promotion.description}</p>}
                           </div>
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge variant="outline" className="font-mono">
-                            {promotion.discount_percentage}% OFF
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
+                        <TableCell><Badge variant="outline" className="font-mono">{promotion.discount_percentage}% OFF</Badge></TableCell>
+                        <TableCell>
                           <div className="text-sm">
                             <p>{format(parseISO(promotion.start_date), 'MMM d, yyyy')}</p>
-                            <p className="text-muted-foreground">
-                              to {format(parseISO(promotion.end_date), 'MMM d, yyyy')}
-                            </p>
+                            <p className="text-muted-foreground">to {format(parseISO(promotion.end_date), 'MMM d, yyyy')}</p>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant={color} className="capitalize">
-                            {status}
-                          </Badge>
-                        </TableCell>
+                        <TableCell><Badge variant={color} className="capitalize">{status}</Badge></TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(promotion)}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setDeleteId(promotion.id)}
-                            >
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleEdit(promotion)}><Edit className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteId(promotion.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                           </div>
                         </TableCell>
                       </TableRow>

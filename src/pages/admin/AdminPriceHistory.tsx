@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -126,78 +127,81 @@ export default function AdminPriceHistory() {
               ))}
             </div>
           ) : priceHistory && priceHistory.length > 0 ? (
-            <div className="overflow-x-auto">
+            <>
+            <MobileCardList>
+              {priceHistory.map((entry) => {
+                const priceChange = getPriceChange(entry.old_price, entry.new_price);
+                return (
+                  <MobileDataCard
+                    key={entry.id}
+                    fields={[
+                      { label: 'Course', value: <span className="font-medium">{getCourseName(entry.course_id)}</span> },
+                      { label: 'Price', value: <span>{entry.old_price !== null ? formatPrice(entry.old_price) : '—'} → <span className={priceChange.color}>{entry.new_price !== null ? formatPrice(entry.new_price) : '—'}</span></span> },
+                      { label: 'Discount', value: <span>{entry.old_discount_price !== null ? formatPrice(entry.old_discount_price) : '—'} → {entry.new_discount_price !== null ? formatPrice(entry.new_discount_price) : '—'}</span> },
+                      { label: 'Free Status', value: entry.old_is_free !== entry.new_is_free ? <span>{entry.old_is_free ? 'Free' : 'Paid'} → {entry.new_is_free ? 'Free' : 'Paid'}</span> : 'No change' },
+                      { label: 'Changed By', value: getProfileName(entry.changed_by) },
+                      { label: 'Date', value: format(parseISO(entry.changed_at), 'MMM d, yyyy HH:mm') },
+                    ]}
+                  />
+                );
+              })}
+            </MobileCardList>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Course</TableHead>
                     <TableHead>Price Change</TableHead>
-                    <TableHead className="hidden md:table-cell">Discount Price</TableHead>
-                    <TableHead className="hidden lg:table-cell">Free Status</TableHead>
-                    <TableHead className="hidden sm:table-cell">Changed By</TableHead>
-                    <TableHead className="hidden sm:table-cell">Date</TableHead>
+                    <TableHead>Discount Price</TableHead>
+                    <TableHead>Free Status</TableHead>
+                    <TableHead>Changed By</TableHead>
+                    <TableHead>Date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {priceHistory.map((entry) => {
                     const priceChange = getPriceChange(entry.old_price, entry.new_price);
                     const PriceIcon = priceChange.icon;
-                    
                     return (
                       <TableRow key={entry.id}>
-                        <TableCell className="font-medium">
-                          {getCourseName(entry.course_id)}
-                        </TableCell>
+                        <TableCell className="font-medium">{getCourseName(entry.course_id)}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">
-                              {entry.old_price !== null ? formatPrice(entry.old_price) : '-'}
-                            </span>
+                            <span className="text-muted-foreground">{entry.old_price !== null ? formatPrice(entry.old_price) : '-'}</span>
                             <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                            <span className={priceChange.color}>
-                              {entry.new_price !== null ? formatPrice(entry.new_price) : '-'}
-                            </span>
+                            <span className={priceChange.color}>{entry.new_price !== null ? formatPrice(entry.new_price) : '-'}</span>
                             <PriceIcon className={`w-4 h-4 ${priceChange.color}`} />
                           </div>
                         </TableCell>
-                        <TableCell className="hidden md:table-cell">
+                        <TableCell>
                           <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">
-                              {entry.old_discount_price !== null ? formatPrice(entry.old_discount_price) : '-'}
-                            </span>
+                            <span className="text-muted-foreground">{entry.old_discount_price !== null ? formatPrice(entry.old_discount_price) : '-'}</span>
                             <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                            <span>
-                              {entry.new_discount_price !== null ? formatPrice(entry.new_discount_price) : '-'}
-                            </span>
+                            <span>{entry.new_discount_price !== null ? formatPrice(entry.new_discount_price) : '-'}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell">
+                        <TableCell>
                           {entry.old_is_free !== entry.new_is_free ? (
                             <div className="flex items-center gap-2">
-                              <Badge variant={entry.old_is_free ? 'secondary' : 'outline'}>
-                                {entry.old_is_free ? 'Free' : 'Paid'}
-                              </Badge>
+                              <Badge variant={entry.old_is_free ? 'secondary' : 'outline'}>{entry.old_is_free ? 'Free' : 'Paid'}</Badge>
                               <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                              <Badge variant={entry.new_is_free ? 'secondary' : 'outline'}>
-                                {entry.new_is_free ? 'Free' : 'Paid'}
-                              </Badge>
+                              <Badge variant={entry.new_is_free ? 'secondary' : 'outline'}>{entry.new_is_free ? 'Free' : 'Paid'}</Badge>
                             </div>
                           ) : (
                             <span className="text-muted-foreground">No change</span>
                           )}
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell text-muted-foreground">
-                          {getProfileName(entry.changed_by)}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell text-muted-foreground">
-                          {format(parseISO(entry.changed_at), 'MMM d, yyyy HH:mm')}
-                        </TableCell>
+                        <TableCell className="text-muted-foreground">{getProfileName(entry.changed_by)}</TableCell>
+                        <TableCell className="text-muted-foreground">{format(parseISO(entry.changed_at), 'MMM d, yyyy HH:mm')}</TableCell>
                       </TableRow>
                     );
                   })}
                 </TableBody>
               </Table>
             </div>
+            </>
           ) : (
             <div className="text-center py-12">
               <History className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />

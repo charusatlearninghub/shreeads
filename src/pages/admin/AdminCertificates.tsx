@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { usePagination } from '@/hooks/usePagination';
 import { TablePagination } from '@/components/admin/TablePagination';
 import { useQuery } from "@tanstack/react-query";
@@ -231,14 +232,36 @@ const AdminCertificates = () => {
                 </div>
               ) : filteredCertificates && filteredCertificates.length > 0 ? (
                 <>
-                <div className="overflow-x-auto">
+                {/* Mobile Card View */}
+                <MobileCardList>
+                  {paginatedCerts.map((cert) => {
+                    const profile = profileMap.get(cert.user_id);
+                    const course = courseMap.get(cert.course_id);
+                    return (
+                      <MobileDataCard
+                        key={cert.id}
+                        fields={[
+                          { label: 'Certificate', value: <Badge variant="outline" className="font-mono">{cert.certificate_number}</Badge> },
+                          { label: 'Student', value: <span className="font-medium">{profile?.full_name || "Unknown"}</span> },
+                          { label: 'Email', value: <span className="text-xs">{profile?.email || "N/A"}</span> },
+                          { label: 'Course', value: course?.title || "Unknown Course" },
+                          { label: 'Issued', value: format(new Date(cert.issued_at), "PPP") },
+                        ]}
+                        actions={cert.pdf_url ? <Button variant="ghost" size="sm" onClick={() => window.open(cert.pdf_url!, "_blank")}><Download className="w-4 h-4 mr-2" />Download</Button> : undefined}
+                      />
+                    );
+                  })}
+                </MobileCardList>
+
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
                   <Table>
-                     <TableHeader>
+                    <TableHeader>
                       <TableRow>
                         <TableHead>Certificate</TableHead>
-                        <TableHead className="hidden sm:table-cell">Student</TableHead>
-                        <TableHead className="hidden md:table-cell">Course</TableHead>
-                        <TableHead className="hidden lg:table-cell">Issued Date</TableHead>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Course</TableHead>
+                        <TableHead>Issued Date</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -248,40 +271,17 @@ const AdminCertificates = () => {
                         const course = courseMap.get(cert.course_id);
                         return (
                           <TableRow key={cert.id}>
+                            <TableCell><Badge variant="outline" className="font-mono">{cert.certificate_number}</Badge></TableCell>
                             <TableCell>
-                              <Badge variant="outline" className="font-mono">
-                                {cert.certificate_number}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="hidden sm:table-cell">
                               <div>
-                                <p className="font-medium truncate max-w-[150px]">
-                                  {profile?.full_name || "Unknown"}
-                                </p>
-                                <p className="text-sm text-muted-foreground truncate max-w-[150px]">
-                                  {profile?.email || "N/A"}
-                                </p>
+                                <p className="font-medium truncate max-w-[150px]">{profile?.full_name || "Unknown"}</p>
+                                <p className="text-sm text-muted-foreground truncate max-w-[150px]">{profile?.email || "N/A"}</p>
                               </div>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
-                              <span className="font-medium truncate max-w-[200px] block">
-                                {course?.title || "Unknown Course"}
-                              </span>
-                            </TableCell>
-                            <TableCell className="hidden lg:table-cell">
-                              {format(new Date(cert.issued_at), "PPP")}
-                            </TableCell>
+                            <TableCell><span className="font-medium truncate max-w-[200px] block">{course?.title || "Unknown Course"}</span></TableCell>
+                            <TableCell>{format(new Date(cert.issued_at), "PPP")}</TableCell>
                             <TableCell>
-                              {cert.pdf_url && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => window.open(cert.pdf_url!, "_blank")}
-                                >
-                                  <Download className="w-4 h-4 mr-2" />
-                                  Download
-                                </Button>
-                              )}
+                              {cert.pdf_url && <Button variant="ghost" size="sm" onClick={() => window.open(cert.pdf_url!, "_blank")}><Download className="w-4 h-4 mr-2" />Download</Button>}
                             </TableCell>
                           </TableRow>
                         );
