@@ -825,7 +825,7 @@ const AdminCourses = () => {
               </Button>
             </div>
           ) : (
-            {/* Mobile Card View */}
+            <>
             <MobileCardList>
               {filteredCourses.map((course) => {
                 const priceInfo = getDisplayPrice(course.price, course.discount_price, course.is_free);
