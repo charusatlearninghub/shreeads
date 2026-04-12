@@ -47,7 +47,9 @@ export default function MobileBottomNavAdmin() {
   const inactiveBtn = "text-muted-foreground hover:text-foreground";
 
   const dropdownBase =
-    "absolute bottom-full mb-2 left-1/2 -translate-x-1/2 mx-2 bg-card !opacity-100 shadow-xl border border-border rounded-2xl p-2 w-36 sm:w-40 md:w-44 max-w-[160px] sm:max-w-[180px] z-[999] flex flex-col gap-1";
+    "absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-card !opacity-100 shadow-xl border border-border rounded-2xl p-2 min-w-[160px] w-max z-[9999] flex flex-col gap-1";
+  const dropdownBaseEnd =
+    "absolute bottom-full mb-2 right-0 bg-card !opacity-100 shadow-xl border border-border rounded-2xl p-2 min-w-[160px] w-max z-[9999] flex flex-col gap-1";
   const dropdownItem =
     "w-full text-left px-2 py-2 rounded-lg text-sm sm:text-base text-foreground font-medium hover:bg-muted active:bg-muted/80 transition-colors flex items-center gap-2";
 
