@@ -381,7 +381,7 @@ const AdminSoftware = () => {
                 <p className="text-muted-foreground">No software added yet</p>
               </div>
             ) : (
-              {/* Mobile Card View */}
+              <>
               <MobileCardList>
                 {products?.map((product) => {
                   const versions = versionCounts?.[product.id];
@@ -464,6 +464,7 @@ const AdminSoftware = () => {
                 </TableBody>
               </Table>
               </div>
+              </>
             )}
           </CardContent>
         </Card>

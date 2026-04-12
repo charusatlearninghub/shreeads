@@ -127,7 +127,7 @@ export default function AdminPriceHistory() {
               ))}
             </div>
           ) : priceHistory && priceHistory.length > 0 ? (
-            {/* Mobile Card View */}
+            <>
             <MobileCardList>
               {priceHistory.map((entry) => {
                 const priceChange = getPriceChange(entry.old_price, entry.new_price);
@@ -201,6 +201,7 @@ export default function AdminPriceHistory() {
                 </TableBody>
               </Table>
             </div>
+            </>
           ) : (
             <div className="text-center py-12">
               <History className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
