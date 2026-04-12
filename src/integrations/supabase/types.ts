@@ -133,23 +133,41 @@ export type Database = {
       enrollments: {
         Row: {
           course_id: string
+          course_name: string | null
           enrolled_at: string
+          final_price_paid: number | null
           id: string
+          original_price: number | null
+          payment_type: string | null
+          promo_code: string | null
           promo_code_id: string | null
+          promo_price: number | null
           user_id: string
         }
         Insert: {
           course_id: string
+          course_name?: string | null
           enrolled_at?: string
+          final_price_paid?: number | null
           id?: string
+          original_price?: number | null
+          payment_type?: string | null
+          promo_code?: string | null
           promo_code_id?: string | null
+          promo_price?: number | null
           user_id: string
         }
         Update: {
           course_id?: string
+          course_name?: string | null
           enrolled_at?: string
+          final_price_paid?: number | null
           id?: string
+          original_price?: number | null
+          payment_type?: string | null
+          promo_code?: string | null
           promo_code_id?: string | null
+          promo_price?: number | null
           user_id?: string
         }
         Relationships: [
@@ -358,6 +376,72 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_code_usage: {
+        Row: {
+          course_id: string | null
+          course_name: string | null
+          created_at: string | null
+          final_price_paid: number | null
+          id: string
+          original_price_at_purchase: number | null
+          paid_amount: number | null
+          promo_code: string
+          promo_code_id: string
+          promo_price: number | null
+          used_at: string | null
+          user_email: string | null
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          course_name?: string | null
+          created_at?: string | null
+          final_price_paid?: number | null
+          id?: string
+          original_price_at_purchase?: number | null
+          paid_amount?: number | null
+          promo_code: string
+          promo_code_id: string
+          promo_price?: number | null
+          used_at?: string | null
+          user_email?: string | null
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          course_id?: string | null
+          course_name?: string | null
+          created_at?: string | null
+          final_price_paid?: number | null
+          id?: string
+          original_price_at_purchase?: number | null
+          paid_amount?: number | null
+          promo_code?: string
+          promo_code_id?: string
+          promo_price?: number | null
+          used_at?: string | null
+          user_email?: string | null
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_usage_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_code_usage_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promo_codes: {
         Row: {
           code: string
@@ -367,6 +451,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_used: boolean | null
+          promo_price: number | null
           used_at: string | null
           used_by: string | null
         }
@@ -378,6 +463,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_used?: boolean | null
+          promo_price?: number | null
           used_at?: string | null
           used_by?: string | null
         }
@@ -389,6 +475,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_used?: boolean | null
+          promo_price?: number | null
           used_at?: string | null
           used_by?: string | null
         }
