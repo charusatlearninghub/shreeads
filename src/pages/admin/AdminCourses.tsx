@@ -917,6 +917,7 @@ const AdminCourses = () => {
                 </TableBody>
               </Table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
