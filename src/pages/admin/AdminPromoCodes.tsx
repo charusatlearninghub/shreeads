@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { usePagination } from '@/hooks/usePagination';
 import { TablePagination } from '@/components/admin/TablePagination';
 import { motion } from 'framer-motion';

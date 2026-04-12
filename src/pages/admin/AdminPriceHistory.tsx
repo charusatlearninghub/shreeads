@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

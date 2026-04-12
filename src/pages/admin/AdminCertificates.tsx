@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { usePagination } from '@/hooks/usePagination';
 import { TablePagination } from '@/components/admin/TablePagination';
 import { useQuery } from "@tanstack/react-query";

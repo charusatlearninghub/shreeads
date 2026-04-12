@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';

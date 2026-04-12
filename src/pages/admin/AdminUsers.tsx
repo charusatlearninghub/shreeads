@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { motion } from 'framer-motion';
 import { 
   Search, 

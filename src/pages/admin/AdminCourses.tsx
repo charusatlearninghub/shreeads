@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { 
   Plus, 
   Search, 
