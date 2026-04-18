@@ -53,8 +53,11 @@ const AdminCertificateTemplates = () => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fontInputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const [previewSize, setPreviewSize] = useState({ width: 0, height: 0 });
+  const [previewing, setPreviewing] = useState(false);
+  const [uploadingFont, setUploadingFont] = useState(false);
 
   const { data: courses } = useQuery({
     queryKey: ["admin-courses-for-templates"],
@@ -73,6 +76,35 @@ const AdminCertificateTemplates = () => {
       return data;
     },
   });
+
+  const { data: customFonts, refetch: refetchFonts } = useQuery({
+    queryKey: ["certificate-fonts"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("certificate_fonts").select("*").order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const allFonts = useMemo(() => [
+    ...BUILTIN_FONTS.map((name) => ({ name, isCustom: false })),
+    ...(customFonts || []).map((f) => ({ name: f.name, isCustom: true })),
+  ], [customFonts]);
+
+  // Inject @font-face for custom fonts so live preview matches PDF
+  useEffect(() => {
+    if (!customFonts) return;
+    const styleId = "cert-custom-fonts";
+    let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = customFonts.map(
+      (f) => `@font-face { font-family: "${f.name}"; src: url("${f.font_url}") format("truetype"); font-display: swap; }`,
+    ).join("\n");
+  }, [customFonts]);
 
   // Load selected template into form
   useEffect(() => {
