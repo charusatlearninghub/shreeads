@@ -21,6 +21,7 @@ import {
   ChevronDown,
   UserCheck,
   Megaphone,
+  FileImage,
   X
 } from 'lucide-react';
 import { AdminNotifications } from './AdminNotifications';
