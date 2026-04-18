@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Upload, Save, Trash2, FileImage } from "lucide-react";
+import { Upload, Save, Trash2, FileImage, FileDown, Type } from "lucide-react";
 import { toast } from "sonner";
 
 type FieldKey = "student_name" | "course_name" | "completion_date" | "certificate_id" | "organization_name";
@@ -34,7 +34,7 @@ const SAMPLE_VALUES: Record<FieldKey, string> = {
   organization_name: "SHREE ADS LEARNx",
 };
 
-const FONT_OPTIONS = ["Helvetica", "HelveticaBold", "TimesRoman", "TimesRomanBold", "Courier", "CourierBold"];
+const BUILTIN_FONTS = ["Helvetica", "HelveticaBold", "TimesRoman", "TimesRomanBold", "Courier", "CourierBold"];
 
 const DEFAULT_POSITIONS: Record<FieldKey, FieldPos> = {
   student_name: { x: 50, y: 45, fontSize: 36, color: "#1a1a1a", fontFamily: "HelveticaBold", align: "center" },
