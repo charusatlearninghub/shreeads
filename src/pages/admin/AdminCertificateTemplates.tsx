@@ -202,9 +202,79 @@ const AdminCertificateTemplates = () => {
   };
 
   const fontFamilyToCss = (f: string) => {
-    if (f.startsWith("Times")) return "'Times New Roman', serif";
-    if (f.startsWith("Courier")) return "'Courier New', monospace";
-    return "Arial, Helvetica, sans-serif";
+    if (BUILTIN_FONTS.includes(f)) {
+      if (f.startsWith("Times")) return "'Times New Roman', serif";
+      if (f.startsWith("Courier")) return "'Courier New', monospace";
+      return "Arial, Helvetica, sans-serif";
+    }
+    // Custom font: use the registered @font-face name
+    return `"${f}", Arial, sans-serif`;
+  };
+
+  const handleFontUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const lower = file.name.toLowerCase();
+    if (!lower.endsWith(".ttf") && !lower.endsWith(".otf")) {
+      toast.error("Please upload a TTF or OTF font file");
+      return;
+    }
+    const fontName = lower.replace(/\.(ttf|otf)$/, "").replace(/[^a-z0-9-]/gi, "-");
+    setUploadingFont(true);
+    try {
+      const path = `${Date.now()}-${fontName}.${lower.endsWith(".otf") ? "otf" : "ttf"}`;
+      const { error: upErr } = await supabase.storage.from("certificate-fonts").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("certificate-fonts").getPublicUrl(path);
+      const { error: insErr } = await supabase.from("certificate_fonts").insert({ name: fontName, font_url: data.publicUrl });
+      if (insErr) throw insErr;
+      toast.success(`Font "${fontName}" uploaded`);
+      refetchFonts();
+    } catch (err: any) {
+      toast.error(err.message || "Font upload failed");
+    } finally {
+      setUploadingFont(false);
+      if (fontInputRef.current) fontInputRef.current.value = "";
+    }
+  };
+
+  const handleDeleteFont = async (id: string, name: string) => {
+    if (!confirm(`Delete font "${name}"? Templates using this font will fall back to Helvetica.`)) return;
+    const { error } = await supabase.from("certificate_fonts").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Font deleted");
+    refetchFonts();
+  };
+
+  const handlePreviewPdf = async () => {
+    if (!templateUrl) {
+      toast.error("Upload a template image first");
+      return;
+    }
+    setPreviewing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/preview-certificate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ template_url: templateUrl, organization_name: organizationName, field_positions: positions }),
+        },
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Preview failed" }));
+        throw new Error(err.error || "Preview failed");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      toast.success("Preview PDF opened");
+    } catch (err: any) {
+      toast.error(err.message || "Preview failed");
+    } finally {
+      setPreviewing(false);
+    }
   };
 
   return (
