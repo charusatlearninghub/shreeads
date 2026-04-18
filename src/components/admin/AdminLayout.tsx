@@ -21,6 +21,7 @@ import {
   ChevronDown,
   UserCheck,
   Megaphone,
+  FileImage,
   X
 } from 'lucide-react';
 import { AdminNotifications } from './AdminNotifications';
@@ -66,6 +67,7 @@ const sidebarGroups: SidebarGroup[] = [
       { icon: Users, label: 'Users', href: '/admin/users' },
       { icon: UserCheck, label: 'Enrollments', href: '/admin/enrollments' },
       { icon: Award, label: 'Certificates', href: '/admin/certificates' },
+      { icon: FileImage, label: 'Certificate Templates', href: '/admin/certificate-templates' },
     ],
   },
   {
