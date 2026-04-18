@@ -2,7 +2,7 @@ import { useState } from "react";
 import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { usePagination } from '@/hooks/usePagination';
 import { TablePagination } from '@/components/admin/TablePagination';
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,14 +25,88 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Award, Search, Download, Calendar, Filter, X } from "lucide-react";
+import { Award, Search, Download, Calendar, Filter, X, RefreshCw, RefreshCwOff, FlaskConical } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 const AdminCertificates = () => {
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCourse, setSelectedCourse] = useState<string>("all");
   const [dateRange, setDateRange] = useState<string>("all");
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+  const [bulkRegenerating, setBulkRegenerating] = useState(false);
+  const [testCourse, setTestCourse] = useState<string>("");
+  const [generatingTest, setGeneratingTest] = useState(false);
+
+  const callEdgeFunction = async (name: string, body: any) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(
+      `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/${name}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify(body),
+      },
+    );
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || "Request failed");
+    return json;
+  };
+
+  const handleRegenerateOne = async (certId: string) => {
+    setRegeneratingId(certId);
+    try {
+      const r = await callEdgeFunction("regenerate-certificate", { certificate_id: certId });
+      if (r.succeeded > 0) {
+        toast.success("Certificate regenerated");
+        queryClient.invalidateQueries({ queryKey: ["admin-certificates"] });
+      } else {
+        toast.error(r.results?.[0]?.error || "Regeneration failed");
+      }
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setRegeneratingId(null);
+    }
+  };
+
+  const handleRegenerateBulk = async () => {
+    if (selectedCourse === "all") {
+      toast.error("Select a specific course in the filter to regenerate all its certificates");
+      return;
+    }
+    if (!confirm("Regenerate ALL certificates for the selected course using the current template?")) return;
+    setBulkRegenerating(true);
+    try {
+      const r = await callEdgeFunction("regenerate-certificate", { course_id: selectedCourse });
+      toast.success(`Regenerated ${r.succeeded}/${r.total} certificates`);
+      queryClient.invalidateQueries({ queryKey: ["admin-certificates"] });
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setBulkRegenerating(false);
+    }
+  };
+
+  const handleGenerateTest = async () => {
+    if (!testCourse) {
+      toast.error("Pick a course first");
+      return;
+    }
+    setGeneratingTest(true);
+    try {
+      const r = await callEdgeFunction("admin-test-certificate", { course_id: testCourse });
+      toast.success(`Test certificate ${r.certificate.certificate_number} generated`);
+      if (!r.has_template) toast.warning("No template configured — PDF was not generated");
+      queryClient.invalidateQueries({ queryKey: ["admin-certificates"] });
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setGeneratingTest(false);
+    }
+  };
 
   // Fetch all certificates with user and course info
   const { data: certificates, isLoading: certificatesLoading } = useQuery({
@@ -136,16 +210,32 @@ const AdminCertificates = () => {
   return (
     <AdminLayout title="Certificates" subtitle="View and manage all issued certificates">
       <div className="space-y-6">
-        {/* Stats Badge */}
+        {/* Stats + Test Cert */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex justify-end"
+          className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center"
         >
-          <Badge variant="secondary" className="text-lg px-4 py-2">
+          <Badge variant="secondary" className="text-base px-4 py-2 self-start">
             <Award className="w-5 h-5 mr-2" />
             {certificates?.length || 0} Total Certificates
           </Badge>
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <Select value={testCourse} onValueChange={setTestCourse}>
+              <SelectTrigger className="sm:w-[260px]">
+                <SelectValue placeholder="Pick course for test cert..." />
+              </SelectTrigger>
+              <SelectContent>
+                {courses?.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={handleGenerateTest} disabled={generatingTest || !testCourse} variant="outline">
+              <FlaskConical className="w-4 h-4 mr-2" />
+              {generatingTest ? "Generating..." : "Generate Test Certificate"}
+            </Button>
+          </div>
         </motion.div>
 
         {/* Filters */}
@@ -204,7 +294,7 @@ const AdminCertificates = () => {
                   </SelectContent>
                 </Select>
 
-                {/* Clear Filters */}
+                {/* Clear Filters + Bulk Regenerate */}
                 {hasActiveFilters && (
                   <Button variant="outline" onClick={clearFilters}>
                     <X className="w-4 h-4 mr-2" />
@@ -212,6 +302,14 @@ const AdminCertificates = () => {
                   </Button>
                 )}
               </div>
+              {selectedCourse !== "all" && (
+                <div className="mt-4">
+                  <Button onClick={handleRegenerateBulk} disabled={bulkRegenerating} variant="secondary" size="sm">
+                    <RefreshCw className={`w-4 h-4 mr-2 ${bulkRegenerating ? "animate-spin" : ""}`} />
+                    {bulkRegenerating ? "Regenerating all..." : "Regenerate all PDFs for this course"}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -247,7 +345,19 @@ const AdminCertificates = () => {
                           { label: 'Course', value: course?.title || "Unknown Course" },
                           { label: 'Issued', value: format(new Date(cert.issued_at), "PPP") },
                         ]}
-                        actions={cert.pdf_url ? <Button variant="ghost" size="sm" onClick={() => window.open(cert.pdf_url!, "_blank")}><Download className="w-4 h-4 mr-2" />Download</Button> : undefined}
+                        actions={
+                          <div className="flex gap-2 flex-wrap">
+                            {cert.pdf_url && (
+                              <Button variant="ghost" size="sm" onClick={() => window.open(cert.pdf_url!, "_blank")}>
+                                <Download className="w-4 h-4 mr-1" />Download
+                              </Button>
+                            )}
+                            <Button variant="ghost" size="sm" onClick={() => handleRegenerateOne(cert.id)} disabled={regeneratingId === cert.id}>
+                              <RefreshCw className={`w-4 h-4 mr-1 ${regeneratingId === cert.id ? "animate-spin" : ""}`} />
+                              Regenerate
+                            </Button>
+                          </div>
+                        }
                       />
                     );
                   })}
@@ -281,7 +391,16 @@ const AdminCertificates = () => {
                             <TableCell><span className="font-medium truncate max-w-[200px] block">{course?.title || "Unknown Course"}</span></TableCell>
                             <TableCell>{format(new Date(cert.issued_at), "PPP")}</TableCell>
                             <TableCell>
-                              {cert.pdf_url && <Button variant="ghost" size="sm" onClick={() => window.open(cert.pdf_url!, "_blank")}><Download className="w-4 h-4 mr-2" />Download</Button>}
+                              <div className="flex gap-1">
+                                {cert.pdf_url && (
+                                  <Button variant="ghost" size="sm" onClick={() => window.open(cert.pdf_url!, "_blank")}>
+                                    <Download className="w-4 h-4" />
+                                  </Button>
+                                )}
+                                <Button variant="ghost" size="sm" onClick={() => handleRegenerateOne(cert.id)} disabled={regeneratingId === cert.id} title="Regenerate PDF with current template">
+                                  <RefreshCw className={`w-4 h-4 ${regeneratingId === cert.id ? "animate-spin" : ""}`} />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         );

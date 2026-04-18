@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      certificate_fonts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          font_url: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          font_url: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          font_url?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       certificate_templates: {
         Row: {
           course_id: string | null

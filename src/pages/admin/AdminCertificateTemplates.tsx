@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Upload, Save, Trash2, FileImage } from "lucide-react";
+import { Upload, Save, Trash2, FileImage, FileDown, Type } from "lucide-react";
 import { toast } from "sonner";
 
 type FieldKey = "student_name" | "course_name" | "completion_date" | "certificate_id" | "organization_name";
@@ -34,7 +34,7 @@ const SAMPLE_VALUES: Record<FieldKey, string> = {
   organization_name: "SHREE ADS LEARNx",
 };
 
-const FONT_OPTIONS = ["Helvetica", "HelveticaBold", "TimesRoman", "TimesRomanBold", "Courier", "CourierBold"];
+const BUILTIN_FONTS = ["Helvetica", "HelveticaBold", "TimesRoman", "TimesRomanBold", "Courier", "CourierBold"];
 
 const DEFAULT_POSITIONS: Record<FieldKey, FieldPos> = {
   student_name: { x: 50, y: 45, fontSize: 36, color: "#1a1a1a", fontFamily: "HelveticaBold", align: "center" },
@@ -53,8 +53,11 @@ const AdminCertificateTemplates = () => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fontInputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const [previewSize, setPreviewSize] = useState({ width: 0, height: 0 });
+  const [previewing, setPreviewing] = useState(false);
+  const [uploadingFont, setUploadingFont] = useState(false);
 
   const { data: courses } = useQuery({
     queryKey: ["admin-courses-for-templates"],
@@ -73,6 +76,35 @@ const AdminCertificateTemplates = () => {
       return data;
     },
   });
+
+  const { data: customFonts, refetch: refetchFonts } = useQuery({
+    queryKey: ["certificate-fonts"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("certificate_fonts").select("*").order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const allFonts = useMemo(() => [
+    ...BUILTIN_FONTS.map((name) => ({ name, isCustom: false })),
+    ...(customFonts || []).map((f) => ({ name: f.name, isCustom: true })),
+  ], [customFonts]);
+
+  // Inject @font-face for custom fonts so live preview matches PDF
+  useEffect(() => {
+    if (!customFonts) return;
+    const styleId = "cert-custom-fonts";
+    let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = customFonts.map(
+      (f) => `@font-face { font-family: "${f.name}"; src: url("${f.font_url}") format("truetype"); font-display: swap; }`,
+    ).join("\n");
+  }, [customFonts]);
 
   // Load selected template into form
   useEffect(() => {
@@ -170,9 +202,79 @@ const AdminCertificateTemplates = () => {
   };
 
   const fontFamilyToCss = (f: string) => {
-    if (f.startsWith("Times")) return "'Times New Roman', serif";
-    if (f.startsWith("Courier")) return "'Courier New', monospace";
-    return "Arial, Helvetica, sans-serif";
+    if (BUILTIN_FONTS.includes(f)) {
+      if (f.startsWith("Times")) return "'Times New Roman', serif";
+      if (f.startsWith("Courier")) return "'Courier New', monospace";
+      return "Arial, Helvetica, sans-serif";
+    }
+    // Custom font: use the registered @font-face name
+    return `"${f}", Arial, sans-serif`;
+  };
+
+  const handleFontUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const lower = file.name.toLowerCase();
+    if (!lower.endsWith(".ttf") && !lower.endsWith(".otf")) {
+      toast.error("Please upload a TTF or OTF font file");
+      return;
+    }
+    const fontName = lower.replace(/\.(ttf|otf)$/, "").replace(/[^a-z0-9-]/gi, "-");
+    setUploadingFont(true);
+    try {
+      const path = `${Date.now()}-${fontName}.${lower.endsWith(".otf") ? "otf" : "ttf"}`;
+      const { error: upErr } = await supabase.storage.from("certificate-fonts").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("certificate-fonts").getPublicUrl(path);
+      const { error: insErr } = await supabase.from("certificate_fonts").insert({ name: fontName, font_url: data.publicUrl });
+      if (insErr) throw insErr;
+      toast.success(`Font "${fontName}" uploaded`);
+      refetchFonts();
+    } catch (err: any) {
+      toast.error(err.message || "Font upload failed");
+    } finally {
+      setUploadingFont(false);
+      if (fontInputRef.current) fontInputRef.current.value = "";
+    }
+  };
+
+  const handleDeleteFont = async (id: string, name: string) => {
+    if (!confirm(`Delete font "${name}"? Templates using this font will fall back to Helvetica.`)) return;
+    const { error } = await supabase.from("certificate_fonts").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Font deleted");
+    refetchFonts();
+  };
+
+  const handlePreviewPdf = async () => {
+    if (!templateUrl) {
+      toast.error("Upload a template image first");
+      return;
+    }
+    setPreviewing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/preview-certificate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ template_url: templateUrl, organization_name: organizationName, field_positions: positions }),
+        },
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Preview failed" }));
+        throw new Error(err.error || "Preview failed");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      toast.success("Preview PDF opened");
+    } catch (err: any) {
+      toast.error(err.message || "Preview failed");
+    } finally {
+      setPreviewing(false);
+    }
   };
 
   return (
@@ -255,7 +357,11 @@ const AdminCertificateTemplates = () => {
                           <Select value={positions[field].fontFamily} onValueChange={(v) => updatePos(field, "fontFamily", v)}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              {FONT_OPTIONS.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                              {allFonts.map((f) => (
+                                <SelectItem key={f.name} value={f.name}>
+                                  {f.name}{f.isCustom && " (custom)"}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -275,9 +381,12 @@ const AdminCertificateTemplates = () => {
                   ))}
                 </Tabs>
 
-                <div className="flex gap-2 pt-2">
+                <div className="flex flex-col sm:flex-row gap-2 pt-2">
                   <Button onClick={handleSave} disabled={saving} className="flex-1">
                     <Save className="w-4 h-4 mr-2" />{saving ? "Saving..." : "Save Template"}
+                  </Button>
+                  <Button onClick={handlePreviewPdf} disabled={previewing || !templateUrl} variant="secondary" className="flex-1">
+                    <FileDown className="w-4 h-4 mr-2" />{previewing ? "Generating..." : "Preview PDF"}
                   </Button>
                   {templates?.find((t) => t.course_id === (selectedCourseId === "__global__" ? null : selectedCourseId)) && (
                     <Button variant="destructive" onClick={handleDelete}>
@@ -331,6 +440,39 @@ const AdminCertificateTemplates = () => {
             </Card>
           </div>
         )}
+
+        {/* Custom Fonts Library */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Type className="w-5 h-5" /> Custom Fonts Library
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Upload TTF or OTF font files to use them in any certificate template. Uploaded fonts appear in the Font Family dropdown above.
+            </p>
+            <input ref={fontInputRef} type="file" accept=".ttf,.otf,font/ttf,font/otf" onChange={handleFontUpload} className="hidden" />
+            <Button variant="outline" onClick={() => fontInputRef.current?.click()} disabled={uploadingFont}>
+              <Upload className="w-4 h-4 mr-2" />
+              {uploadingFont ? "Uploading..." : "Upload Font (TTF / OTF)"}
+            </Button>
+            {customFonts && customFonts.length > 0 ? (
+              <div className="grid sm:grid-cols-2 gap-2 mt-3">
+                {customFonts.map((f) => (
+                  <div key={f.id} className="flex items-center justify-between gap-2 p-3 border rounded-md">
+                    <span className="text-sm truncate" style={{ fontFamily: `"${f.name}", sans-serif` }}>{f.name}</span>
+                    <Button size="sm" variant="ghost" onClick={() => handleDeleteFont(f.id, f.name)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground italic">No custom fonts uploaded yet.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
