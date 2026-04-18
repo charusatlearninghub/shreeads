@@ -82,7 +82,7 @@ const AdminCertificateTemplates = () => {
     if (tmpl) {
       setTemplateUrl(tmpl.template_url);
       setOrganizationName(tmpl.organization_name);
-      setPositions({ ...DEFAULT_POSITIONS, ...(tmpl.field_positions as Record<FieldKey, FieldPos>) });
+      setPositions({ ...DEFAULT_POSITIONS, ...(tmpl.field_positions as unknown as Record<FieldKey, FieldPos>) });
     } else {
       setTemplateUrl("");
       setOrganizationName("SHREE ADS LEARNx");

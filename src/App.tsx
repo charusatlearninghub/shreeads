@@ -32,6 +32,7 @@ import AdminReviews from "./pages/admin/AdminReviews";
 import AdminPromotions from "./pages/admin/AdminPromotions";
 import AdminPriceHistory from "./pages/admin/AdminPriceHistory";
 import AdminCertificates from "./pages/admin/AdminCertificates";
+import AdminCertificateTemplates from "./pages/admin/AdminCertificateTemplates";
 import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import AdminSoftware from "./pages/admin/AdminSoftware";
 import AdminSoftwarePromoCodes from "./pages/admin/AdminSoftwarePromoCodes";
@@ -221,6 +222,14 @@ const App = () => (
                 element={
                   <ProtectedRoute requireAdmin>
                     <AdminCertificates />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/certificate-templates"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminCertificateTemplates />
                   </ProtectedRoute>
                 }
               />
