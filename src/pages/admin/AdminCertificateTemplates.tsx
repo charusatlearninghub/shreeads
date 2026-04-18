@@ -381,9 +381,12 @@ const AdminCertificateTemplates = () => {
                   ))}
                 </Tabs>
 
-                <div className="flex gap-2 pt-2">
+                <div className="flex flex-col sm:flex-row gap-2 pt-2">
                   <Button onClick={handleSave} disabled={saving} className="flex-1">
                     <Save className="w-4 h-4 mr-2" />{saving ? "Saving..." : "Save Template"}
+                  </Button>
+                  <Button onClick={handlePreviewPdf} disabled={previewing || !templateUrl} variant="secondary" className="flex-1">
+                    <FileDown className="w-4 h-4 mr-2" />{previewing ? "Generating..." : "Preview PDF"}
                   </Button>
                   {templates?.find((t) => t.course_id === (selectedCourseId === "__global__" ? null : selectedCourseId)) && (
                     <Button variant="destructive" onClick={handleDelete}>
@@ -437,6 +440,39 @@ const AdminCertificateTemplates = () => {
             </Card>
           </div>
         )}
+
+        {/* Custom Fonts Library */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Type className="w-5 h-5" /> Custom Fonts Library
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Upload TTF or OTF font files to use them in any certificate template. Uploaded fonts appear in the Font Family dropdown above.
+            </p>
+            <input ref={fontInputRef} type="file" accept=".ttf,.otf,font/ttf,font/otf" onChange={handleFontUpload} className="hidden" />
+            <Button variant="outline" onClick={() => fontInputRef.current?.click()} disabled={uploadingFont}>
+              <Upload className="w-4 h-4 mr-2" />
+              {uploadingFont ? "Uploading..." : "Upload Font (TTF / OTF)"}
+            </Button>
+            {customFonts && customFonts.length > 0 ? (
+              <div className="grid sm:grid-cols-2 gap-2 mt-3">
+                {customFonts.map((f) => (
+                  <div key={f.id} className="flex items-center justify-between gap-2 p-3 border rounded-md">
+                    <span className="text-sm truncate" style={{ fontFamily: `"${f.name}", sans-serif` }}>{f.name}</span>
+                    <Button size="sm" variant="ghost" onClick={() => handleDeleteFont(f.id, f.name)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground italic">No custom fonts uploaded yet.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
