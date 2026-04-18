@@ -2,7 +2,7 @@ import { useState } from "react";
 import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { usePagination } from '@/hooks/usePagination';
 import { TablePagination } from '@/components/admin/TablePagination';
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,14 +25,88 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Award, Search, Download, Calendar, Filter, X } from "lucide-react";
+import { Award, Search, Download, Calendar, Filter, X, RefreshCw, RefreshCwOff, FlaskConical } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 const AdminCertificates = () => {
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCourse, setSelectedCourse] = useState<string>("all");
   const [dateRange, setDateRange] = useState<string>("all");
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+  const [bulkRegenerating, setBulkRegenerating] = useState(false);
+  const [testCourse, setTestCourse] = useState<string>("");
+  const [generatingTest, setGeneratingTest] = useState(false);
+
+  const callEdgeFunction = async (name: string, body: any) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(
+      `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/${name}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify(body),
+      },
+    );
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || "Request failed");
+    return json;
+  };
+
+  const handleRegenerateOne = async (certId: string) => {
+    setRegeneratingId(certId);
+    try {
+      const r = await callEdgeFunction("regenerate-certificate", { certificate_id: certId });
+      if (r.succeeded > 0) {
+        toast.success("Certificate regenerated");
+        queryClient.invalidateQueries({ queryKey: ["admin-certificates"] });
+      } else {
+        toast.error(r.results?.[0]?.error || "Regeneration failed");
+      }
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setRegeneratingId(null);
+    }
+  };
+
+  const handleRegenerateBulk = async () => {
+    if (selectedCourse === "all") {
+      toast.error("Select a specific course in the filter to regenerate all its certificates");
+      return;
+    }
+    if (!confirm("Regenerate ALL certificates for the selected course using the current template?")) return;
+    setBulkRegenerating(true);
+    try {
+      const r = await callEdgeFunction("regenerate-certificate", { course_id: selectedCourse });
+      toast.success(`Regenerated ${r.succeeded}/${r.total} certificates`);
+      queryClient.invalidateQueries({ queryKey: ["admin-certificates"] });
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setBulkRegenerating(false);
+    }
+  };
+
+  const handleGenerateTest = async () => {
+    if (!testCourse) {
+      toast.error("Pick a course first");
+      return;
+    }
+    setGeneratingTest(true);
+    try {
+      const r = await callEdgeFunction("admin-test-certificate", { course_id: testCourse });
+      toast.success(`Test certificate ${r.certificate.certificate_number} generated`);
+      if (!r.has_template) toast.warning("No template configured — PDF was not generated");
+      queryClient.invalidateQueries({ queryKey: ["admin-certificates"] });
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setGeneratingTest(false);
+    }
+  };
 
   // Fetch all certificates with user and course info
   const { data: certificates, isLoading: certificatesLoading } = useQuery({
