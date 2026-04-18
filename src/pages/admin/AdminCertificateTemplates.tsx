@@ -357,7 +357,11 @@ const AdminCertificateTemplates = () => {
                           <Select value={positions[field].fontFamily} onValueChange={(v) => updatePos(field, "fontFamily", v)}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              {FONT_OPTIONS.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                              {allFonts.map((f) => (
+                                <SelectItem key={f.name} value={f.name}>
+                                  {f.name}{f.isCustom && " (custom)"}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
