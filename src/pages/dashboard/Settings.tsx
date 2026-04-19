@@ -56,6 +56,43 @@ const Settings = () => {
   // Device management state
   const [devices, setDevices] = useState<DeviceRegistration[]>([]);
   const [isLoadingDevices, setIsLoadingDevices] = useState(true);
+  const [processingDeviceId, setProcessingDeviceId] = useState<string | null>(null);
+
+  const handleDeactivateDevice = async (deviceId: string) => {
+    setProcessingDeviceId(deviceId);
+    try {
+      const { error } = await supabase
+        .from('device_registrations')
+        .update({ is_active: false })
+        .eq('id', deviceId);
+      if (error) throw error;
+      setDevices((prev) => prev.map((d) => (d.id === deviceId ? { ...d, is_active: false } : d)));
+      toast({ title: 'Device deactivated', description: 'This device can no longer access your account.' });
+    } catch (error: any) {
+      console.error('Error deactivating device:', error);
+      toast({ title: 'Error', description: error.message || 'Failed to deactivate device', variant: 'destructive' });
+    } finally {
+      setProcessingDeviceId(null);
+    }
+  };
+
+  const handleRemoveDevice = async (deviceId: string) => {
+    setProcessingDeviceId(deviceId);
+    try {
+      const { error } = await supabase
+        .from('device_registrations')
+        .delete()
+        .eq('id', deviceId);
+      if (error) throw error;
+      setDevices((prev) => prev.filter((d) => d.id !== deviceId));
+      toast({ title: 'Device removed', description: 'The device registration has been deleted.' });
+    } catch (error: any) {
+      console.error('Error removing device:', error);
+      toast({ title: 'Error', description: error.message || 'Failed to remove device', variant: 'destructive' });
+    } finally {
+      setProcessingDeviceId(null);
+    }
+  };
 
   // Account deletion state
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
@@ -674,17 +711,65 @@ const Settings = () => {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {device.is_active && (
+                      <div className="flex items-center gap-2 flex-wrap justify-end">
+                        {device.is_active ? (
                           <span className="text-xs bg-green-500/10 text-green-600 px-2 py-1 rounded-full">
                             Active
                           </span>
+                        ) : (
+                          <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+                            Inactive
+                          </span>
                         )}
+                        {device.is_active && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeactivateDevice(device.id)}
+                            disabled={processingDeviceId === device.id}
+                          >
+                            {processingDeviceId === device.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              'Deactivate'
+                            )}
+                          </Button>
+                        )}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              disabled={processingDeviceId === device.id}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove this device?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will delete the registration for "{device.device_name || 'Unknown Device'}".
+                                You'll need to register again next time you sign in from this device.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleRemoveDevice(device.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Remove
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   ))}
                   <p className="text-xs text-muted-foreground mt-2">
-                    To switch devices, please contact support to reset your device binding.
+                    Deactivate to block access from a device, or remove to free the slot for re-registration.
                   </p>
                 </div>
               )}
