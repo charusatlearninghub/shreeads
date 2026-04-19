@@ -201,6 +201,25 @@ const AdminCertificateTemplates = () => {
     setPositions((p) => ({ ...p, [field]: { ...p[field], [key]: value } }));
   };
 
+  const [defaultFont, setDefaultFont] = useState<string>("Helvetica");
+  const applyDefaultFontToAll = () => {
+    setPositions((p) => {
+      const next = { ...p };
+      (Object.keys(next) as FieldKey[]).forEach((k) => {
+        next[k] = { ...next[k], fontFamily: defaultFont };
+      });
+      return next;
+    });
+    toast.success(`Applied "${defaultFont}" to all fields`);
+  };
+
+  const courseTitleById = useMemo(() => {
+    const map = new Map<string, string>();
+    courses?.forEach((c) => map.set(c.id, c.title));
+    return map;
+  }, [courses]);
+
+
   const fontFamilyToCss = (f: string) => {
     if (BUILTIN_FONTS.includes(f)) {
       if (f.startsWith("Times")) return "'Times New Roman', serif";
