@@ -111,6 +111,16 @@ export const TestimonialsSection = forwardRef<HTMLElement>((_, ref) => {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
+        ) : displayTestimonials.length === 0 ? (
+          <div className="text-center py-16 max-w-xl mx-auto">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Quote className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="font-display text-xl font-semibold mb-2">No reviews yet</h3>
+            <p className="text-muted-foreground">
+              Be the first to share your experience.
+            </p>
+          </div>
         ) : (
           /* Testimonials Grid */
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
