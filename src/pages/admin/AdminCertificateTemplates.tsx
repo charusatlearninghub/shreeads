@@ -299,6 +299,47 @@ const AdminCertificateTemplates = () => {
   return (
     <AdminLayout title="Certificate Templates" subtitle="Upload custom certificate designs and configure dynamic field positions">
       <div className="space-y-6">
+        {/* Gallery of saved templates */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <FileImage className="w-5 h-5" /> Saved Templates Gallery
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!templates || templates.length === 0 ? (
+              <p className="text-sm text-muted-foreground italic">No templates saved yet. Configure one below to get started.</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {templates.map((t) => {
+                  const isGlobal = t.course_id === null;
+                  const label = isGlobal ? "Global Default" : (courseTitleById.get(t.course_id!) || "Course");
+                  const isSelected = (selectedCourseId === "__global__" && isGlobal) || selectedCourseId === t.course_id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setSelectedCourseId(isGlobal ? "__global__" : t.course_id!)}
+                      className={`group relative border rounded-md overflow-hidden bg-muted text-left transition-all hover:shadow-md ${isSelected ? "ring-2 ring-primary" : ""}`}
+                    >
+                      <div className="aspect-[4/3] overflow-hidden bg-background">
+                        <img src={t.template_url} alt={label} className="w-full h-full object-contain" />
+                      </div>
+                      <div className="p-2 border-t bg-card">
+                        <div className="flex items-center gap-1 text-xs font-medium truncate">
+                          {isGlobal && <Globe className="w-3 h-3 text-primary shrink-0" />}
+                          <span className="truncate">{label}</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground truncate">{t.organization_name}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Template Scope</CardTitle>
