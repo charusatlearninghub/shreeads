@@ -3,10 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { Play, Sparkles, Users, BookOpen, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePlatformStats, formatStat } from "@/hooks/usePlatformStats";
 
 export const HeroSection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { stats: platformStats } = usePlatformStats();
 
   const handleStartLearning = () => {
     navigate(user ? "/dashboard/courses" : "/login");
@@ -21,9 +23,9 @@ export const HeroSection = () => {
   };
 
   const stats = [
-    { icon: Users, value: "10,000+", label: "Active Students" },
-    { icon: BookOpen, value: "500+", label: "Video Lessons" },
-    { icon: Award, value: "50+", label: "Expert Courses" },
+    { icon: Users, value: formatStat(platformStats.activeStudents), label: "Active Students" },
+    { icon: BookOpen, value: formatStat(platformStats.videoLessons), label: "Video Lessons" },
+    { icon: Award, value: formatStat(platformStats.expertCourses), label: "Expert Courses" },
   ];
 
   return (
@@ -135,7 +137,7 @@ export const HeroSection = () => {
                       <Play className="w-10 h-10 text-primary-foreground" />
                     </div>
                     <h3 className="font-display text-2xl font-bold mb-2">Start Watching</h3>
-                    <p className="text-muted-foreground">500+ Video Lessons Available</p>
+                    <p className="text-muted-foreground">{formatStat(platformStats.videoLessons)} Video Lessons Available</p>
                   </div>
                 </div>
                 <div className="p-6 border-t border-border/50">
@@ -149,7 +151,7 @@ export const HeroSection = () => {
                       ))}
                     </div>
                     <div>
-                      <p className="font-semibold">Join 10,000+ Students</p>
+                      <p className="font-semibold">Join {formatStat(platformStats.activeStudents)} Students</p>
                       <p className="text-sm text-muted-foreground">Learning right now</p>
                     </div>
                   </div>
