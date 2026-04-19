@@ -79,7 +79,6 @@ const Settings = () => {
         if (data) {
           setEmailNotifications(data.email_notifications);
           setPushNotifications(data.push_notifications);
-          setTwoFactorEnabled(data.two_factor_enabled);
         } else {
           // Create default preferences if they don't exist
           const { error: insertError } = await supabase
@@ -88,11 +87,15 @@ const Settings = () => {
               user_id: user.id,
               email_notifications: true,
               push_notifications: false,
-              two_factor_enabled: false,
             });
 
           if (insertError) console.error('Error creating preferences:', insertError);
         }
+
+        // Derive 2FA status from Supabase Auth MFA (source of truth)
+        const { data: factorsData } = await supabase.auth.mfa.listFactors();
+        const hasVerifiedTotp = !!factorsData?.totp?.find((f) => f.status === 'verified');
+        setTwoFactorEnabled(hasVerifiedTotp);
       } catch (error) {
         console.error('Error loading preferences:', error);
       } finally {
@@ -282,11 +285,7 @@ const Settings = () => {
 
       if (verifyError) throw verifyError;
 
-      // Update preferences
-      await supabase
-        .from('user_preferences')
-        .update({ two_factor_enabled: true })
-        .eq('user_id', user?.id);
+      // 2FA state lives in Supabase Auth MFA — no local mirror needed
 
       setTwoFactorEnabled(true);
       setShow2FADialog(false);
@@ -317,10 +316,7 @@ const Settings = () => {
         if (error) throw error;
       }
 
-      await supabase
-        .from('user_preferences')
-        .update({ two_factor_enabled: false })
-        .eq('user_id', user?.id);
+      // 2FA state lives in Supabase Auth MFA — no local mirror needed
 
       setTwoFactorEnabled(false);
       toast({ title: "Success", description: "Two-factor authentication disabled" });
