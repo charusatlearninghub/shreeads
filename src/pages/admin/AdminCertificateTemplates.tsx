@@ -386,6 +386,22 @@ const AdminCertificateTemplates = () => {
                   <Input value={organizationName} onChange={(e) => setOrganizationName(e.target.value)} className="mt-1" />
                 </div>
 
+                <div className="p-3 border rounded-md bg-muted/30 space-y-2">
+                  <Label className="text-xs flex items-center gap-1.5"><Wand2 className="w-3.5 h-3.5" /> Default Font (apply to all fields)</Label>
+                  <div className="flex gap-2">
+                    <Select value={defaultFont} onValueChange={setDefaultFont}>
+                      <SelectTrigger className="flex-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {allFonts.map((f) => (
+                          <SelectItem key={f.name} value={f.name}>{f.name}{f.isCustom && " (custom)"}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button type="button" variant="secondary" onClick={applyDefaultFontToAll}>Apply to all</Button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Sets the same font family for every field at once.</p>
+                </div>
+
                 <Tabs defaultValue="student_name" className="w-full">
                   <TabsList className="grid grid-cols-5 h-auto">
                     {(Object.keys(FIELD_LABELS) as FieldKey[]).map((k) => (
