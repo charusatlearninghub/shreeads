@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Upload, Save, Trash2, FileImage, FileDown, Type } from "lucide-react";
+import { Upload, Save, Trash2, FileImage, FileDown, Type, Wand2, Globe } from "lucide-react";
 import { toast } from "sonner";
 
 type FieldKey = "student_name" | "course_name" | "completion_date" | "certificate_id" | "organization_name";
@@ -201,6 +201,25 @@ const AdminCertificateTemplates = () => {
     setPositions((p) => ({ ...p, [field]: { ...p[field], [key]: value } }));
   };
 
+  const [defaultFont, setDefaultFont] = useState<string>("Helvetica");
+  const applyDefaultFontToAll = () => {
+    setPositions((p) => {
+      const next = { ...p };
+      (Object.keys(next) as FieldKey[]).forEach((k) => {
+        next[k] = { ...next[k], fontFamily: defaultFont };
+      });
+      return next;
+    });
+    toast.success(`Applied "${defaultFont}" to all fields`);
+  };
+
+  const courseTitleById = useMemo(() => {
+    const map = new Map<string, string>();
+    courses?.forEach((c) => map.set(c.id, c.title));
+    return map;
+  }, [courses]);
+
+
   const fontFamilyToCss = (f: string) => {
     if (BUILTIN_FONTS.includes(f)) {
       if (f.startsWith("Times")) return "'Times New Roman', serif";
@@ -280,6 +299,47 @@ const AdminCertificateTemplates = () => {
   return (
     <AdminLayout title="Certificate Templates" subtitle="Upload custom certificate designs and configure dynamic field positions">
       <div className="space-y-6">
+        {/* Gallery of saved templates */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <FileImage className="w-5 h-5" /> Saved Templates Gallery
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!templates || templates.length === 0 ? (
+              <p className="text-sm text-muted-foreground italic">No templates saved yet. Configure one below to get started.</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {templates.map((t) => {
+                  const isGlobal = t.course_id === null;
+                  const label = isGlobal ? "Global Default" : (courseTitleById.get(t.course_id!) || "Course");
+                  const isSelected = (selectedCourseId === "__global__" && isGlobal) || selectedCourseId === t.course_id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setSelectedCourseId(isGlobal ? "__global__" : t.course_id!)}
+                      className={`group relative border rounded-md overflow-hidden bg-muted text-left transition-all hover:shadow-md ${isSelected ? "ring-2 ring-primary" : ""}`}
+                    >
+                      <div className="aspect-[4/3] overflow-hidden bg-background">
+                        <img src={t.template_url} alt={label} className="w-full h-full object-contain" />
+                      </div>
+                      <div className="p-2 border-t bg-card">
+                        <div className="flex items-center gap-1 text-xs font-medium truncate">
+                          {isGlobal && <Globe className="w-3 h-3 text-primary shrink-0" />}
+                          <span className="truncate">{label}</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground truncate">{t.organization_name}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Template Scope</CardTitle>
@@ -324,6 +384,22 @@ const AdminCertificateTemplates = () => {
                 <div>
                   <Label>Organization Name</Label>
                   <Input value={organizationName} onChange={(e) => setOrganizationName(e.target.value)} className="mt-1" />
+                </div>
+
+                <div className="p-3 border rounded-md bg-muted/30 space-y-2">
+                  <Label className="text-xs flex items-center gap-1.5"><Wand2 className="w-3.5 h-3.5" /> Default Font (apply to all fields)</Label>
+                  <div className="flex gap-2">
+                    <Select value={defaultFont} onValueChange={setDefaultFont}>
+                      <SelectTrigger className="flex-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {allFonts.map((f) => (
+                          <SelectItem key={f.name} value={f.name}>{f.name}{f.isCustom && " (custom)"}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button type="button" variant="secondary" onClick={applyDefaultFontToAll}>Apply to all</Button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Sets the same font family for every field at once.</p>
                 </div>
 
                 <Tabs defaultValue="student_name" className="w-full">
