@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Upload, Save, Trash2, FileImage, FileDown, Type } from "lucide-react";
+import { Upload, Save, Trash2, FileImage, FileDown, Type, Wand2, Globe } from "lucide-react";
 import { toast } from "sonner";
 
 type FieldKey = "student_name" | "course_name" | "completion_date" | "certificate_id" | "organization_name";
