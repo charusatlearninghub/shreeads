@@ -1107,6 +1107,7 @@ export type Database = {
     }
     Functions: {
       cleanup_old_software_downloads: { Args: never; Returns: number }
+      cleanup_old_software_downloads_scheduled: { Args: never; Returns: number }
       generate_certificate_number: { Args: never; Returns: string }
       get_active_promotion_for_course: {
         Args: { _course_id: string }
