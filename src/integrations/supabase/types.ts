@@ -1017,8 +1017,6 @@ export type Database = {
           email_notifications: boolean
           id: string
           push_notifications: boolean
-          two_factor_enabled: boolean
-          two_factor_secret: string | null
           updated_at: string
           user_id: string
         }
@@ -1027,8 +1025,6 @@ export type Database = {
           email_notifications?: boolean
           id?: string
           push_notifications?: boolean
-          two_factor_enabled?: boolean
-          two_factor_secret?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1037,8 +1033,6 @@ export type Database = {
           email_notifications?: boolean
           id?: string
           push_notifications?: boolean
-          two_factor_enabled?: boolean
-          two_factor_secret?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1112,6 +1106,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_software_downloads: { Args: never; Returns: number }
       generate_certificate_number: { Args: never; Returns: string }
       get_active_promotion_for_course: {
         Args: { _course_id: string }
