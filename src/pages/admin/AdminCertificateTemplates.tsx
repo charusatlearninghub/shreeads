@@ -355,6 +355,9 @@ const AdminCertificateTemplates = () => {
     }
   };
 
+  const previewSrc = useSignedUrl(templateUrl);
+  const gallerySrcMap = useSignedUrlMap((templates || []).map((t) => t.template_url));
+
   return (
     <AdminLayout title="Certificate Templates" subtitle="Upload custom certificate designs and configure dynamic field positions">
       <div className="space-y-6">
