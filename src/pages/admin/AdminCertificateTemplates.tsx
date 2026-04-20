@@ -543,7 +543,7 @@ const AdminCertificateTemplates = () => {
               <CardContent>
                 {templateUrl ? (
                   <div ref={previewRef} className="relative w-full border rounded-md overflow-hidden bg-muted">
-                    <img src={templateUrl} alt="Certificate template" className="w-full h-auto block" />
+                    <img src={previewSrc || templateUrl} alt="Certificate template" className="w-full h-auto block" />
                     {(Object.keys(FIELD_LABELS) as FieldKey[]).map((field) => {
                       const pos = positions[field];
                       // Scale font size: assume template renders at preview width; use ratio of preview width to a 1000px reference
