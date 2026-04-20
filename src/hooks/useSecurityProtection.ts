@@ -370,7 +370,7 @@ export function useSecurityProtection({ enabled, userId, userEmail, userName }: 
     document.addEventListener('enterpictureinpicture', handlePiP);
 
     return () => {
-      clearInterval(devToolsInterval);
+      if (devToolsInterval) clearInterval(devToolsInterval);
       clearInterval(screenCheckInterval);
       clearTimeout(touchTimer);
       cancelAnimationFrame(fpsRafId);
