@@ -385,7 +385,7 @@ const AdminCertificateTemplates = () => {
                       className={`group relative border rounded-md overflow-hidden bg-muted text-left transition-all hover:shadow-md ${isSelected ? "ring-2 ring-primary" : ""}`}
                     >
                       <div className="aspect-[4/3] overflow-hidden bg-background">
-                        <img src={t.template_url} alt={label} className="w-full h-full object-contain" />
+                        <img src={gallerySrcMap[t.template_url] || t.template_url} alt={label} className="w-full h-full object-contain" loading="lazy" />
                       </div>
                       <div className="p-2 border-t bg-card">
                         <div className="flex items-center gap-1 text-xs font-medium truncate">
