@@ -2,6 +2,37 @@
 // Imported by generate-certificate, preview-certificate, regenerate-certificate.
 import { PDFDocument, StandardFonts, rgb, PDFFont } from 'https://esm.sh/pdf-lib@1.17.1';
 import fontkit from 'https://esm.sh/@pdf-lib/fontkit@1.1.1';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// Resolve a possibly-private Supabase Storage URL into a fetchable URL.
+// Accepts: full public URL, full signed URL, or relative "<bucket>/<path>".
+// If the URL points at a known private bucket, generate a 5-min signed URL.
+const PRIVATE_BUCKETS = new Set(['certificate-templates', 'certificate-fonts', 'certificates', 'course-videos']);
+
+async function resolveStorageUrl(url: string): Promise<string> {
+  if (!url) return url;
+  // External URL (not Supabase storage) — return as-is
+  try {
+    const u = new URL(url);
+    const match = u.pathname.match(/\/storage\/v1\/object\/(?:public\/|sign\/|authenticated\/)?([^/]+)\/(.+)$/);
+    if (!match) return url; // Not a storage URL
+    const bucket = match[1];
+    const path = decodeURIComponent(match[2].split('?')[0]);
+    if (!PRIVATE_BUCKETS.has(bucket)) return url; // Public bucket, fine as-is
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !serviceKey) return url;
+    const admin = createClient(supabaseUrl, serviceKey);
+    const { data, error } = await admin.storage.from(bucket).createSignedUrl(path, 300);
+    if (error || !data?.signedUrl) {
+      console.error(`Failed to sign ${bucket}/${path}:`, error);
+      return url;
+    }
+    return data.signedUrl;
+  } catch {
+    return url;
+  }
+}
 
 export interface FieldPos {
   x: number;
@@ -54,8 +85,9 @@ export async function renderCertificatePdf(
   data: CertificateData,
   customFonts: Array<{ name: string; font_url: string }> = [],
 ): Promise<Uint8Array> {
-  // Fetch background image
-  const imgRes = await fetch(template.template_url);
+  // Fetch background image (resolve private bucket → signed URL if needed)
+  const fetchableTemplateUrl = await resolveStorageUrl(template.template_url);
+  const imgRes = await fetch(fetchableTemplateUrl);
   if (!imgRes.ok) throw new Error(`Template image fetch failed: ${imgRes.status}`);
   const imgBytes = new Uint8Array(await imgRes.arrayBuffer());
   const contentType = imgRes.headers.get('content-type') || '';
@@ -80,9 +112,9 @@ export async function renderCertificatePdf(
     if (BUILTIN_FONTS.has(family)) {
       font = await pdfDoc.embedFont(getStandardFont(family));
     } else if (customFontMap.has(family)) {
-      const url = customFontMap.get(family)!;
+      const url = await resolveStorageUrl(customFontMap.get(family)!);
       const res = await fetch(url);
-      if (!res.ok) throw new Error(`Font fetch failed for ${family}`);
+      if (!res.ok) throw new Error(`Font fetch failed for ${family}: ${res.status}`);
       const bytes = new Uint8Array(await res.arrayBuffer());
       font = await pdfDoc.embedFont(bytes);
     } else {

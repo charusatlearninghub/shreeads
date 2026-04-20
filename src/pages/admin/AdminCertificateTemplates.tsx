@@ -36,6 +36,56 @@ const SAMPLE_VALUES: Record<FieldKey, string> = {
 
 const BUILTIN_FONTS = ["Helvetica", "HelveticaBold", "TimesRoman", "TimesRomanBold", "Courier", "CourierBold"];
 
+// Private storage buckets — getPublicUrl returns a non-fetchable URL for these,
+// so we sign them on the fly for display.
+const PRIVATE_BUCKETS = new Set(["certificate-templates", "certificate-fonts", "certificates"]);
+
+async function signStorageUrl(url: string | null | undefined): Promise<string | null> {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    const m = u.pathname.match(/\/storage\/v1\/object\/(?:public\/|sign\/|authenticated\/)?([^/]+)\/(.+)$/);
+    if (!m) return url;
+    const bucket = m[1];
+    const path = decodeURIComponent(m[2].split("?")[0]);
+    if (!PRIVATE_BUCKETS.has(bucket)) return url;
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 3600);
+    if (error || !data?.signedUrl) return url;
+    return data.signedUrl;
+  } catch {
+    return url;
+  }
+}
+
+function useSignedUrl(url: string | null | undefined) {
+  const [signed, setSigned] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setSigned(null);
+    if (!url) return;
+    signStorageUrl(url).then((s) => { if (!cancelled) setSigned(s); });
+    return () => { cancelled = true; };
+  }, [url]);
+  return signed;
+}
+
+function useSignedUrlMap(urls: string[]) {
+  const [map, setMap] = useState<Record<string, string>>({});
+  const key = urls.join("|");
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const entries = await Promise.all(
+        urls.map(async (u) => [u, (await signStorageUrl(u)) || u] as const),
+      );
+      if (!cancelled) setMap(Object.fromEntries(entries));
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return map;
+}
+
 const DEFAULT_POSITIONS: Record<FieldKey, FieldPos> = {
   student_name: { x: 50, y: 45, fontSize: 36, color: "#1a1a1a", fontFamily: "HelveticaBold", align: "center" },
   course_name: { x: 50, y: 58, fontSize: 24, color: "#1a1a1a", fontFamily: "Helvetica", align: "center" },
@@ -91,19 +141,28 @@ const AdminCertificateTemplates = () => {
     ...(customFonts || []).map((f) => ({ name: f.name, isCustom: true })),
   ], [customFonts]);
 
-  // Inject @font-face for custom fonts so live preview matches PDF
+  // Inject @font-face for custom fonts so live preview matches PDF.
+  // Fonts live in a private bucket — sign each URL before referencing it.
   useEffect(() => {
     if (!customFonts) return;
-    const styleId = "cert-custom-fonts";
-    let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
-    if (!styleEl) {
-      styleEl = document.createElement("style");
-      styleEl.id = styleId;
-      document.head.appendChild(styleEl);
-    }
-    styleEl.textContent = customFonts.map(
-      (f) => `@font-face { font-family: "${f.name}"; src: url("${f.font_url}") format("truetype"); font-display: swap; }`,
-    ).join("\n");
+    let cancelled = false;
+    (async () => {
+      const signed = await Promise.all(
+        customFonts.map(async (f) => ({ name: f.name, url: (await signStorageUrl(f.font_url)) || f.font_url })),
+      );
+      if (cancelled) return;
+      const styleId = "cert-custom-fonts";
+      let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = styleId;
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = signed.map(
+        (f) => `@font-face { font-family: "${f.name}"; src: url("${f.url}") format("truetype"); font-display: swap; }`,
+      ).join("\n");
+    })();
+    return () => { cancelled = true; };
   }, [customFonts]);
 
   // Load selected template into form
@@ -296,6 +355,9 @@ const AdminCertificateTemplates = () => {
     }
   };
 
+  const previewSrc = useSignedUrl(templateUrl);
+  const gallerySrcMap = useSignedUrlMap((templates || []).map((t) => t.template_url));
+
   return (
     <AdminLayout title="Certificate Templates" subtitle="Upload custom certificate designs and configure dynamic field positions">
       <div className="space-y-6">
@@ -323,7 +385,7 @@ const AdminCertificateTemplates = () => {
                       className={`group relative border rounded-md overflow-hidden bg-muted text-left transition-all hover:shadow-md ${isSelected ? "ring-2 ring-primary" : ""}`}
                     >
                       <div className="aspect-[4/3] overflow-hidden bg-background">
-                        <img src={t.template_url} alt={label} className="w-full h-full object-contain" />
+                        <img src={gallerySrcMap[t.template_url] || t.template_url} alt={label} className="w-full h-full object-contain" loading="lazy" />
                       </div>
                       <div className="p-2 border-t bg-card">
                         <div className="flex items-center gap-1 text-xs font-medium truncate">
@@ -481,7 +543,7 @@ const AdminCertificateTemplates = () => {
               <CardContent>
                 {templateUrl ? (
                   <div ref={previewRef} className="relative w-full border rounded-md overflow-hidden bg-muted">
-                    <img src={templateUrl} alt="Certificate template" className="w-full h-auto block" />
+                    <img src={previewSrc || templateUrl} alt="Certificate template" className="w-full h-auto block" />
                     {(Object.keys(FIELD_LABELS) as FieldKey[]).map((field) => {
                       const pos = positions[field];
                       // Scale font size: assume template renders at preview width; use ratio of preview width to a 1000px reference
