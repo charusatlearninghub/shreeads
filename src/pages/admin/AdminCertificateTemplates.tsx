@@ -36,6 +36,56 @@ const SAMPLE_VALUES: Record<FieldKey, string> = {
 
 const BUILTIN_FONTS = ["Helvetica", "HelveticaBold", "TimesRoman", "TimesRomanBold", "Courier", "CourierBold"];
 
+// Private storage buckets — getPublicUrl returns a non-fetchable URL for these,
+// so we sign them on the fly for display.
+const PRIVATE_BUCKETS = new Set(["certificate-templates", "certificate-fonts", "certificates"]);
+
+async function signStorageUrl(url: string | null | undefined): Promise<string | null> {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    const m = u.pathname.match(/\/storage\/v1\/object\/(?:public\/|sign\/|authenticated\/)?([^/]+)\/(.+)$/);
+    if (!m) return url;
+    const bucket = m[1];
+    const path = decodeURIComponent(m[2].split("?")[0]);
+    if (!PRIVATE_BUCKETS.has(bucket)) return url;
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 3600);
+    if (error || !data?.signedUrl) return url;
+    return data.signedUrl;
+  } catch {
+    return url;
+  }
+}
+
+function useSignedUrl(url: string | null | undefined) {
+  const [signed, setSigned] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setSigned(null);
+    if (!url) return;
+    signStorageUrl(url).then((s) => { if (!cancelled) setSigned(s); });
+    return () => { cancelled = true; };
+  }, [url]);
+  return signed;
+}
+
+function useSignedUrlMap(urls: string[]) {
+  const [map, setMap] = useState<Record<string, string>>({});
+  const key = urls.join("|");
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const entries = await Promise.all(
+        urls.map(async (u) => [u, (await signStorageUrl(u)) || u] as const),
+      );
+      if (!cancelled) setMap(Object.fromEntries(entries));
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return map;
+}
+
 const DEFAULT_POSITIONS: Record<FieldKey, FieldPos> = {
   student_name: { x: 50, y: 45, fontSize: 36, color: "#1a1a1a", fontFamily: "HelveticaBold", align: "center" },
   course_name: { x: 50, y: 58, fontSize: 24, color: "#1a1a1a", fontFamily: "Helvetica", align: "center" },
