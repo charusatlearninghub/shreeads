@@ -112,9 +112,9 @@ export async function renderCertificatePdf(
     if (BUILTIN_FONTS.has(family)) {
       font = await pdfDoc.embedFont(getStandardFont(family));
     } else if (customFontMap.has(family)) {
-      const url = customFontMap.get(family)!;
+      const url = await resolveStorageUrl(customFontMap.get(family)!);
       const res = await fetch(url);
-      if (!res.ok) throw new Error(`Font fetch failed for ${family}`);
+      if (!res.ok) throw new Error(`Font fetch failed for ${family}: ${res.status}`);
       const bytes = new Uint8Array(await res.arrayBuffer());
       font = await pdfDoc.embedFont(bytes);
     } else {
