@@ -85,8 +85,9 @@ export async function renderCertificatePdf(
   data: CertificateData,
   customFonts: Array<{ name: string; font_url: string }> = [],
 ): Promise<Uint8Array> {
-  // Fetch background image
-  const imgRes = await fetch(template.template_url);
+  // Fetch background image (resolve private bucket → signed URL if needed)
+  const fetchableTemplateUrl = await resolveStorageUrl(template.template_url);
+  const imgRes = await fetch(fetchableTemplateUrl);
   if (!imgRes.ok) throw new Error(`Template image fetch failed: ${imgRes.status}`);
   const imgBytes = new Uint8Array(await imgRes.arrayBuffer());
   const contentType = imgRes.headers.get('content-type') || '';
