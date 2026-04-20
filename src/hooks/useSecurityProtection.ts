@@ -59,16 +59,43 @@ export function useSecurityProtection({ enabled, userId, userEmail, userName }: 
     if (!enabled) return;
 
     // === 1. DevTools Detection ===
-    let devToolsInterval: NodeJS.Timeout;
-    const detectDevTools = () => {
-      const widthThreshold = window.outerWidth - window.innerWidth > 160;
-      const heightThreshold = window.outerHeight - window.innerHeight > 160;
-      if (widthThreshold || heightThreshold) {
-        setIsDevToolsOpen(true);
-        triggerAlert('devtools_open', 'Developer tools detected via window size');
-      }
-    };
-    devToolsInterval = setInterval(detectDevTools, 3000);
+    // Skip entirely on mobile (false positives from URL bar collapse, on-screen keyboard,
+    // viewport resizing, touch debugging tools, WebView chrome).
+    const isMobile =
+      /Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(navigator.userAgent) ||
+      (typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches);
+
+    let devToolsInterval: NodeJS.Timeout | undefined;
+    let lastDevToolsAlert = 0;
+    if (!isMobile) {
+      // Safer detector: when DevTools is open, the browser invokes the `toString` getter
+      // on objects logged to the console. No reliance on window.outerWidth/innerWidth,
+      // which produces false positives during normal video playback / fullscreen.
+      const detectDevTools = () => {
+        // Debounce: at most one alert per 10s
+        if (Date.now() - lastDevToolsAlert < 10000) return;
+
+        let triggered = false;
+        const probe: any = {};
+        Object.defineProperty(probe, 'id', {
+          get() {
+            triggered = true;
+            return '';
+          },
+        });
+        // eslint-disable-next-line no-console
+        console.debug(probe);
+        // eslint-disable-next-line no-console
+        console.clear?.();
+
+        if (triggered) {
+          lastDevToolsAlert = Date.now();
+          setIsDevToolsOpen(true);
+          triggerAlert('devtools_open', 'Developer tools detected. Content protection is active.');
+        }
+      };
+      devToolsInterval = setInterval(detectDevTools, 5000);
+    }
 
     // === 2. Console Protection ===
     const noop = () => {};
@@ -343,7 +370,7 @@ export function useSecurityProtection({ enabled, userId, userEmail, userName }: 
     document.addEventListener('enterpictureinpicture', handlePiP);
 
     return () => {
-      clearInterval(devToolsInterval);
+      if (devToolsInterval) clearInterval(devToolsInterval);
       clearInterval(screenCheckInterval);
       clearTimeout(touchTimer);
       cancelAnimationFrame(fpsRafId);

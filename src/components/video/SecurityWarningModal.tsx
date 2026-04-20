@@ -48,8 +48,8 @@ export function SecurityWarningModal({ isOpen, message, onDismiss }: SecurityWar
               <div className="text-sm">
                 <p className="font-medium text-destructive">{message}</p>
                 <p className="text-muted-foreground mt-2">
-                  Video playback has been paused. This incident has been logged for security purposes.
-                  Continued violations may result in account suspension.
+                  This activity has been logged for security purposes. You can continue watching —
+                  repeated violations may result in account suspension.
                 </p>
               </div>
             </div>
@@ -57,7 +57,7 @@ export function SecurityWarningModal({ isOpen, message, onDismiss }: SecurityWar
         </div>
 
         <Button onClick={onDismiss} variant="outline" className="w-full">
-          I understand — Resume Playback
+          Continue Watching
         </Button>
       </DialogContent>
     </Dialog>
