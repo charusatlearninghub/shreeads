@@ -141,19 +141,28 @@ const AdminCertificateTemplates = () => {
     ...(customFonts || []).map((f) => ({ name: f.name, isCustom: true })),
   ], [customFonts]);
 
-  // Inject @font-face for custom fonts so live preview matches PDF
+  // Inject @font-face for custom fonts so live preview matches PDF.
+  // Fonts live in a private bucket — sign each URL before referencing it.
   useEffect(() => {
     if (!customFonts) return;
-    const styleId = "cert-custom-fonts";
-    let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
-    if (!styleEl) {
-      styleEl = document.createElement("style");
-      styleEl.id = styleId;
-      document.head.appendChild(styleEl);
-    }
-    styleEl.textContent = customFonts.map(
-      (f) => `@font-face { font-family: "${f.name}"; src: url("${f.font_url}") format("truetype"); font-display: swap; }`,
-    ).join("\n");
+    let cancelled = false;
+    (async () => {
+      const signed = await Promise.all(
+        customFonts.map(async (f) => ({ name: f.name, url: (await signStorageUrl(f.font_url)) || f.font_url })),
+      );
+      if (cancelled) return;
+      const styleId = "cert-custom-fonts";
+      let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = styleId;
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = signed.map(
+        (f) => `@font-face { font-family: "${f.name}"; src: url("${f.url}") format("truetype"); font-display: swap; }`,
+      ).join("\n");
+    })();
+    return () => { cancelled = true; };
   }, [customFonts]);
 
   // Load selected template into form
