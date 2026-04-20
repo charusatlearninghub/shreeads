@@ -403,7 +403,7 @@ export function VideoPlayer({
                 refreshUrl();
               }}
             >
-              Try again
+              Retry Video
             </Button>
           )}
         </div>
@@ -476,7 +476,7 @@ export function VideoPlayer({
                     refreshUrl();
                   }}
                 >
-                  Try again
+                  Retry Video
                 </Button>
               </div>
             )}
