@@ -4,6 +4,7 @@ import { SeoHead } from "@/components/common/SeoHead";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeaturesSection } from "@/components/home/FeaturesSection";
 import { CoursesPreview } from "@/components/home/CoursesPreview";
+import { PackagesPreview } from "@/components/home/PackagesPreview";
 import { SoftwarePreview } from "@/components/home/SoftwarePreview";
 import { VideoGalleryPreview } from "@/components/home/VideoGalleryPreview";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
@@ -23,6 +24,7 @@ const Index = () => {
         <HeroSection />
         <FeaturesSection />
         <CoursesPreview />
+        <PackagesPreview />
         <SoftwarePreview />
         <VideoGalleryPreview />
         <TestimonialsSection />

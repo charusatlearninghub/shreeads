@@ -22,6 +22,7 @@ import {
   UserCheck,
   Megaphone,
   FileImage,
+  Share2,
   X
 } from 'lucide-react';
 import { AdminNotifications } from './AdminNotifications';
@@ -58,6 +59,15 @@ const sidebarGroups: SidebarGroup[] = [
     items: [
       { icon: Package, label: 'Software', href: '/admin/software' },
       { icon: Ticket, label: 'Software Promo Codes', href: '/admin/software-promo-codes' },
+    ],
+  },
+  {
+    label: 'Packages',
+    icon: Package,
+    items: [
+      { icon: Package, label: 'Packages', href: '/admin/packages' },
+      { icon: Ticket, label: 'Package Promo Codes', href: '/admin/package-promo-codes' },
+      { icon: Share2, label: 'Affiliates', href: '/admin/affiliates' },
     ],
   },
   {
