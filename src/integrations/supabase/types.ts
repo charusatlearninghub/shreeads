@@ -14,6 +14,118 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_sales: {
+        Row: {
+          affiliate_id: string
+          commission_amount: number
+          commission_percent: number
+          created_at: string
+          id: string
+          package_id: string
+          package_purchase_id: string | null
+          paid_at: string | null
+          sale_amount: number
+          status: Database["public"]["Enums"]["affiliate_sale_status"]
+          user_id: string
+        }
+        Insert: {
+          affiliate_id: string
+          commission_amount?: number
+          commission_percent?: number
+          created_at?: string
+          id?: string
+          package_id: string
+          package_purchase_id?: string | null
+          paid_at?: string | null
+          sale_amount?: number
+          status?: Database["public"]["Enums"]["affiliate_sale_status"]
+          user_id: string
+        }
+        Update: {
+          affiliate_id?: string
+          commission_amount?: number
+          commission_percent?: number
+          created_at?: string
+          id?: string
+          package_id?: string
+          package_purchase_id?: string | null
+          paid_at?: string | null
+          sale_amount?: number
+          status?: Database["public"]["Enums"]["affiliate_sale_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_sales_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_sales_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_sales_package_purchase_id_fkey"
+            columns: ["package_purchase_id"]
+            isOneToOne: false
+            referencedRelation: "package_purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          applied_at: string
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          id: string
+          paid_earnings: number
+          pending_earnings: number
+          referral_code: string
+          status: Database["public"]["Enums"]["affiliate_status"]
+          total_earnings: number
+          total_sales: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          paid_earnings?: number
+          pending_earnings?: number
+          referral_code: string
+          status?: Database["public"]["Enums"]["affiliate_status"]
+          total_earnings?: number
+          total_sales?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applied_at?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          paid_earnings?: number
+          pending_earnings?: number
+          referral_code?: string
+          status?: Database["public"]["Enums"]["affiliate_status"]
+          total_earnings?: number
+          total_sales?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       certificate_fonts: {
         Row: {
           created_at: string
@@ -342,6 +454,178 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      package_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          item_type: Database["public"]["Enums"]["package_item_type"]
+          package_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: Database["public"]["Enums"]["package_item_type"]
+          package_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: Database["public"]["Enums"]["package_item_type"]
+          package_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_items_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      package_promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_used: boolean
+          package_id: string
+          promo_price: number
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean
+          package_id: string
+          promo_price?: number
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean
+          package_id?: string
+          promo_price?: number
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_promo_codes_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      package_purchases: {
+        Row: {
+          affiliate_id: string | null
+          amount_paid: number
+          id: string
+          original_price: number
+          package_id: string
+          promo_code: string | null
+          promo_code_id: string | null
+          purchased_at: string
+          user_id: string
+        }
+        Insert: {
+          affiliate_id?: string | null
+          amount_paid?: number
+          id?: string
+          original_price?: number
+          package_id: string
+          promo_code?: string | null
+          promo_code_id?: string | null
+          purchased_at?: string
+          user_id: string
+        }
+        Update: {
+          affiliate_id?: string | null
+          amount_paid?: number
+          id?: string
+          original_price?: number
+          package_id?: string
+          promo_code?: string | null
+          promo_code_id?: string | null
+          purchased_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_purchases_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_purchases_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "package_promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packages: {
+        Row: {
+          affiliate_commission_percent: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          original_price: number
+          price: number
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          affiliate_commission_percent?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          original_price?: number
+          price?: number
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          affiliate_commission_percent?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          original_price?: number
+          price?: number
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       platform_settings: {
         Row: {
@@ -1106,6 +1390,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_as_affiliate: {
+        Args: never
+        Returns: {
+          applied_at: string
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          id: string
+          paid_earnings: number
+          pending_earnings: number
+          referral_code: string
+          status: Database["public"]["Enums"]["affiliate_status"]
+          total_earnings: number
+          total_sales: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "affiliates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cleanup_old_software_downloads: { Args: never; Returns: number }
       cleanup_old_software_downloads_scheduled: { Args: never; Returns: number }
       generate_certificate_number: { Args: never; Returns: string }
@@ -1127,6 +1435,7 @@ export type Database = {
           promotion_name: string
         }[]
       }
+      get_affiliate_by_code: { Args: { _code: string }; Returns: string }
       has_completed_course: {
         Args: { _course_id: string; _user_id: string }
         Returns: boolean
@@ -1151,9 +1460,20 @@ export type Database = {
         Args: { _lesson_id: string; _user_id: string }
         Returns: boolean
       }
+      mark_affiliate_sale_paid: {
+        Args: { _sale_id: string }
+        Returns: undefined
+      }
+      redeem_package_promo: {
+        Args: { _code: string; _referral_code?: string }
+        Returns: Json
+      }
     }
     Enums: {
+      affiliate_sale_status: "pending" | "paid" | "rejected"
+      affiliate_status: "pending" | "approved" | "rejected"
       app_role: "admin" | "student"
+      package_item_type: "course" | "software"
       software_file_type:
         | "apk"
         | "exe"
@@ -1291,7 +1611,10 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      affiliate_sale_status: ["pending", "paid", "rejected"],
+      affiliate_status: ["pending", "approved", "rejected"],
       app_role: ["admin", "student"],
+      package_item_type: ["course", "software"],
       software_file_type: [
         "apk",
         "exe",
