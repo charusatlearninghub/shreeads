@@ -40,8 +40,10 @@ const sidebarGroups: SidebarGroup[] = [
   items: [
   { icon: BookOpen, label: "My Courses", href: "/dashboard/courses" },
   { icon: Package, label: "My Software", href: "/dashboard/software" },
+  { icon: PackageOpen, label: "My Packages", href: "/dashboard/packages" },
   { icon: Folder, label: "Browse Courses", href: "/courses" },
-  { icon: PackageOpen, label: "Browse Software", href: "/software" }]
+  { icon: PackageOpen, label: "Browse Software", href: "/software" },
+  { icon: Package, label: "Browse Packages", href: "/packages" }]
 
 },
 {
@@ -53,7 +55,8 @@ const sidebarGroups: SidebarGroup[] = [
 {
   label: 'Community',
   items: [
-  { icon: Share2, label: "Referrals", href: "/dashboard/referrals" }]
+  { icon: Share2, label: "Referrals", href: "/dashboard/referrals" },
+  { icon: Share2, label: "Affiliate", href: "/dashboard/affiliate" }]
 
 },
 {
