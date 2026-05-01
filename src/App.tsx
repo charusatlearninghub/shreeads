@@ -49,6 +49,13 @@ import MySoftware from "./pages/dashboard/MySoftware";
 import Videos from "./pages/Videos";
 import AdminVideos from "./pages/admin/AdminVideos";
 import HelpCenter from "./pages/HelpCenter";
+import Packages from "./pages/Packages";
+import PackageDetail from "./pages/PackageDetail";
+import MyPackages from "./pages/dashboard/MyPackages";
+import Affiliate from "./pages/dashboard/Affiliate";
+import AdminPackages from "./pages/admin/AdminPackages";
+import AdminPackagePromoCodes from "./pages/admin/AdminPackagePromoCodes";
+import AdminAffiliates from "./pages/admin/AdminAffiliates";
 import FAQs from "./pages/FAQs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -78,6 +85,8 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
               <Route path="/videos" element={<Videos />} />
+              <Route path="/packages" element={<Packages />} />
+              <Route path="/packages/:packageId" element={<PackageDetail />} />
               <Route path="/verify-certificate" element={<VerifyCertificate />} />
               <Route path="/help-center" element={<HelpCenter />} />
               <Route path="/faqs" element={<FAQs />} />
@@ -141,6 +150,22 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <MySoftware />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/packages"
+                element={
+                  <ProtectedRoute>
+                    <MyPackages />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/affiliate"
+                element={
+                  <ProtectedRoute>
+                    <Affiliate />
                   </ProtectedRoute>
                 }
               />
@@ -286,6 +311,30 @@ const App = () => (
                 element={
                   <ProtectedRoute requireAdmin>
                     <AdminSecurityIncidents />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/packages"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminPackages />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/package-promo-codes"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminPackagePromoCodes />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/affiliates"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminAffiliates />
                   </ProtectedRoute>
                 }
               />
