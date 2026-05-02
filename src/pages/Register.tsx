@@ -10,29 +10,77 @@ import { useAuth } from "@/contexts/AuthContext";
 import { lovable } from "@/integrations/lovable";
 import { isNativePlatform, handleNativeOAuth } from "@/lib/native-oauth";
 import { supabase } from "@/integrations/supabase/client";
-import { getDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
+
+async function quickFingerprint(): Promise<string> {
+  try {
+    const parts = [navigator.userAgent, navigator.language, screen.width + 'x' + screen.height, new Date().getTimezoneOffset(), navigator.platform].join('|');
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(parts));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch { return ''; }
+}
 import logo from "@/assets/new-logo.png";
 
 const Register = () => {
+  const [searchParams] = useSearchParams();
+  const prefilledRef = (searchParams.get("ref") || "").toUpperCase();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
     confirmPassword: "",
-    referralCode: "",
+    referralCode: prefilledRef,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
+
+  // Referral validation
+  const [refStatus, setRefStatus] = useState<"idle" | "checking" | "valid" | "invalid">(prefilledRef ? "checking" : "idle");
+  const [refSponsorName, setRefSponsorName] = useState<string>("");
+  const [refError, setRefError] = useState<string>("");
+
   const { toast } = useToast();
   const navigate = useNavigate();
   const { signUp } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: name === "referralCode" ? value.toUpperCase() : value }));
+    if (name === "referralCode") {
+      setRefStatus("idle");
+      setRefSponsorName("");
+      setRefError("");
+    }
   };
+
+  // Debounced referral validation
+  useEffect(() => {
+    const code = formData.referralCode.trim();
+    if (!code) { setRefStatus("idle"); return; }
+    setRefStatus("checking");
+    const t = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.rpc("validate_referral_code", { _code: code });
+        if (error) throw error;
+        const result = data as any;
+        if (result?.valid) {
+          setRefStatus("valid");
+          setRefSponsorName(result.sponsor_name || "");
+          setRefError("");
+        } else {
+          setRefStatus("invalid");
+          setRefError(result?.error || "Invalid referral code");
+        }
+      } catch (e: any) {
+        setRefStatus("invalid");
+        setRefError("Could not verify referral code. Please try again.");
+      }
+    }, 450);
+    return () => clearTimeout(t);
+  }, [formData.referralCode]);
 
   const validateForm = () => {
     if (!formData.name.trim()) {
