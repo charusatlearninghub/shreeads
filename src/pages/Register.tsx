@@ -119,6 +119,24 @@ const Register = () => {
       return false;
     }
 
+    if (!formData.referralCode.trim()) {
+      toast({
+        title: "Referral code required",
+        description: "You need a sponsor's referral code to create an account.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (refStatus !== "valid") {
+      toast({
+        title: "Invalid referral code",
+        description: refError || "Please enter a valid sponsor code.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     return true;
   };
 
@@ -128,14 +146,26 @@ const Register = () => {
     if (!validateForm()) return;
     
     setIsLoading(true);
+
+    const fp = await quickFingerprint();
+    const refCode = formData.referralCode.trim().toUpperCase();
     
     const { error } = await signUp(
       formData.email.trim(),
       formData.password,
       formData.name.trim(),
-      formData.referralCode.trim() || undefined,
+      refCode,
       formData.phone.trim() || undefined
     );
+    
+    // Log signup attempt (best-effort, ignore errors)
+    supabase.from("signup_attempts").insert({
+      email: formData.email.trim().toLowerCase(),
+      device_fingerprint: fp || null,
+      referral_code: refCode,
+      success: !error,
+      reason: error?.message || null,
+    }).then(() => {}, () => {});
     
     setIsLoading(false);
     
@@ -149,10 +179,10 @@ const Register = () => {
     }
     
     toast({
-      title: "Account Created!",
-      description: "Welcome to SHREE ADS Learning. You can now log in.",
+      title: "Check your email",
+      description: "We sent you a confirmation link. Verify your email to activate your account.",
     });
-    navigate("/dashboard");
+    navigate("/login");
   };
 
   const handleGoogleSignIn = async () => {
