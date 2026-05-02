@@ -351,6 +351,10 @@ const AdminUsers = () => {
                         ) : (
                           <DropdownMenuItem onClick={() => handleUpdateRole(user.id, 'student')}><UserX className="w-4 h-4 mr-2" /> Remove Admin</DropdownMenuItem>
                         )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteTarget(user)}>
+                          <Trash2 className="w-4 h-4 mr-2" /> Delete User
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   }
