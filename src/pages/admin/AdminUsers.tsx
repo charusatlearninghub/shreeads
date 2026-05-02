@@ -68,6 +68,38 @@ const AdminUsers = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userDevices, setUserDevices] = useState<DeviceRegistration[]>([]);
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteUser = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/admin-delete-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token ?? ''}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ user_id: deleteTarget.id }),
+        }
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to delete user');
+
+      setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
+      toast({ title: 'User deleted', description: `${deleteTarget.full_name || deleteTarget.email} has been removed.` });
+      setDeleteTarget(null);
+    } catch (e: any) {
+      toast({ title: 'Delete failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
