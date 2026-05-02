@@ -68,6 +68,7 @@ const sidebarGroups: SidebarGroup[] = [
       { icon: Package, label: 'Packages', href: '/admin/packages' },
       { icon: Ticket, label: 'Package Promo Codes', href: '/admin/package-promo-codes' },
       { icon: Share2, label: 'Affiliates', href: '/admin/affiliates' },
+      { icon: Share2, label: 'Affiliate Network', href: '/admin/affiliate-network' },
     ],
   },
   {
