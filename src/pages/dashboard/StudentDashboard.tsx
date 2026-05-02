@@ -26,6 +26,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePromoCode } from "@/hooks/usePromoCode";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { SponsorCard } from "@/components/dashboard/SponsorCard";
 import { LegalAgreementNote } from "@/components/common/LegalAgreementNote";
 
 interface Enrollment {
@@ -227,6 +228,11 @@ const StudentDashboard = () => {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Sponsor */}
+      <div className="mb-6">
+        <SponsorCard />
+      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

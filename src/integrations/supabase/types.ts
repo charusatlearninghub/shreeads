@@ -455,6 +455,42 @@ export type Database = {
           },
         ]
       }
+      master_referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          label: string | null
+          max_uses: number | null
+          use_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          max_uses?: number | null
+          use_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          max_uses?: number | null
+          use_count?: number
+        }
+        Relationships: []
+      }
       package_items: {
         Row: {
           created_at: string
@@ -706,6 +742,8 @@ export type Database = {
           full_name: string | null
           id: string
           phone: string | null
+          referral_code_used: string | null
+          sponsor_id: string | null
           updated_at: string
         }
         Insert: {
@@ -715,6 +753,8 @@ export type Database = {
           full_name?: string | null
           id: string
           phone?: string | null
+          referral_code_used?: string | null
+          sponsor_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -724,6 +764,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          referral_code_used?: string | null
+          sponsor_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1060,6 +1102,39 @@ export type Database = {
           ip_address?: string | null
           user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      signup_attempts: {
+        Row: {
+          created_at: string
+          device_fingerprint: string | null
+          email: string | null
+          id: string
+          ip_address: string | null
+          reason: string | null
+          referral_code: string | null
+          success: boolean
+        }
+        Insert: {
+          created_at?: string
+          device_fingerprint?: string | null
+          email?: string | null
+          id?: string
+          ip_address?: string | null
+          reason?: string | null
+          referral_code?: string | null
+          success?: boolean
+        }
+        Update: {
+          created_at?: string
+          device_fingerprint?: string | null
+          email?: string | null
+          id?: string
+          ip_address?: string | null
+          reason?: string | null
+          referral_code?: string | null
+          success?: boolean
         }
         Relationships: []
       }
@@ -1436,6 +1511,17 @@ export type Database = {
         }[]
       }
       get_affiliate_by_code: { Args: { _code: string }; Returns: string }
+      get_affiliate_network_stats: { Args: never; Returns: Json }
+      get_my_sponsor: { Args: never; Returns: Json }
+      get_top_sponsors: {
+        Args: { _limit?: number }
+        Returns: {
+          referral_count: number
+          sponsor_email: string
+          sponsor_id: string
+          sponsor_name: string
+        }[]
+      }
       has_completed_course: {
         Args: { _course_id: string; _user_id: string }
         Returns: boolean
@@ -1468,6 +1554,7 @@ export type Database = {
         Args: { _code: string; _referral_code?: string }
         Returns: Json
       }
+      validate_referral_code: { Args: { _code: string }; Returns: Json }
     }
     Enums: {
       affiliate_sale_status: "pending" | "paid" | "rejected"

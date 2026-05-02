@@ -56,6 +56,7 @@ import Affiliate from "./pages/dashboard/Affiliate";
 import AdminPackages from "./pages/admin/AdminPackages";
 import AdminPackagePromoCodes from "./pages/admin/AdminPackagePromoCodes";
 import AdminAffiliates from "./pages/admin/AdminAffiliates";
+import AdminAffiliateNetwork from "./pages/admin/AdminAffiliateNetwork";
 import FAQs from "./pages/FAQs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -335,6 +336,14 @@ const App = () => (
                 element={
                   <ProtectedRoute requireAdmin>
                     <AdminAffiliates />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/affiliate-network"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminAffiliateNetwork />
                   </ProtectedRoute>
                 }
               />
