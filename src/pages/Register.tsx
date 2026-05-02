@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Phone, Loader2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Phone, Loader2, CheckCircle2, XCircle, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { lovable } from "@/integrations/lovable";
 import { isNativePlatform, handleNativeOAuth } from "@/lib/native-oauth";
+import { supabase } from "@/integrations/supabase/client";
+import { getDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
 import logo from "@/assets/new-logo.png";
 
 const Register = () => {
