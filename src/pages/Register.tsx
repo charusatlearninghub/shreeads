@@ -463,16 +463,40 @@ const Register = () => {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
-                    Referral Code <span className="text-muted-foreground">(Optional)</span>
+                    Referral Code <span className="text-destructive">*</span>
                   </label>
-                  <Input
-                    type="text"
-                    name="referralCode"
-                    placeholder="Enter referral code if you have one"
-                    value={formData.referralCode}
-                    onChange={handleChange}
-                    disabled={isLoading}
-                  />
+                  <div className="relative">
+                    <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      name="referralCode"
+                      placeholder="Enter your sponsor's referral code"
+                      value={formData.referralCode}
+                      onChange={handleChange}
+                      className="pl-12 pr-10 uppercase"
+                      required
+                      disabled={isLoading}
+                      autoComplete="off"
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {refStatus === "checking" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                      {refStatus === "valid" && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                      {refStatus === "invalid" && <XCircle className="w-4 h-4 text-destructive" />}
+                    </div>
+                  </div>
+                  {refStatus === "valid" && (
+                    <p className="text-xs text-green-600 dark:text-green-400">
+                      ✓ Sponsor: <span className="font-semibold">{refSponsorName}</span>
+                    </p>
+                  )}
+                  {refStatus === "invalid" && (
+                    <p className="text-xs text-destructive">{refError}</p>
+                  )}
+                  {refStatus === "idle" && (
+                    <p className="text-xs text-muted-foreground">
+                      A valid sponsor referral code is required to sign up.
+                    </p>
+                  )}
                 </div>
 
                 <Button 
