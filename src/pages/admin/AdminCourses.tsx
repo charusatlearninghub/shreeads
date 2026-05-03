@@ -752,6 +752,21 @@ const AdminCourses = () => {
         )}
       </div>
 
+      {/* Affiliate commission */}
+      <div className="space-y-2 p-4 rounded-lg border bg-secondary/30">
+        <Label htmlFor="form-affiliate-commission" className="text-base font-medium flex items-center gap-2">
+          <Percent className="w-4 h-4" /> Affiliate Commission (%)
+        </Label>
+        <p className="text-xs text-muted-foreground">Percent paid to approved affiliates when this course is purchased via their referral link. Set 0 to disable.</p>
+        <Input
+          id="form-affiliate-commission"
+          type="number" min="0" max="100" step="0.1"
+          value={formAffiliateCommission}
+          onChange={(e) => setFormAffiliateCommission(e.target.value)}
+          placeholder="e.g. 25"
+        />
+      </div>
+
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Switch
