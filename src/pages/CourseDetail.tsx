@@ -25,6 +25,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourseProgress } from '@/hooks/useLessonProgress';
 import { usePromoCode } from '@/hooks/usePromoCode';
+import { useAffiliateRefCapture, getStoredAffiliateRef } from '@/hooks/useAffiliateRef';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CourseReviewForm } from '@/components/course/CourseReviewForm';
@@ -62,6 +63,7 @@ interface LessonProgress {
 }
 
 const CourseDetail = () => {
+  useAffiliateRefCapture();
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -73,9 +75,11 @@ const CourseDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showPromoDialog, setShowPromoDialog] = useState(false);
   const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [inlinePromoCode, setInlinePromoCode] = useState('');
   const { getCourseProgress } = useCourseProgress(courseId || '');
   const [progress, setProgress] = useState<{ completedCount: number; totalCount: number; percentage: number } | null>(null);
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
+  const storedRef = typeof window !== 'undefined' ? getStoredAffiliateRef() : null;
 
   useEffect(() => {
     const fetchCourseData = async () => {
