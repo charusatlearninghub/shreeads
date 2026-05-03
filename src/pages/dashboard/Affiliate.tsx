@@ -15,9 +15,12 @@ interface Affiliate {
   total_earnings: number; total_sales: number; pending_earnings: number; paid_earnings: number;
 }
 interface SaleRow {
-  id: string; package_id: string; sale_amount: number; commission_amount: number;
+  id: string; package_id: string | null; course_id: string | null;
+  sale_type: "course" | "package"; product_name: string | null;
+  sale_amount: number; commission_amount: number;
   status: "pending" | "paid" | "rejected"; created_at: string;
-  packages?: { name: string };
+  packages?: { name: string } | null;
+  courses?: { title: string } | null;
 }
 
 export default function Affiliate() {
@@ -38,10 +41,10 @@ export default function Affiliate() {
     if (aff) {
       const { data: s } = await supabase
         .from("affiliate_sales")
-        .select("id, package_id, sale_amount, commission_amount, status, created_at, packages(name)")
+        .select("id, package_id, course_id, sale_type, product_name, sale_amount, commission_amount, status, created_at, packages(name), courses(title)")
         .eq("affiliate_id", aff.id)
         .order("created_at", { ascending: false });
-      setSales((s || []) as SaleRow[]);
+      setSales((s || []) as unknown as SaleRow[]);
     }
     setLoading(false);
   }
