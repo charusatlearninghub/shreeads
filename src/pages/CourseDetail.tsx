@@ -145,15 +145,25 @@ const CourseDetail = () => {
     fetchCourseData();
   }, [courseId, user, getCourseProgress]);
 
-  const handleRedeemCode = async () => {
-    const result = await redeemPromoCode(promoCodeInput);
+  const handleRedeemCode = async (codeOverride?: string) => {
+    const code = (codeOverride ?? promoCodeInput).trim();
+    if (!code) return;
+    const result = await redeemPromoCode(code);
     if (result?.success) {
       setShowPromoDialog(false);
       setPromoCodeInput('');
+      setInlinePromoCode('');
       setIsEnrolled(true);
-      // Refresh the page data
       window.location.reload();
     }
+  };
+
+  const handleInlineRedeem = async () => {
+    if (!user) {
+      navigate('/login', { state: { from: `/course/${courseId}` } });
+      return;
+    }
+    await handleRedeemCode(inlinePromoCode);
   };
 
   const formatDuration = (seconds: number) => {
