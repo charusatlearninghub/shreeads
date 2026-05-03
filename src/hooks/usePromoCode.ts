@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getStoredAffiliateRef, clearStoredAffiliateRef } from '@/hooks/useAffiliateRef';
 
 interface RedeemResult {
   success: boolean;
@@ -45,8 +46,9 @@ export function usePromoCode() {
         return null;
       }
 
+      const ref = getStoredAffiliateRef();
       const response = await supabase.functions.invoke('redeem-promo-code', {
-        body: { code: code.trim() },
+        body: { code: code.trim(), referral_code: ref ?? null },
       });
 
       // Handle edge function errors
@@ -76,6 +78,7 @@ export function usePromoCode() {
             original_price: result.enrollment.original_price,
           });
         }
+        if (result.affiliate_credited) clearStoredAffiliateRef();
         toast({
           title: 'Success!',
           description: result.message,

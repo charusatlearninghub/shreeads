@@ -70,6 +70,7 @@ interface Course {
   price: number | null;
   discount_price: number | null;
   is_free: boolean | null;
+  affiliate_commission_percent?: number | null;
   _count?: { lessons: number; enrollments: number };
 }
 
@@ -203,6 +204,7 @@ const AdminCourses = () => {
   const [formPrice, setFormPrice] = useState('');
   const [formDiscountPrice, setFormDiscountPrice] = useState('');
   const [formIsFree, setFormIsFree] = useState(true);
+  const [formAffiliateCommission, setFormAffiliateCommission] = useState('');
 
   // Lesson form state
   const [lessonTitle, setLessonTitle] = useState('');
@@ -266,6 +268,7 @@ const AdminCourses = () => {
     setFormPrice('');
     setFormDiscountPrice('');
     setFormIsFree(true);
+    setFormAffiliateCommission('');
   }, []);
 
   const loadCourseForm = useCallback((course: Course) => {
@@ -278,6 +281,7 @@ const AdminCourses = () => {
     setFormPrice(course.price?.toString() || '');
     setFormDiscountPrice(course.discount_price?.toString() || '');
     setFormIsFree(course.is_free ?? true);
+    setFormAffiliateCommission(course.affiliate_commission_percent?.toString() || '');
   }, []);
 
   const resetLessonForm = useCallback(() => {
@@ -301,6 +305,7 @@ const AdminCourses = () => {
       price: formIsFree ? 0 : parseFloat(formPrice) || 0,
       discount_price: formDiscountPrice ? parseFloat(formDiscountPrice) : null,
       is_free: formIsFree,
+      affiliate_commission_percent: Math.max(0, Math.min(100, parseFloat(formAffiliateCommission) || 0)),
     };
 
     try {
@@ -745,6 +750,21 @@ const AdminCourses = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Affiliate commission */}
+      <div className="space-y-2 p-4 rounded-lg border bg-secondary/30">
+        <Label htmlFor="form-affiliate-commission" className="text-base font-medium flex items-center gap-2">
+          <Percent className="w-4 h-4" /> Affiliate Commission (%)
+        </Label>
+        <p className="text-xs text-muted-foreground">Percent paid to approved affiliates when this course is purchased via their referral link. Set 0 to disable.</p>
+        <Input
+          id="form-affiliate-commission"
+          type="number" min="0" max="100" step="0.1"
+          value={formAffiliateCommission}
+          onChange={(e) => setFormAffiliateCommission(e.target.value)}
+          placeholder="e.g. 25"
+        />
       </div>
 
       <div className="flex items-center gap-4">

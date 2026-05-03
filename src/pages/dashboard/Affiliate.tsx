@@ -15,9 +15,12 @@ interface Affiliate {
   total_earnings: number; total_sales: number; pending_earnings: number; paid_earnings: number;
 }
 interface SaleRow {
-  id: string; package_id: string; sale_amount: number; commission_amount: number;
+  id: string; package_id: string | null; course_id: string | null;
+  sale_type: "course" | "package"; product_name: string | null;
+  sale_amount: number; commission_amount: number;
   status: "pending" | "paid" | "rejected"; created_at: string;
-  packages?: { name: string };
+  packages?: { name: string } | null;
+  courses?: { title: string } | null;
 }
 
 export default function Affiliate() {
@@ -38,10 +41,10 @@ export default function Affiliate() {
     if (aff) {
       const { data: s } = await supabase
         .from("affiliate_sales")
-        .select("id, package_id, sale_amount, commission_amount, status, created_at, packages(name)")
+        .select("id, package_id, course_id, sale_type, product_name, sale_amount, commission_amount, status, created_at, packages(name), courses(title)")
         .eq("affiliate_id", aff.id)
         .order("created_at", { ascending: false });
-      setSales((s || []) as SaleRow[]);
+      setSales((s || []) as unknown as SaleRow[]);
     }
     setLoading(false);
   }
@@ -159,7 +162,8 @@ export default function Affiliate() {
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
-              <TableHead>Package</TableHead>
+              <TableHead>Product</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Sale</TableHead>
               <TableHead>Commission</TableHead>
               <TableHead>Status</TableHead>
@@ -167,23 +171,32 @@ export default function Affiliate() {
           </TableHeader>
           <TableBody>
             {sales.length === 0 && (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-10">
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">
                 No sales yet — share your link to start earning.
               </TableCell></TableRow>
             )}
-            {sales.map(s => (
-              <TableRow key={s.id}>
-                <TableCell className="text-sm">{format(new Date(s.created_at), "dd MMM yyyy")}</TableCell>
-                <TableCell>{s.packages?.name || "—"}</TableCell>
-                <TableCell>₹{Number(s.sale_amount).toLocaleString("en-IN")}</TableCell>
-                <TableCell className="font-medium">₹{Number(s.commission_amount).toLocaleString("en-IN")}</TableCell>
-                <TableCell>
-                  <Badge variant={s.status === "paid" ? "default" : s.status === "pending" ? "secondary" : "destructive"}>
-                    {s.status}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
+            {sales.map(s => {
+              const name = s.product_name || s.packages?.name || s.courses?.title || "—";
+              const isCourse = s.sale_type === "course";
+              return (
+                <TableRow key={s.id}>
+                  <TableCell className="text-sm">{format(new Date(s.created_at), "dd MMM yyyy")}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">{name}</TableCell>
+                  <TableCell>
+                    <Badge variant={isCourse ? "outline" : "secondary"}>
+                      {isCourse ? "Course" : "Package"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>₹{Number(s.sale_amount).toLocaleString("en-IN")}</TableCell>
+                  <TableCell className="font-medium">₹{Number(s.commission_amount).toLocaleString("en-IN")}</TableCell>
+                  <TableCell>
+                    <Badge variant={s.status === "paid" ? "default" : s.status === "pending" ? "secondary" : "destructive"}>
+                      {s.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent></Card>

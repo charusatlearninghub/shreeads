@@ -19,12 +19,16 @@ export type Database = {
           affiliate_id: string
           commission_amount: number
           commission_percent: number
+          course_id: string | null
           created_at: string
+          enrollment_id: string | null
           id: string
-          package_id: string
+          package_id: string | null
           package_purchase_id: string | null
           paid_at: string | null
+          product_name: string | null
           sale_amount: number
+          sale_type: string
           status: Database["public"]["Enums"]["affiliate_sale_status"]
           user_id: string
         }
@@ -32,12 +36,16 @@ export type Database = {
           affiliate_id: string
           commission_amount?: number
           commission_percent?: number
+          course_id?: string | null
           created_at?: string
+          enrollment_id?: string | null
           id?: string
-          package_id: string
+          package_id?: string | null
           package_purchase_id?: string | null
           paid_at?: string | null
+          product_name?: string | null
           sale_amount?: number
+          sale_type?: string
           status?: Database["public"]["Enums"]["affiliate_sale_status"]
           user_id: string
         }
@@ -45,12 +53,16 @@ export type Database = {
           affiliate_id?: string
           commission_amount?: number
           commission_percent?: number
+          course_id?: string | null
           created_at?: string
+          enrollment_id?: string | null
           id?: string
-          package_id?: string
+          package_id?: string | null
           package_purchase_id?: string | null
           paid_at?: string | null
+          product_name?: string | null
           sale_amount?: number
+          sale_type?: string
           status?: Database["public"]["Enums"]["affiliate_sale_status"]
           user_id?: string
         }
@@ -234,6 +246,7 @@ export type Database = {
       }
       courses: {
         Row: {
+          affiliate_commission_percent: number
           category: string | null
           created_at: string
           created_by: string | null
@@ -249,6 +262,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          affiliate_commission_percent?: number
           category?: string | null
           created_at?: string
           created_by?: string | null
@@ -264,6 +278,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          affiliate_commission_percent?: number
           category?: string | null
           created_at?: string
           created_by?: string | null
@@ -1512,6 +1527,7 @@ export type Database = {
       }
       get_affiliate_by_code: { Args: { _code: string }; Returns: string }
       get_affiliate_network_stats: { Args: never; Returns: Json }
+      get_my_referrals_detail: { Args: never; Returns: Json }
       get_my_sponsor: { Args: never; Returns: Json }
       get_top_sponsors: {
         Args: { _limit?: number }
@@ -1549,6 +1565,16 @@ export type Database = {
       mark_affiliate_sale_paid: {
         Args: { _sale_id: string }
         Returns: undefined
+      }
+      record_course_affiliate_sale: {
+        Args: {
+          _course_id: string
+          _enrollment_id: string
+          _referral_code: string
+          _sale_amount: number
+          _user_id: string
+        }
+        Returns: string
       }
       redeem_package_promo: {
         Args: { _code: string; _referral_code?: string }

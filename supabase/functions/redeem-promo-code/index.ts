@@ -7,6 +7,7 @@ const corsHeaders = {
 
 interface RedeemRequest {
   code: string;
+  referral_code?: string | null;
 }
 
 function parseMoney(v: unknown): number {
@@ -62,7 +63,7 @@ Deno.serve(async (req) => {
 
     const user = { id: authUser.id };
 
-    const { code }: RedeemRequest = await req.json();
+    const { code, referral_code }: RedeemRequest = await req.json();
 
     if (!code || typeof code !== 'string') {
       return new Response(
@@ -399,10 +400,35 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Affiliate commission for course (best-effort, never blocks enrollment)
+    let affiliateCredited = false;
+    let commissionAmount = 0;
+    try {
+      if (referral_code && finalPricePaid > 0) {
+        const { data: aff } = await supabaseClient.rpc('record_course_affiliate_sale', {
+          _user_id: user.id,
+          _course_id: promoCode.course_id,
+          _enrollment_id: enrollment.id,
+          _referral_code: referral_code,
+          _sale_amount: finalPricePaid,
+        });
+        if (aff) {
+          affiliateCredited = true;
+          const { data: row } = await supabaseClient
+            .from('affiliate_sales').select('commission_amount').eq('id', aff).maybeSingle();
+          commissionAmount = parseMoney(row?.commission_amount);
+        }
+      }
+    } catch (e) {
+      console.error('[redeem-promo-code] affiliate credit failed:', e);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         message: 'Successfully enrolled in course',
+        affiliate_credited: affiliateCredited,
+        commission_amount: commissionAmount,
         enrollment: {
           id: enrollment.id,
           course: singleEmbed(

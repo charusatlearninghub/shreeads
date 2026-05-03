@@ -25,6 +25,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourseProgress } from '@/hooks/useLessonProgress';
 import { usePromoCode } from '@/hooks/usePromoCode';
+import { useAffiliateRefCapture, getStoredAffiliateRef } from '@/hooks/useAffiliateRef';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CourseReviewForm } from '@/components/course/CourseReviewForm';
@@ -62,6 +63,7 @@ interface LessonProgress {
 }
 
 const CourseDetail = () => {
+  useAffiliateRefCapture();
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -73,9 +75,11 @@ const CourseDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showPromoDialog, setShowPromoDialog] = useState(false);
   const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [inlinePromoCode, setInlinePromoCode] = useState('');
   const { getCourseProgress } = useCourseProgress(courseId || '');
   const [progress, setProgress] = useState<{ completedCount: number; totalCount: number; percentage: number } | null>(null);
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
+  const storedRef = typeof window !== 'undefined' ? getStoredAffiliateRef() : null;
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -141,15 +145,25 @@ const CourseDetail = () => {
     fetchCourseData();
   }, [courseId, user, getCourseProgress]);
 
-  const handleRedeemCode = async () => {
-    const result = await redeemPromoCode(promoCodeInput);
+  const handleRedeemCode = async (codeOverride?: string) => {
+    const code = (codeOverride ?? promoCodeInput).trim();
+    if (!code) return;
+    const result = await redeemPromoCode(code);
     if (result?.success) {
       setShowPromoDialog(false);
       setPromoCodeInput('');
+      setInlinePromoCode('');
       setIsEnrolled(true);
-      // Refresh the page data
       window.location.reload();
     }
+  };
+
+  const handleInlineRedeem = async () => {
+    if (!user) {
+      navigate('/login', { state: { from: `/course/${courseId}` } });
+      return;
+    }
+    await handleRedeemCode(inlinePromoCode);
   };
 
   const formatDuration = (seconds: number) => {
@@ -319,9 +333,9 @@ const CourseDetail = () => {
 
                     {isEnrolled ? (
                       <>
-                        <Button 
-                          variant="hero" 
-                          size="lg" 
+                        <Button
+                          variant="hero"
+                          size="lg"
                           className="w-full mb-4"
                           onClick={() => {
                             const nextLesson = getNextLesson();
@@ -339,59 +353,63 @@ const CourseDetail = () => {
                       </>
                     ) : (
                       <>
-                        <div className="text-center mb-6">
-                          <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                            <Ticket className="w-8 h-8 text-primary" />
-                          </div>
-                          <p className="text-muted-foreground">
-                            Enroll with a promo code
-                          </p>
+                        {/* Inline promo input — same UX as Package page */}
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Have a promo code? Enter it below to enroll instantly.
+                        </p>
+                        <div className="flex gap-2">
+                          <Input
+                            value={inlinePromoCode}
+                            onChange={(e) => setInlinePromoCode(e.target.value.toUpperCase())}
+                            placeholder="PROMO-XXXXXX"
+                            className="font-mono"
+                            disabled={isRedeeming}
+                          />
+                          <Button onClick={handleInlineRedeem} disabled={isRedeeming || !inlinePromoCode.trim()}>
+                            {isRedeeming ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <>
+                                <Ticket className="w-4 h-4 mr-1" /> Redeem
+                              </>
+                            )}
+                          </Button>
                         </div>
-                        {user ? (
-                          <Button 
-                            variant="hero" 
-                            size="lg" 
-                            className="w-full"
-                            onClick={() => setShowPromoDialog(true)}
-                          >
-                            <Gift className="w-5 h-5 mr-2" />
-                            Enter Promo Code
-                          </Button>
-                        ) : (
-                          <Button 
-                            variant="hero" 
-                            size="lg" 
-                            className="w-full"
-                            onClick={() => navigate('/login', { state: { from: `/course/${courseId}` } })}
-                          >
-                            Sign In to Enroll
-                          </Button>
+                        {!user && (
+                          <p className="text-xs text-muted-foreground text-center mt-2">
+                            <Link to={`/login`} state={{ from: `/course/${courseId}` }} className="text-primary underline">Sign in</Link> to redeem your code.
+                          </p>
                         )}
-                        
-                        {/* WhatsApp Contact Button */}
+                        {storedRef && (
+                          <p className="text-xs text-muted-foreground text-center mt-2">
+                            Referred by <span className="font-mono font-medium text-foreground">{storedRef}</span>
+                          </p>
+                        )}
+
+                        {/* WhatsApp */}
                         <div className="mt-4">
                           <div className="relative flex items-center justify-center my-4">
                             <div className="border-t border-border flex-1"></div>
                             <span className="px-3 text-xs text-muted-foreground bg-card">or</span>
                             <div className="border-t border-border flex-1"></div>
                           </div>
-                          <Button 
-                            variant="outline" 
-                            size="lg" 
+                          <Button
+                            variant="outline"
+                            size="lg"
                             className="w-full bg-[#25D366] hover:bg-[#20BD5A] text-white border-0"
                             asChild
                           >
-                            <a 
+                            <a
                               href={`https://wa.me/919265106657?text=${encodeURIComponent(`Hi, I am interested in the course: "${course.title}". Please share more details about enrollment.`)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
                               <MessageCircle className="w-5 h-5 mr-2" />
-                              WhatsApp to Enroll
+                              Contact on WhatsApp
                             </a>
                           </Button>
                           <p className="text-xs text-muted-foreground text-center mt-2">
-                            Contact admin for enrollment
+                            Don't have a code? Contact admin for enrollment.
                           </p>
                         </div>
                         <LegalAgreementNote className="mt-5 px-1" />
@@ -605,7 +623,7 @@ const CourseDetail = () => {
                 <Button variant="outline" onClick={() => setShowPromoDialog(false)} disabled={isRedeeming} className="w-full sm:w-auto">
                   Browse Course First
                 </Button>
-                <Button onClick={handleRedeemCode} disabled={isRedeeming || !promoCodeInput.trim()} className="w-full sm:w-auto">
+                <Button onClick={() => handleRedeemCode()} disabled={isRedeeming || !promoCodeInput.trim()} className="w-full sm:w-auto">
                   {isRedeeming ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
