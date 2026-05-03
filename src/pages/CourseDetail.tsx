@@ -619,7 +619,7 @@ const CourseDetail = () => {
                 <Button variant="outline" onClick={() => setShowPromoDialog(false)} disabled={isRedeeming} className="w-full sm:w-auto">
                   Browse Course First
                 </Button>
-                <Button onClick={handleRedeemCode} disabled={isRedeeming || !promoCodeInput.trim()} className="w-full sm:w-auto">
+                <Button onClick={() => handleRedeemCode()} disabled={isRedeeming || !promoCodeInput.trim()} className="w-full sm:w-auto">
                   {isRedeeming ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
