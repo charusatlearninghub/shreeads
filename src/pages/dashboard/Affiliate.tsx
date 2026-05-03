@@ -162,7 +162,8 @@ export default function Affiliate() {
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
-              <TableHead>Package</TableHead>
+              <TableHead>Product</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Sale</TableHead>
               <TableHead>Commission</TableHead>
               <TableHead>Status</TableHead>
@@ -170,23 +171,32 @@ export default function Affiliate() {
           </TableHeader>
           <TableBody>
             {sales.length === 0 && (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-10">
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">
                 No sales yet — share your link to start earning.
               </TableCell></TableRow>
             )}
-            {sales.map(s => (
-              <TableRow key={s.id}>
-                <TableCell className="text-sm">{format(new Date(s.created_at), "dd MMM yyyy")}</TableCell>
-                <TableCell>{s.packages?.name || "—"}</TableCell>
-                <TableCell>₹{Number(s.sale_amount).toLocaleString("en-IN")}</TableCell>
-                <TableCell className="font-medium">₹{Number(s.commission_amount).toLocaleString("en-IN")}</TableCell>
-                <TableCell>
-                  <Badge variant={s.status === "paid" ? "default" : s.status === "pending" ? "secondary" : "destructive"}>
-                    {s.status}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
+            {sales.map(s => {
+              const name = s.product_name || s.packages?.name || s.courses?.title || "—";
+              const isCourse = s.sale_type === "course";
+              return (
+                <TableRow key={s.id}>
+                  <TableCell className="text-sm">{format(new Date(s.created_at), "dd MMM yyyy")}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">{name}</TableCell>
+                  <TableCell>
+                    <Badge variant={isCourse ? "outline" : "secondary"}>
+                      {isCourse ? "Course" : "Package"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>₹{Number(s.sale_amount).toLocaleString("en-IN")}</TableCell>
+                  <TableCell className="font-medium">₹{Number(s.commission_amount).toLocaleString("en-IN")}</TableCell>
+                  <TableCell>
+                    <Badge variant={s.status === "paid" ? "default" : s.status === "pending" ? "secondary" : "destructive"}>
+                      {s.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent></Card>
