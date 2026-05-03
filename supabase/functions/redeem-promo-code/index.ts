@@ -7,6 +7,7 @@ const corsHeaders = {
 
 interface RedeemRequest {
   code: string;
+  referral_code?: string | null;
 }
 
 function parseMoney(v: unknown): number {
@@ -62,7 +63,7 @@ Deno.serve(async (req) => {
 
     const user = { id: authUser.id };
 
-    const { code }: RedeemRequest = await req.json();
+    const { code, referral_code }: RedeemRequest = await req.json();
 
     if (!code || typeof code !== 'string') {
       return new Response(
