@@ -8,16 +8,16 @@ import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Monitor, Smartphone, Apple, Terminal, Download, Check, 
   Shield, RefreshCw, Clock, Package, ArrowLeft, Loader2,
-  MessageCircle
+  Ticket
 } from 'lucide-react';
-import { formatPrice, calculateDiscountPercentage } from '@/lib/price-utils';
+import { formatPrice } from '@/lib/price-utils';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { PricingCard, PromoCodeInput, MobileBottomBar } from '@/components/shared';
 
 const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   android: Smartphone,
