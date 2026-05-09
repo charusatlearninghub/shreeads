@@ -550,6 +550,41 @@ const CourseDetail = () => {
         </div>
       </section>
 
+      {/* Mobile sticky purchase bar */}
+      {!isEnrolled && !course.is_free && (
+        <MobileBottomBar
+          left={
+            <div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-lg font-bold">
+                  ₹{Number(course.discount_price ?? course.price ?? 0).toLocaleString("en-IN")}
+                </span>
+                {course.discount_price != null && course.price != null && Number(course.discount_price) < Number(course.price) && (
+                  <span className="text-xs text-muted-foreground line-through">
+                    ₹{Number(course.price).toLocaleString("en-IN")}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground">{lessons.length} lessons · Certificate</p>
+            </div>
+          }
+          right={
+            <Button
+              size="sm"
+              onClick={() => {
+                if (!user) {
+                  navigate('/login', { state: { from: `/course/${courseId}` } });
+                  return;
+                }
+                setShowPromoDialog(true);
+              }}
+            >
+              <Ticket className="w-4 h-4 mr-1" /> Redeem
+            </Button>
+          }
+        />
+      )}
+
       <Footer />
 
       {/* Promo Code Dialog */}
