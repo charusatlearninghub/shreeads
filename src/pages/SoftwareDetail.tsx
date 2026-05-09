@@ -325,124 +325,86 @@ const SoftwareDetail = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Purchase Card */}
-            <Card className="sticky top-24">
-              <CardContent className="p-6">
-                {/* Price */}
-                <div className="mb-6">
-                  {product.is_free ? (
-                    <Badge variant="secondary" className="text-lg px-4 py-1">Free</Badge>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl font-bold text-primary">
-                        {formatPrice(product.discount_price || product.price)}
-                      </span>
-                      {hasDiscount && (
-                        <>
-                          <span className="text-lg text-muted-foreground line-through">
-                            {formatPrice(product.price)}
-                          </span>
-                          <Badge variant="destructive">{discountPercentage}% OFF</Badge>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {hasPurchased ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-green-500">
-                      <Check className="w-5 h-5" />
-                      <span className="font-medium">You own this software</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Scroll down to download the latest version for your platform.
-                    </p>
+            <PricingCard
+              price={Number(product.discount_price ?? product.price ?? 0)}
+              originalPrice={hasDiscount ? Number(product.price) : null}
+              isFree={!!product.is_free}
+              whatsappMessage={!hasPurchased ? whatsappMessage : undefined}
+              features={[
+                { label: "Secure & verified download", icon: <Shield className="w-4 h-4" /> },
+                { label: "Free lifetime updates", icon: <RefreshCw className="w-4 h-4" /> },
+                { label: "Instant access after purchase", icon: <Clock className="w-4 h-4" /> },
+              ]}
+            >
+              {hasPurchased ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-success">
+                    <Check className="w-5 h-5" />
+                    <span className="font-medium">You own this software</span>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Promo Code Input */}
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Have a promo code?</label>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Enter code"
-                          value={promoCode}
-                          onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                          className="uppercase"
-                        />
-                        <Button 
-                          onClick={handleRedeemPromo} 
-                          disabled={isRedeeming || !promoCode.trim()}
-                        >
-                          {isRedeeming ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            'Redeem'
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="relative flex items-center justify-center my-4">
-                      <div className="border-t border-border flex-1"></div>
-                      <span className="px-3 text-xs text-muted-foreground bg-card">or</span>
-                      <div className="border-t border-border flex-1"></div>
-                    </div>
-
-                    {/* WhatsApp Button */}
-                    <Button 
-                      className="w-full bg-[#25D366] hover:bg-[#20BD5A] text-white"
+                  <p className="text-sm text-muted-foreground">
+                    Scroll down to download the latest version for your platform.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm font-medium">Have a promo code?</p>
+                  <PromoCodeInput
+                    value={promoCode}
+                    onChange={setPromoCode}
+                    onRedeem={handleRedeemPromo}
+                    loading={isRedeeming}
+                    placeholder="Enter code"
+                  />
+                  {product.is_free && (
+                    <Button
+                      className="w-full"
                       size="lg"
-                      asChild
+                      onClick={handleRedeemPromo}
+                      disabled={!user}
                     >
-                      <a 
-                        href={`https://wa.me/919265106657?text=${encodeURIComponent(whatsappMessage)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <MessageCircle className="w-5 h-5 mr-2" />
-                        WhatsApp to Purchase
-                      </a>
+                      {user ? "Get Free Software" : "Login to Download"}
                     </Button>
-                    <p className="text-xs text-muted-foreground text-center">
-                      Contact admin for promo codes or direct purchase
-                    </p>
-
-                    {product.is_free && (
-                      <Button 
-                        className="w-full" 
-                        size="lg"
-                        onClick={handleRedeemPromo}
-                        disabled={!user}
-                      >
-                        {user ? 'Get Free Software' : 'Login to Download'}
-                      </Button>
-                    )}
-                  </div>
-                )}
-
-                {/* Features */}
-                <div className="mt-6 pt-6 border-t border-border space-y-3">
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <Shield className="w-4 h-4 text-green-500" />
-                    Secure & verified download
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <RefreshCw className="w-4 h-4 text-blue-500" />
-                    Free lifetime updates
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <Clock className="w-4 h-4 text-orange-500" />
-                    Instant access after purchase
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  )}
+                </>
+              )}
+            </PricingCard>
           </div>
         </div>
       </div>
+
+      {/* Mobile sticky purchase bar */}
+      {!hasPurchased && !product.is_free && (
+        <MobileBottomBar
+          left={
+            <div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-lg font-bold">
+                  {formatPrice(product.discount_price || product.price)}
+                </span>
+                {hasDiscount && (
+                  <span className="text-xs text-muted-foreground line-through">
+                    {formatPrice(product.price)}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground">{product.title}</p>
+            </div>
+          }
+          right={
+            <Button
+              size="sm"
+              onClick={() =>
+                document
+                  .querySelector<HTMLInputElement>('input[placeholder="Enter code"]')
+                  ?.focus()
+              }
+            >
+              <Ticket className="w-4 h-4 mr-1" /> Redeem
+            </Button>
+          }
+        />
+      )}
 
       <Footer />
     </div>
