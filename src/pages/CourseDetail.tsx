@@ -46,6 +46,7 @@ interface Course {
   price: number | null;
   discount_price: number | null;
   is_free: boolean | null;
+  affiliate_commission_percent?: number | null;
 }
 
 interface Lesson {
