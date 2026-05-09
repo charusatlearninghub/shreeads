@@ -309,131 +309,88 @@ const CourseDetail = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
-                <Card className="sticky top-24">
-                  {course.thumbnail_url && (
-                    <div className="aspect-video rounded-t-lg overflow-hidden">
-                      <img 
-                        src={course.thumbnail_url} 
+                <PricingCard
+                  thumbnail={
+                    course.thumbnail_url ? (
+                      <img
+                        src={course.thumbnail_url}
                         alt={course.title}
                         className="w-full h-full object-cover"
                       />
-                    </div>
-                  )}
-                  <CardContent className="p-6">
-                    {/* Price Display */}
-                    {!isEnrolled && (
-                      <div className="text-center mb-6 pb-6 border-b">
+                    ) : null
+                  }
+                  price={Number(course.discount_price ?? course.price ?? 0)}
+                  originalPrice={
+                    course.discount_price != null && course.price != null && Number(course.discount_price) < Number(course.price)
+                      ? Number(course.price)
+                      : null
+                  }
+                  isFree={!!course.is_free || (course.price != null && Number(course.price) === 0)}
+                  priceExtra={
+                    !isEnrolled ? (
+                      <div className="mt-2">
                         <CoursePriceDisplay
                           courseId={course.id}
                           price={course.price}
                           discountPrice={course.discount_price}
                           isFree={course.is_free}
-                          size="lg"
+                          size="sm"
                         />
                       </div>
-                    )}
-
-                    {isEnrolled ? (
-                      <>
-                        <Button
-                          variant="hero"
-                          size="lg"
-                          className="w-full mb-4"
-                          onClick={() => {
-                            const nextLesson = getNextLesson();
-                            if (nextLesson) {
-                              navigate(`/course/${courseId}/lesson/${nextLesson.id}`);
-                            }
-                          }}
-                        >
-                          <Play className="w-5 h-5 mr-2" />
-                          Continue Learning
-                        </Button>
-                        <p className="text-center text-sm text-muted-foreground">
-                          You're enrolled in this course
+                    ) : null
+                  }
+                  whatsappMessage={!isEnrolled ? `Hi, I am interested in the course: "${course.title}". Please share more details about enrollment.` : undefined}
+                  features={[
+                    { label: "Lifetime access" },
+                    { label: "Certificate of completion" },
+                    { label: "Mobile & desktop access" },
+                  ]}
+                >
+                  {isEnrolled ? (
+                    <>
+                      <Button
+                        variant="hero"
+                        size="lg"
+                        className="w-full"
+                        onClick={() => {
+                          const nextLesson = getNextLesson();
+                          if (nextLesson) {
+                            navigate(`/course/${courseId}/lesson/${nextLesson.id}`);
+                          }
+                        }}
+                      >
+                        <Play className="w-5 h-5 mr-2" />
+                        Continue Learning
+                      </Button>
+                      <p className="text-center text-sm text-muted-foreground">
+                        You're enrolled in this course
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        Have a promo code? Enter it below to enroll instantly.
+                      </p>
+                      <PromoCodeInput
+                        value={inlinePromoCode}
+                        onChange={setInlinePromoCode}
+                        onRedeem={handleInlineRedeem}
+                        loading={isRedeeming}
+                      />
+                      {!user && (
+                        <p className="text-xs text-muted-foreground text-center">
+                          <Link to={`/login`} state={{ from: `/course/${courseId}` }} className="text-primary underline">Sign in</Link> to redeem your code.
                         </p>
-                      </>
-                    ) : (
-                      <>
-                        {/* Inline promo input — same UX as Package page */}
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Have a promo code? Enter it below to enroll instantly.
-                        </p>
-                        <div className="flex gap-2">
-                          <Input
-                            value={inlinePromoCode}
-                            onChange={(e) => setInlinePromoCode(e.target.value.toUpperCase())}
-                            placeholder="PROMO-XXXXXX"
-                            className="font-mono"
-                            disabled={isRedeeming}
-                          />
-                          <Button onClick={handleInlineRedeem} disabled={isRedeeming || !inlinePromoCode.trim()}>
-                            {isRedeeming ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <>
-                                <Ticket className="w-4 h-4 mr-1" /> Redeem
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                        {!user && (
-                          <p className="text-xs text-muted-foreground text-center mt-2">
-                            <Link to={`/login`} state={{ from: `/course/${courseId}` }} className="text-primary underline">Sign in</Link> to redeem your code.
-                          </p>
-                        )}
-                        {storedRef && (
-                          <p className="text-xs text-muted-foreground text-center mt-2">
-                            Referred by <span className="font-mono font-medium text-foreground">{storedRef}</span>
-                          </p>
-                        )}
-
-                        {/* WhatsApp */}
-                        <div className="mt-4">
-                          <div className="relative flex items-center justify-center my-4">
-                            <div className="border-t border-border flex-1"></div>
-                            <span className="px-3 text-xs text-muted-foreground bg-card">or</span>
-                            <div className="border-t border-border flex-1"></div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="lg"
-                            className="w-full bg-[#25D366] hover:bg-[#20BD5A] text-white border-0"
-                            asChild
-                          >
-                            <a
-                              href={`https://wa.me/919265106657?text=${encodeURIComponent(`Hi, I am interested in the course: "${course.title}". Please share more details about enrollment.`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <MessageCircle className="w-5 h-5 mr-2" />
-                              Contact on WhatsApp
-                            </a>
-                          </Button>
-                          <p className="text-xs text-muted-foreground text-center mt-2">
-                            Don't have a code? Contact admin for enrollment.
-                          </p>
-                        </div>
-                        <LegalAgreementNote className="mt-5 px-1" />
-                      </>
-                    )}
-
-                    <div className="mt-6 pt-6 border-t space-y-3">
-                      <div className="flex items-center gap-3 text-sm">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span>Lifetime access</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span>Certificate of completion</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span>Mobile & desktop access</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      )}
+                      <AffiliateInfoCard
+                        refCode={storedRef}
+                        price={Number(course.discount_price ?? course.price ?? 0)}
+                        commissionPercent={course.affiliate_commission_percent}
+                      />
+                      <LegalAgreementNote className="px-1" />
+                    </>
+                  )}
+                </PricingCard>
               </motion.div>
             </div>
           </div>
