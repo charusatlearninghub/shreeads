@@ -1,18 +1,38 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Package as PackageIcon, BookOpen, Box, Check, Loader2, Ticket } from "lucide-react";
+import {
+  Package as PackageIcon,
+  BookOpen,
+  Box,
+  Check,
+  Loader2,
+  Award,
+  Infinity as InfinityIcon,
+  Smartphone,
+} from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { SeoHead } from "@/components/common/SeoHead";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAffiliateRefCapture, getStoredAffiliateRef, clearStoredAffiliateRef } from "@/hooks/useAffiliateRef";
+import {
+  useAffiliateRefCapture,
+  getStoredAffiliateRef,
+  clearStoredAffiliateRef,
+} from "@/hooks/useAffiliateRef";
+import {
+  PageContainer,
+  PricingCard,
+  PromoCodeInput,
+  AffiliateInfoCard,
+  AccordionSection,
+  MobileBottomBar,
+  type AccordionSectionItem,
+} from "@/components/shared";
 
 interface Pkg {
   id: string;
@@ -21,6 +41,7 @@ interface Pkg {
   price: number;
   original_price: number;
   thumbnail_url: string | null;
+  affiliate_commission_percent: number | null;
 }
 
 export default function PackageDetail() {
@@ -37,38 +58,67 @@ export default function PackageDetail() {
   const [code, setCode] = useState("");
   const [redeeming, setRedeeming] = useState(false);
   const [owned, setOwned] = useState(false);
+  const storedRef = typeof window !== "undefined" ? getStoredAffiliateRef() : null;
 
-  useEffect(() => { if (packageId) void load(packageId); }, [packageId]);
+  useEffect(() => {
+    if (packageId) void load(packageId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [packageId]);
 
   async function load(id: string) {
     setLoading(true);
-    const { data: p } = await supabase.from("packages")
-      .select("id, name, description, price, original_price, thumbnail_url, is_active")
-      .eq("id", id).maybeSingle();
-    if (!p || !p.is_active) { setPkg(null); setLoading(false); return; }
+    const { data: p } = await supabase
+      .from("packages")
+      .select(
+        "id, name, description, price, original_price, thumbnail_url, is_active, affiliate_commission_percent"
+      )
+      .eq("id", id)
+      .maybeSingle();
+    if (!p || !p.is_active) {
+      setPkg(null);
+      setLoading(false);
+      return;
+    }
     setPkg(p as Pkg);
 
-    const { data: items } = await supabase.from("package_items").select("item_type, item_id").eq("package_id", id);
-    const courseIds = (items || []).filter(i => i.item_type === "course").map(i => i.item_id);
-    const swIds = (items || []).filter(i => i.item_type === "software").map(i => i.item_id);
+    const { data: items } = await supabase
+      .from("package_items")
+      .select("item_type, item_id")
+      .eq("package_id", id);
+    const courseIds = (items || []).filter((i) => i.item_type === "course").map((i) => i.item_id);
+    const swIds = (items || []).filter((i) => i.item_type === "software").map((i) => i.item_id);
     const [cRes, sRes] = await Promise.all([
-      courseIds.length ? supabase.from("courses").select("id, title").in("id", courseIds) : Promise.resolve({ data: [] as { id: string; title: string }[] }),
-      swIds.length ? supabase.from("software_products").select("id, title").in("id", swIds) : Promise.resolve({ data: [] as { id: string; title: string }[] }),
+      courseIds.length
+        ? supabase.from("courses").select("id, title").in("id", courseIds)
+        : Promise.resolve({ data: [] as { id: string; title: string }[] }),
+      swIds.length
+        ? supabase.from("software_products").select("id, title").in("id", swIds)
+        : Promise.resolve({ data: [] as { id: string; title: string }[] }),
     ]);
     setCourses(cRes.data || []);
     setSoftware(sRes.data || []);
 
     if (user) {
-      const { data: own } = await supabase.from("package_purchases").select("id")
-        .eq("user_id", user.id).eq("package_id", id).maybeSingle();
+      const { data: own } = await supabase
+        .from("package_purchases")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("package_id", id)
+        .maybeSingle();
       setOwned(!!own);
     }
     setLoading(false);
   }
 
   async function redeem() {
-    if (!user) { navigate("/login"); return; }
-    if (!code.trim()) { toast({ title: "Enter your promo code", variant: "destructive" }); return; }
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    if (!code.trim()) {
+      toast({ title: "Enter your promo code", variant: "destructive" });
+      return;
+    }
     setRedeeming(true);
     try {
       const ref = getStoredAffiliateRef();
@@ -79,19 +129,26 @@ export default function PackageDetail() {
       if (error) throw error;
       const result = data as { success: boolean; affiliate_credited: boolean };
       if (result?.affiliate_credited) clearStoredAffiliateRef();
-      toast({ title: "Package unlocked!", description: "All included courses and software are now in your dashboard." });
+      toast({
+        title: "Package unlocked!",
+        description: "All included courses and software are now in your dashboard.",
+      });
       navigate("/dashboard/packages");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Redemption failed";
       toast({ title: "Could not redeem", description: msg, variant: "destructive" });
-    } finally { setRedeeming(false); }
+    } finally {
+      setRedeeming(false);
+    }
   }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="flex items-center justify-center pt-40"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+        <div className="flex items-center justify-center pt-40">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
       </div>
     );
   }
@@ -100,98 +157,234 @@ export default function PackageDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 pt-32 pb-20 text-center">
+        <PageContainer className="text-center">
           <PackageIcon className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
           <h1 className="text-2xl font-bold mb-2">Package not found</h1>
-          <Button asChild variant="outline"><Link to="/packages">Browse Packages</Link></Button>
-        </div>
+          <Button asChild variant="outline">
+            <Link to="/packages">Browse Packages</Link>
+          </Button>
+        </PageContainer>
         <Footer />
       </div>
     );
   }
 
-  const save = Number(pkg.original_price) - Number(pkg.price);
+  const accordionItems: AccordionSectionItem[] = [];
+  if (courses.length) {
+    accordionItems.push({
+      id: "courses",
+      title: "Courses Included",
+      icon: <BookOpen className="w-4 h-4" />,
+      meta: `${courses.length}`,
+      content: (
+        <ul className="space-y-2">
+          {courses.map((c) => (
+            <li key={c.id} className="flex items-start gap-2">
+              <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
+              <span className="text-foreground">{c.title}</span>
+            </li>
+          ))}
+        </ul>
+      ),
+    });
+  }
+  if (software.length) {
+    accordionItems.push({
+      id: "software",
+      title: "Software Included",
+      icon: <Box className="w-4 h-4" />,
+      meta: `${software.length}`,
+      content: (
+        <ul className="space-y-2">
+          {software.map((s) => (
+            <li key={s.id} className="flex items-start gap-2">
+              <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
+              <span className="text-foreground">{s.title}</span>
+            </li>
+          ))}
+        </ul>
+      ),
+    });
+  }
+  accordionItems.push({
+    id: "benefits",
+    title: "What you get",
+    icon: <Award className="w-4 h-4" />,
+    content: (
+      <ul className="space-y-2">
+        <li className="flex items-start gap-2"><Check className="w-4 h-4 text-success shrink-0 mt-0.5" /> Lifetime access to every included course and software product</li>
+        <li className="flex items-start gap-2"><Check className="w-4 h-4 text-success shrink-0 mt-0.5" /> Certificate of completion for each course</li>
+        <li className="flex items-start gap-2"><Check className="w-4 h-4 text-success shrink-0 mt-0.5" /> Watch on mobile and desktop with secure streaming</li>
+        <li className="flex items-start gap-2"><Check className="w-4 h-4 text-success shrink-0 mt-0.5" /> Priority support on WhatsApp</li>
+      </ul>
+    ),
+  });
+
+  const features = [
+    { label: "Lifetime access to bundle", icon: <InfinityIcon className="w-4 h-4" /> },
+    { label: "Certificate per course", icon: <Award className="w-4 h-4" /> },
+    { label: "Mobile & desktop access", icon: <Smartphone className="w-4 h-4" /> },
+  ];
+
+  const whatsappMsg = `Hi, I am interested in the package: "${pkg.name}". Please share more details.`;
+
+  const pricingBody = owned ? (
+    <div className="space-y-3">
+      <Badge variant="default" className="w-full justify-center py-2 text-sm">
+        You own this package
+      </Badge>
+      <Button asChild className="w-full" size="lg">
+        <Link to="/dashboard/packages">Go to My Packages</Link>
+      </Button>
+    </div>
+  ) : (
+    <>
+      <p className="text-sm text-muted-foreground">
+        Have a package promo code? Enter it below to unlock everything in this bundle instantly.
+      </p>
+      <PromoCodeInput
+        value={code}
+        onChange={setCode}
+        onRedeem={redeem}
+        loading={redeeming}
+        placeholder="PKG-XXXXXX"
+      />
+      {!user && (
+        <p className="text-xs text-muted-foreground text-center">
+          <Link to="/login" className="text-primary underline">
+            Sign in
+          </Link>{" "}
+          to redeem your code.
+        </p>
+      )}
+      <AffiliateInfoCard
+        refCode={storedRef}
+        price={pkg.price}
+        commissionPercent={pkg.affiliate_commission_percent}
+      />
+    </>
+  );
 
   return (
     <div className="min-h-screen bg-background">
-      <SeoHead title={`${pkg.name} – ShreeAds Package`} description={pkg.description || "Learning bundle"} />
+      <SeoHead
+        title={`${pkg.name} – ShreeAds Package`}
+        description={pkg.description || "Learning bundle"}
+      />
       <Header />
-      <main className="pt-32 md:pt-28 pb-20">
-        <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-8">
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            {pkg.thumbnail_url ? (
-              <img src={pkg.thumbnail_url} alt={pkg.name} className="w-full aspect-video rounded-xl object-cover" />
-            ) : (
-              <div className="aspect-video rounded-xl bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
-                <PackageIcon className="w-16 h-16 text-primary/60" />
-              </div>
-            )}
-            <h1 className="font-display text-3xl font-bold mt-6 mb-3">{pkg.name}</h1>
-            {pkg.description && <p className="text-muted-foreground">{pkg.description}</p>}
-
-            <div className="mt-6 grid sm:grid-cols-2 gap-4">
-              <Card><CardContent className="p-4">
-                <h3 className="font-semibold mb-2 flex items-center gap-2"><BookOpen className="w-4 h-4" /> Courses ({courses.length})</h3>
-                <ul className="space-y-1.5 text-sm">
-                  {courses.length === 0 && <li className="text-muted-foreground">None</li>}
-                  {courses.map(c => <li key={c.id} className="flex gap-2"><Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" /> {c.title}</li>)}
-                </ul>
-              </CardContent></Card>
-              <Card><CardContent className="p-4">
-                <h3 className="font-semibold mb-2 flex items-center gap-2"><Box className="w-4 h-4" /> Software ({software.length})</h3>
-                <ul className="space-y-1.5 text-sm">
-                  {software.length === 0 && <li className="text-muted-foreground">None</li>}
-                  {software.map(s => <li key={s.id} className="flex gap-2"><Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" /> {s.title}</li>)}
-                </ul>
-              </CardContent></Card>
-            </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-            <Card className="sticky top-24"><CardContent className="p-6">
-              <div className="flex items-baseline gap-3 mb-4">
-                <span className="text-3xl font-bold">₹{Number(pkg.price).toLocaleString("en-IN")}</span>
-                {save > 0 && (
-                  <>
-                    <span className="text-muted-foreground line-through">₹{Number(pkg.original_price).toLocaleString("en-IN")}</span>
-                    <Badge>Save ₹{save.toLocaleString("en-IN")}</Badge>
-                  </>
-                )}
-              </div>
-
-              {owned ? (
-                <div className="space-y-3">
-                  <Badge variant="default" className="w-full justify-center py-2 text-sm">You own this package</Badge>
-                  <Button asChild className="w-full"><Link to="/dashboard/packages">Go to My Packages</Link></Button>
-                </div>
+      <main>
+        <PageContainer>
+          <div className="grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-10">
+            {/* LEFT: thumbnail, title, description, accordions */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="min-w-0 space-y-6"
+            >
+              {pkg.thumbnail_url ? (
+                <img
+                  src={pkg.thumbnail_url}
+                  alt={pkg.name}
+                  className="w-full aspect-video rounded-2xl object-cover border"
+                />
               ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    Have a package promo code? Enter it below to unlock everything in this bundle instantly.
-                  </p>
-                  <div className="flex gap-2">
-                    <Input
-                      value={code} onChange={(e) => setCode(e.target.value.toUpperCase())}
-                      placeholder="PKG-XXXXXX" className="font-mono"
-                    />
-                    <Button onClick={redeem} disabled={redeeming}>
-                      {redeeming ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Ticket className="w-4 h-4 mr-1" /> Redeem</>}
-                    </Button>
-                  </div>
-                  {!user && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      <Link to="/login" className="text-primary underline">Sign in</Link> to redeem your code.
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground text-center">
-                    Don't have a code? <a href="https://wa.me/" className="text-primary underline">Contact us on WhatsApp</a>.
-                  </p>
+                <div className="aspect-video rounded-2xl bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center border">
+                  <PackageIcon className="w-16 h-16 text-primary/60" />
                 </div>
               )}
-            </CardContent></Card>
-          </motion.div>
+
+              <div>
+                <Badge variant="secondary" className="mb-3">
+                  Package
+                </Badge>
+                <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
+                  {pkg.name}
+                </h1>
+                {pkg.description && (
+                  <p className="text-muted-foreground mt-3 text-base leading-relaxed">
+                    {pkg.description}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2 mt-4 text-sm">
+                  <Badge variant="outline" className="gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5" /> {courses.length} Courses
+                  </Badge>
+                  <Badge variant="outline" className="gap-1.5">
+                    <Box className="w-3.5 h-3.5" /> {software.length} Software
+                  </Badge>
+                </div>
+              </div>
+
+              <AccordionSection items={accordionItems} defaultOpen={["courses", "software"]} />
+            </motion.div>
+
+            {/* RIGHT: sticky pricing card */}
+            <motion.aside
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.05 }}
+              className="hidden lg:block"
+            >
+              <PricingCard
+                price={Number(pkg.price)}
+                originalPrice={Number(pkg.original_price)}
+                whatsappMessage={whatsappMsg}
+                features={features}
+              >
+                {pricingBody}
+              </PricingCard>
+            </motion.aside>
+          </div>
+        </PageContainer>
+
+        {/* Mobile inline card (visible <lg) */}
+        <div className="lg:hidden px-4 pb-32">
+          <PricingCard
+            price={Number(pkg.price)}
+            originalPrice={Number(pkg.original_price)}
+            whatsappMessage={whatsappMsg}
+            features={features}
+            sticky={false}
+          >
+            {pricingBody}
+          </PricingCard>
         </div>
       </main>
+
+      {/* Mobile sticky purchase bar */}
+      {!owned && (
+        <MobileBottomBar
+          left={
+            <div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-lg font-bold">
+                  ₹{Number(pkg.price).toLocaleString("en-IN")}
+                </span>
+                {Number(pkg.original_price) > Number(pkg.price) && (
+                  <span className="text-xs text-muted-foreground line-through">
+                    ₹{Number(pkg.original_price).toLocaleString("en-IN")}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {courses.length} courses · {software.length} software
+              </p>
+            </div>
+          }
+          right={
+            <Button
+              size="sm"
+              onClick={() =>
+                document.querySelector<HTMLInputElement>('input[placeholder="PKG-XXXXXX"]')?.focus()
+              }
+            >
+              Redeem code
+            </Button>
+          }
+        />
+      )}
+
       <Footer />
     </div>
   );
