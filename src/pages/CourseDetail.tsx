@@ -33,6 +33,7 @@ import { CourseReviews } from '@/components/course/CourseReviews';
 import { CoursePriceDisplay } from '@/components/course/CoursePriceDisplay';
 import { PromotionalBanner } from '@/components/promotions/PromotionalBanner';
 import { LegalAgreementNote } from '@/components/common/LegalAgreementNote';
+import { PricingCard, PromoCodeInput, AffiliateInfoCard, MobileBottomBar } from '@/components/shared';
 
 interface Course {
   id: string;
