@@ -209,10 +209,7 @@ const SoftwareDetail = () => {
     );
   }
 
-  const hasDiscount = product.discount_price && product.discount_price < (product.price || 0);
-  const discountPercentage = hasDiscount 
-    ? calculateDiscountPercentage(product.price || 0, product.discount_price!)
-    : 0;
+  const hasDiscount = !!(product.discount_price && product.discount_price < (product.price || 0));
 
   const whatsappMessage = `Hi, I am interested in the software: "${product.title}". Please share more details about purchasing.`;
 
