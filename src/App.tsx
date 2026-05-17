@@ -20,7 +20,7 @@ import CourseLesson from "./pages/CourseLesson";
 import StudentDashboard from "./pages/dashboard/StudentDashboard";
 import MyCourses from "./pages/dashboard/MyCourses";
 import Certificates from "./pages/dashboard/Certificates";
-import Referrals from "./pages/dashboard/Referrals";
+
 import Settings from "./pages/dashboard/Settings";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import AdminCourses from "./pages/admin/AdminCourses";
