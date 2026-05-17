@@ -285,7 +285,7 @@ const CourseDetail = () => {
                 <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm">
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-5 h-5 text-primary" />
-                    <span>{lessons.length} Lessons</span>
+                    <span>{displayLessonCount} Lessons</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-5 h-5 text-primary" />
@@ -416,7 +416,7 @@ const CourseDetail = () => {
             What's Included in This Course
           </h2>
           <p className="text-muted-foreground mb-8">
-            {lessons.length} lessons • {formatDuration(totalDuration)} total
+            {displayLessonCount} lessons • {formatDuration(totalDuration)} total
           </p>
 
           <div className="space-y-4">
@@ -577,7 +577,7 @@ const CourseDetail = () => {
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-muted-foreground">{lessons.length} lessons · Certificate</p>
+              <p className="text-[11px] text-muted-foreground">{displayLessonCount} lessons · Certificate</p>
             </div>
           }
           right={
