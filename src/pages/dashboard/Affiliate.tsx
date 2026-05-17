@@ -43,9 +43,9 @@ export default function Affiliate() {
       if (!aff) {
         const { data: created, error } = await supabase.rpc("apply_as_affiliate");
         if (error) throw error;
-        aff = created as Affiliate;
+        aff = created as typeof aff;
       }
-      setAffiliate(aff as Affiliate);
+      setAffiliate(aff as unknown as Affiliate);
 
       if (aff) {
         const [{ data: s }, { count }] = await Promise.all([
