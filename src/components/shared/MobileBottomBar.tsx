@@ -1,5 +1,6 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { registerStickyBar } from "@/lib/stickyBar";
 
 interface MobileBottomBarProps {
   /** Left-side content, typically a price block. */
@@ -22,6 +23,7 @@ export function MobileBottomBar({
   className,
   mobileOnly = true,
 }: MobileBottomBarProps) {
+  useEffect(() => registerStickyBar(), []);
   return (
     <div
       className={cn(
