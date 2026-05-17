@@ -1527,6 +1527,11 @@ export type Database = {
       }
       get_affiliate_by_code: { Args: { _code: string }; Returns: string }
       get_affiliate_network_stats: { Args: never; Returns: Json }
+      get_course_lesson_count: { Args: { _course_id: string }; Returns: number }
+      get_course_total_duration: {
+        Args: { _course_id: string }
+        Returns: number
+      }
       get_my_referrals_detail: { Args: never; Returns: Json }
       get_my_sponsor: { Args: never; Returns: Json }
       get_top_sponsors: {

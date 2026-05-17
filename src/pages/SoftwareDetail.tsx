@@ -217,7 +217,7 @@ const SoftwareDetail = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <div className="container mx-auto px-4 pt-24 lg:pt-28 pb-8">
+      <div className="container mx-auto px-4 pt-24 lg:pt-28 pb-40 sm:pb-12 lg:pb-12">
         {/* Back Button */}
         <Button variant="ghost" onClick={() => navigate('/software')} className="mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Software

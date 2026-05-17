@@ -81,6 +81,8 @@ const CourseDetail = () => {
   const { getCourseProgress } = useCourseProgress(courseId || '');
   const [progress, setProgress] = useState<{ completedCount: number; totalCount: number; percentage: number } | null>(null);
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
+  const [publicLessonCount, setPublicLessonCount] = useState<number>(0);
+  const [publicTotalDuration, setPublicTotalDuration] = useState<number>(0);
   const storedRef = typeof window !== 'undefined' ? getStoredAffiliateRef() : null;
 
   useEffect(() => {
@@ -99,7 +101,7 @@ const CourseDetail = () => {
         if (courseError) throw courseError;
         setCourse(courseData);
 
-        // Fetch lessons
+        // Fetch lessons (RLS hides non-preview rows from guests; that's fine for the list)
         const { data: lessonsData, error: lessonsError } = await supabase
           .from('lessons')
           .select('*')
@@ -108,6 +110,15 @@ const CourseDetail = () => {
 
         if (lessonsError) throw lessonsError;
         setLessons(lessonsData || []);
+
+        // Always fetch the true public lesson count + duration via security-definer RPCs
+        // so logged-out visitors see the real numbers (not "0 lessons").
+        const [{ data: countRpc }, { data: durRpc }] = await Promise.all([
+          supabase.rpc('get_course_lesson_count', { _course_id: courseId }),
+          supabase.rpc('get_course_total_duration', { _course_id: courseId }),
+        ]);
+        setPublicLessonCount(Number(countRpc ?? (lessonsData?.length ?? 0)));
+        setPublicTotalDuration(Number(durRpc ?? 0));
 
         // Check enrollment — free courses (price === 0 or is_free) grant access without enrollment
         const courseIsFree = courseData?.is_free === true || (courseData?.price != null && courseData.price === 0);
@@ -177,7 +188,8 @@ const CourseDetail = () => {
     return `${mins} min`;
   };
 
-  const totalDuration = lessons.reduce((acc, l) => acc + l.duration_seconds, 0);
+  const totalDuration = publicTotalDuration || lessons.reduce((acc, l) => acc + l.duration_seconds, 0);
+  const displayLessonCount = publicLessonCount || lessons.length;
 
   const getLessonProgress = (lessonId: string) => {
     return lessonsProgress.find(p => p.lesson_id === lessonId);
@@ -273,7 +285,7 @@ const CourseDetail = () => {
                 <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm">
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-5 h-5 text-primary" />
-                    <span>{lessons.length} Lessons</span>
+                    <span>{displayLessonCount} Lessons</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-5 h-5 text-primary" />
@@ -398,13 +410,13 @@ const CourseDetail = () => {
       </section>
 
       {/* Course Content */}
-      <section className="py-8 sm:py-12 lg:py-16">
+      <section className="py-8 sm:py-12 lg:py-16 pb-40 sm:pb-12 lg:pb-16">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-display font-bold mb-8">
             What's Included in This Course
           </h2>
           <p className="text-muted-foreground mb-8">
-            {lessons.length} lessons • {formatDuration(totalDuration)} total
+            {displayLessonCount} lessons • {formatDuration(totalDuration)} total
           </p>
 
           <div className="space-y-4">
@@ -565,7 +577,7 @@ const CourseDetail = () => {
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-muted-foreground">{lessons.length} lessons · Certificate</p>
+              <p className="text-[11px] text-muted-foreground">{displayLessonCount} lessons · Certificate</p>
             </div>
           }
           right={
