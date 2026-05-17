@@ -410,7 +410,7 @@ const CourseDetail = () => {
       </section>
 
       {/* Course Content */}
-      <section className="py-8 sm:py-12 lg:py-16">
+      <section className="py-8 sm:py-12 lg:py-16 pb-40 sm:pb-12 lg:pb-16">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-display font-bold mb-8">
             What's Included in This Course
