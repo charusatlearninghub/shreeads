@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -20,7 +20,7 @@ import CourseLesson from "./pages/CourseLesson";
 import StudentDashboard from "./pages/dashboard/StudentDashboard";
 import MyCourses from "./pages/dashboard/MyCourses";
 import Certificates from "./pages/dashboard/Certificates";
-import Referrals from "./pages/dashboard/Referrals";
+
 import Settings from "./pages/dashboard/Settings";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import AdminCourses from "./pages/admin/AdminCourses";
@@ -130,14 +130,7 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/dashboard/referrals"
-                element={
-                  <ProtectedRoute>
-                    <Referrals />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/dashboard/referrals" element={<Navigate to="/dashboard/affiliate" replace />} />
               <Route
                 path="/dashboard/settings"
                 element={

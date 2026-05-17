@@ -352,46 +352,7 @@ const StudentDashboard = () => {
         )}
       </div>
 
-      {/* Referral Section */}
-      {referralCode && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-primary" />
-                Refer & Earn
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                <div className="flex-1">
-                  <p className="text-muted-foreground mb-4">
-                    Share your referral code with friends and earn rewards when they join!
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-secondary rounded-lg px-4 py-3 font-mono font-bold text-lg">
-                      {referralCode.code}
-                    </div>
-                    <Button variant="outline" onClick={handleCopyReferralCode}>
-                      {codeCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    </Button>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <p className="font-display text-3xl font-bold text-primary">
-                    {referralCode.total_referrals}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Total Referrals</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+      {/* Referral / Affiliate moved entirely to the Affiliate Dashboard */}
 
       {/* Promo Code Dialog */}
       <Dialog open={showPromoDialog} onOpenChange={setShowPromoDialog}>

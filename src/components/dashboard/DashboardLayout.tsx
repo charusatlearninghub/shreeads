@@ -55,8 +55,7 @@ const sidebarGroups: SidebarGroup[] = [
 {
   label: 'Community',
   items: [
-  { icon: Share2, label: "Referrals", href: "/dashboard/referrals" },
-  { icon: Share2, label: "Affiliate", href: "/dashboard/affiliate" }]
+  { icon: Share2, label: "Affiliate Dashboard", href: "/dashboard/affiliate" }]
 
 },
 {
