@@ -130,14 +130,7 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/dashboard/referrals"
-                element={
-                  <ProtectedRoute>
-                    <Referrals />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/dashboard/referrals" element={<Navigate to="/dashboard/affiliate" replace />} />
               <Route
                 path="/dashboard/settings"
                 element={
