@@ -72,6 +72,21 @@ Deno.serve(async (req) => {
         );
       }
 
+      case 'reset_all_devices': {
+        // Wipe device bindings for every user in one shot.
+        const { error: wipeError, count } = await supabaseClient
+          .from('device_registrations')
+          .delete({ count: 'exact' })
+          .neq('user_id', '00000000-0000-0000-0000-000000000000');
+
+        if (wipeError) throw wipeError;
+
+        return new Response(
+          JSON.stringify({ success: true, cleared: count ?? 0, message: 'All device bindings reset' }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       case 'deactivate_device': {
         const { error: updateError } = await supabaseClient
           .from('device_registrations')
