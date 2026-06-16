@@ -1,0 +1,69 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Daily re-scan at 03:00 UTC so new CVEs are caught even without commits
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  dependency-audit:
+    name: Dependency Audit (npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install
+        run: bun install --frozen-lockfile
+      - name: Audit (high+critical fail the build)
+        run: |
+          set -o pipefail
+          bunx --bun better-npm-audit audit --level high || npx --yes audit-ci --high
+
+  sast-codeql:
+    name: SAST (CodeQL)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+      - uses: github/codeql-action/analyze@v3
+
+  secret-scan:
+    name: Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  headers-check:
+    name: Security Headers Check (Published Site)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Probe production headers
+        run: |
+          URL="https://shreeads.lovable.app"
+          echo "Checking $URL"
+          curl -sI "$URL" | tee headers.txt
+          for h in "content-security-policy" "x-content-type-options" "referrer-policy"; do
+            if ! grep -i "^$h:" headers.txt > /dev/null; then
+              echo "::warning::Missing header: $h"
+            fi
+          done
