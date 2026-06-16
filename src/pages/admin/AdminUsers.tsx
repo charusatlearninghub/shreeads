@@ -70,6 +70,26 @@ const AdminUsers = () => {
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showResetAllConfirm, setShowResetAllConfirm] = useState(false);
+  const [isResettingAll, setIsResettingAll] = useState(false);
+
+  const handleResetAllDevices = async () => {
+    setIsResettingAll(true);
+    try {
+      const response = await supabase.functions.invoke('admin-device-management', {
+        body: { action: 'reset_all_devices' },
+      });
+      if (response.error) throw new Error(response.error.message);
+      const cleared = response.data?.cleared ?? 0;
+      toast({ title: 'All devices reset', description: `${cleared} device binding(s) cleared. Users can now sign in on a new device.` });
+      setActiveDeviceCount(0);
+      setShowResetAllConfirm(false);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsResettingAll(false);
+    }
+  };
 
   const handleDeleteUser = async () => {
     if (!deleteTarget) return;
@@ -257,7 +277,32 @@ const AdminUsers = () => {
             <SelectItem value="admin">Admins</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="destructive"
+          onClick={() => setShowResetAllConfirm(true)}
+          className="w-full sm:w-auto"
+        >
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Reset All Devices
+        </Button>
       </div>
+
+      <AlertDialog open={showResetAllConfirm} onOpenChange={setShowResetAllConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset device binding for ALL users?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This clears every device registration in the system. All users (except admins) will be able to sign in on a new device on their next login. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isResettingAll}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResetAllDevices} disabled={isResettingAll}>
+              {isResettingAll ? 'Resetting…' : 'Yes, reset all'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
