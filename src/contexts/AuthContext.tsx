@@ -238,7 +238,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // Global scope revokes refresh tokens across ALL devices/sessions for this user.
+    await supabase.auth.signOut({ scope: 'global' });
     setProfile(null);
     setRole(null);
   };
