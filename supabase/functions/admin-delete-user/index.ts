@@ -67,10 +67,18 @@ Deno.serve(async (req) => {
     for (const t of tables) {
       await admin.from(t).delete().eq('user_id', targetUserId);
     }
+    // Null out used_by on promo-code tables (FK -> auth.users blocks deletion otherwise)
+    await admin.from('promo_codes').update({ used_by: null }).eq('used_by', targetUserId);
+    await admin.from('package_promo_codes').update({ used_by: null }).eq('used_by', targetUserId);
+    await admin.from('software_promo_codes').update({ used_by: null }).eq('used_by', targetUserId);
+    await admin.from('promo_code_usage').delete().eq('user_id', targetUserId);
+    await admin.from('master_referral_codes').update({ created_by: null }).eq('created_by', targetUserId);
+
     // Referrals: drop both sides
     await admin.from('referrals').delete().eq('referrer_id', targetUserId);
     await admin.from('referrals').delete().eq('referred_id', targetUserId);
-    // Profiles use id (not user_id)
+    // Profiles use id (not user_id); clear sponsor_id references first
+    await admin.from('profiles').update({ sponsor_id: null }).eq('sponsor_id', targetUserId);
     await admin.from('profiles').delete().eq('id', targetUserId);
 
     // Finally delete the auth user
