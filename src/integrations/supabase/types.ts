@@ -244,6 +244,45 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          admin_last_read_at: string
+          created_at: string
+          id: string
+          last_message_at: string
+          last_message_preview: string | null
+          last_sender_role: string | null
+          student_id: string
+          student_last_read_at: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_last_read_at?: string
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          last_message_preview?: string | null
+          last_sender_role?: string | null
+          student_id: string
+          student_last_read_at?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_last_read_at?: string
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          last_message_preview?: string | null
+          last_sender_role?: string | null
+          student_id?: string
+          student_last_read_at?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       courses: {
         Row: {
           affiliate_commission_percent: number
@@ -505,6 +544,53 @@ export type Database = {
           use_count?: number
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          attachment_mime: string | null
+          attachment_name: string | null
+          attachment_path: string | null
+          attachment_size: number | null
+          body: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+          sender_role: string
+        }
+        Insert: {
+          attachment_mime?: string | null
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+          sender_role: string
+        }
+        Update: {
+          attachment_mime?: string | null
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       package_items: {
         Row: {
@@ -1480,6 +1566,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_get_or_create_conversation: {
+        Args: { _student_id: string }
+        Returns: string
+      }
+      admin_list_conversations: {
+        Args: never
+        Returns: {
+          admin_last_read_at: string
+          id: string
+          last_message_at: string
+          last_message_preview: string
+          last_sender_role: string
+          student_email: string
+          student_id: string
+          student_name: string
+          unread_from_student: number
+        }[]
+      }
       apply_as_affiliate: {
         Args: never
         Returns: {
@@ -1534,6 +1638,7 @@ export type Database = {
       }
       get_my_referrals_detail: { Args: never; Returns: Json }
       get_my_sponsor: { Args: never; Returns: Json }
+      get_or_create_my_conversation: { Args: never; Returns: string }
       get_top_sponsors: {
         Args: { _limit?: number }
         Returns: {
@@ -1543,6 +1648,7 @@ export type Database = {
           sponsor_name: string
         }[]
       }
+      get_unread_message_count: { Args: never; Returns: number }
       has_completed_course: {
         Args: { _course_id: string; _user_id: string }
         Returns: boolean
@@ -1569,6 +1675,10 @@ export type Database = {
       }
       mark_affiliate_sale_paid: {
         Args: { _sale_id: string }
+        Returns: undefined
+      }
+      mark_conversation_read: {
+        Args: { _conversation_id: string }
         Returns: undefined
       }
       record_course_affiliate_sale: {
