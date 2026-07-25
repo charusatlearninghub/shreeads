@@ -1,3 +1,4 @@
+import { Navigate, useLocation } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { SeoHead } from "@/components/common/SeoHead";
@@ -10,8 +11,20 @@ import { VideoGalleryPreview } from "@/components/home/VideoGalleryPreview";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { CTASection } from "@/components/home/CTASection";
 import { PromotionalBanner } from "@/components/promotions/PromotionalBanner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
+  const location = useLocation();
+  const { user, isLoading } = useAuth();
+  const params = new URLSearchParams(location.search);
+  const ref = params.get("ref");
+
+  // If landing here with a referral code and not signed in, jump straight to Register.
+  if (ref && !isLoading && !user) {
+    return <Navigate to={`/register?ref=${encodeURIComponent(ref)}`} replace />;
+  }
+
+
   return (
     <div className="min-h-screen bg-background">
       <SeoHead
