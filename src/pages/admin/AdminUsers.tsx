@@ -60,6 +60,7 @@ interface DeviceRegistration {
 
 const AdminUsers = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [activeDeviceCount, setActiveDeviceCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -390,6 +391,7 @@ const AdminUsers = () => {
                         <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="w-4 h-4" /></Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => navigate(`/admin/messages?student=${user.id}`)}><MessageSquare className="w-4 h-4 mr-2" /> Message</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => openDevicesDialog(user)}><Smartphone className="w-4 h-4 mr-2" /> View Devices</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleResetDevice(user.id)}><RefreshCw className="w-4 h-4 mr-2" /> Reset Device</DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -455,6 +457,7 @@ const AdminUsers = () => {
                             <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="w-4 h-4" /></Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => navigate(`/admin/messages?student=${user.id}`)}><MessageSquare className="w-4 h-4 mr-2" /> Message</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openDevicesDialog(user)}><Smartphone className="w-4 h-4 mr-2" /> View Devices</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleResetDevice(user.id)}><RefreshCw className="w-4 h-4 mr-2" /> Reset Device</DropdownMenuItem>
                             <DropdownMenuSeparator />
