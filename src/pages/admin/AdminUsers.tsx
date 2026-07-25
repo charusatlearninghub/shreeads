@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MobileDataCard, MobileCardList } from '@/components/admin/MobileDataCard';
 import { motion } from 'framer-motion';
 import { 
@@ -16,7 +17,8 @@ import {
   Calendar,
   RefreshCw,
   UserX,
-  UserCheck
+  UserCheck,
+  MessageSquare
 } from 'lucide-react';
 import { usePagination } from '@/hooks/usePagination';
 import { TablePagination } from '@/components/admin/TablePagination';
