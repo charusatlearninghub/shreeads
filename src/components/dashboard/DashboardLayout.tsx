@@ -14,10 +14,13 @@ import {
   PackageOpen,
   ChevronDown,
   Menu,
+  MessageSquare,
   X } from
 "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { PromotionalBanner } from "@/components/promotions/PromotionalBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import logo from "@/assets/new-logo.png";
@@ -55,6 +58,7 @@ const sidebarGroups: SidebarGroup[] = [
 {
   label: 'Community',
   items: [
+  { icon: MessageSquare, label: "Messages", href: "/dashboard/messages" },
   { icon: Share2, label: "Affiliate Dashboard", href: "/dashboard/affiliate" }]
 
 },
@@ -65,7 +69,7 @@ const sidebarGroups: SidebarGroup[] = [
 
 }];
 
-function SidebarGroupSection({ group, location, onNavigate }: {group: SidebarGroup;location: ReturnType<typeof useLocation>;onNavigate: () => void;}) {
+function SidebarGroupSection({ group, location, onNavigate, unread }: {group: SidebarGroup;location: ReturnType<typeof useLocation>;onNavigate: () => void; unread: number;}) {
   const isGroupActive = group.items.some(
     (item) => location.pathname === item.href
   );
@@ -87,6 +91,7 @@ function SidebarGroupSection({ group, location, onNavigate }: {group: SidebarGro
       <div className="space-y-0.5">
           {group.items.map((item) => {
           const isActive = location.pathname === item.href;
+          const showBadge = item.href === "/dashboard/messages" && unread > 0;
           return (
             <Link
               key={item.href}
@@ -100,7 +105,12 @@ function SidebarGroupSection({ group, location, onNavigate }: {group: SidebarGro
               )}>
               
                 <item.icon className="w-4 h-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate flex-1">{item.label}</span>
+                {showBadge && (
+                  <Badge variant={isActive ? "secondary" : "default"} className="h-5 min-w-5 px-1.5 text-[10px]">
+                    {unread > 99 ? '99+' : unread}
+                  </Badge>
+                )}
               </Link>);
 
         })}
@@ -115,6 +125,7 @@ export const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutPr
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const unreadMessages = useUnreadMessages();
 
   const handleSignOut = async () => {
     await signOut();
@@ -173,7 +184,7 @@ export const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutPr
         {/* Grouped Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 pt-3 pb-20 md:pb-3 space-y-4">
           {sidebarGroups.map((group) =>
-          <SidebarGroupSection key={group.label} group={group} location={location} onNavigate={closeSidebar} />
+          <SidebarGroupSection key={group.label} group={group} location={location} onNavigate={closeSidebar} unread={unreadMessages} />
           )}
         </nav>
 

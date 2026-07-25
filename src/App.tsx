@@ -62,6 +62,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import RefundPolicy from "./pages/RefundPolicy";
 import Disclaimer from "./pages/Disclaimer";
+import Messages from "./pages/dashboard/Messages";
+import AdminMessages from "./pages/admin/AdminMessages";
 
 const queryClient = new QueryClient();
 
@@ -160,6 +162,22 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Affiliate />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/messages"
+                element={
+                  <ProtectedRoute>
+                    <Messages />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/messages"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminMessages />
                   </ProtectedRoute>
                 }
               />
