@@ -27,7 +27,9 @@ import {
 } from 'lucide-react';
 import { AdminNotifications } from './AdminNotifications';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import logo from '@/assets/new-logo.png';
 import { cn } from '@/lib/utils';
 
@@ -163,6 +165,7 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const unreadMessages = useUnreadMessages();
 
   const handleSignOut = async () => {
     await signOut();
@@ -199,7 +202,7 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
         </div>
 
         {/* Dashboard Link */}
-        <div className="px-3 pt-3">
+        <div className="px-3 pt-3 space-y-1">
           <Link
             to="/admin"
             onClick={closeSidebar}
@@ -212,6 +215,27 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
           >
             <Home className="w-4 h-4" />
             Dashboard
+          </Link>
+          <Link
+            to="/admin/messages"
+            onClick={closeSidebar}
+            className={cn(
+              "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+              location.pathname.startsWith('/admin/messages')
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span className="flex-1">Messages</span>
+            {unreadMessages > 0 && (
+              <Badge
+                variant={location.pathname.startsWith('/admin/messages') ? 'secondary' : 'default'}
+                className="h-5 min-w-5 px-1.5 text-[10px]"
+              >
+                {unreadMessages > 99 ? '99+' : unreadMessages}
+              </Badge>
+            )}
           </Link>
         </div>
 
