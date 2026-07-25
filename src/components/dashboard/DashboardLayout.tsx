@@ -125,6 +125,7 @@ export const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutPr
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const unreadMessages = useUnreadMessages();
 
   const handleSignOut = async () => {
     await signOut();
@@ -183,7 +184,7 @@ export const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutPr
         {/* Grouped Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 pt-3 pb-20 md:pb-3 space-y-4">
           {sidebarGroups.map((group) =>
-          <SidebarGroupSection key={group.label} group={group} location={location} onNavigate={closeSidebar} />
+          <SidebarGroupSection key={group.label} group={group} location={location} onNavigate={closeSidebar} unread={unreadMessages} />
           )}
         </nav>
 
