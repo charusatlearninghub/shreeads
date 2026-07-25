@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { MessageThread } from '@/components/messaging/MessageThread';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,10 +33,27 @@ function timeAgo(iso: string) {
 }
 
 export default function AdminMessages() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ConversationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+
+  // Deep-link: /admin/messages?student=<uuid> opens/creates that thread.
+  useEffect(() => {
+    const studentParam = searchParams.get('student');
+    if (!studentParam) return;
+    (async () => {
+      const { data, error } = await supabase.rpc('admin_get_or_create_conversation', {
+        _student_id: studentParam,
+      });
+      if (!error && data) setSelectedId(data as string);
+      searchParams.delete('student');
+      setSearchParams(searchParams, { replace: true });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const refresh = useCallback(async () => {
     const { data, error } = await supabase.rpc('admin_list_conversations');
