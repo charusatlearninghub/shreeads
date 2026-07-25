@@ -15,12 +15,12 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const location = useLocation();
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth();
   const params = new URLSearchParams(location.search);
   const ref = params.get("ref");
 
   // If landing here with a referral code and not signed in, jump straight to Register.
-  if (ref && !loading && !user) {
+  if (ref && !isLoading && !user) {
     return <Navigate to={`/register?ref=${encodeURIComponent(ref)}`} replace />;
   }
 
