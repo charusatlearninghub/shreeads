@@ -442,6 +442,17 @@ export function VideoPlayer({
         </div>
       )}
 
+      {/* Free preview ended */}
+      {previewEnded && (
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 p-6 text-center">
+          <p className="text-white text-lg font-semibold mb-1">Free preview ended</p>
+          <p className="text-white/80 text-sm max-w-sm">
+            You've watched the free {Math.round((previewLimitSeconds || 0) / 60) || 1}-minute preview. Enroll in this course to continue watching the full lesson.
+          </p>
+        </div>
+      )}
+
+
       {/* YouTube Embed */}
       {isYouTube && youtubeVideoId ? (
         <div key={youtubeVideoId} className={cn("w-full h-full relative", isProtected && "blur-xl pointer-events-none")}>
