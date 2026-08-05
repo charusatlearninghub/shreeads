@@ -175,6 +175,14 @@ const CourseLesson = () => {
 
   const currentIndex = lessons.findIndex(l => l.id === lessonId);
 
+  // Free preview gating for non-enrolled visitors
+  const allowedPreviewLessonIds = lessons
+    .filter(l => l.is_preview)
+    .slice(0, Math.max(0, previewLessonLimit))
+    .map(l => l.id);
+  const isPreviewMode = !isEnrolled;
+  const previewLocked = isPreviewMode && !allowedPreviewLessonIds.includes(lessonId || '');
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
