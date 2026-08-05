@@ -787,6 +787,62 @@ const AdminCourses = () => {
         />
       </div>
 
+      {/* Free preview limits */}
+      <div className="space-y-3 p-4 rounded-lg border bg-secondary/30">
+        <Label className="text-base font-medium">Free Preview Limits</Label>
+        <p className="text-xs text-muted-foreground">
+          Controls what non-enrolled students can watch. Only lessons marked as "Preview" are eligible.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="form-preview-lesson-limit">Max preview lessons</Label>
+            <Input
+              id="form-preview-lesson-limit"
+              type="number" min="0" step="1"
+              value={formPreviewLessonLimit}
+              onChange={(e) => setFormPreviewLessonLimit(e.target.value)}
+              placeholder="1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="form-preview-seconds-limit">Preview seconds per lesson</Label>
+            <Input
+              id="form-preview-seconds-limit"
+              type="number" min="0" step="10"
+              value={formPreviewSecondsLimit}
+              onChange={(e) => setFormPreviewSecondsLimit(e.target.value)}
+              placeholder="300"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Upcoming course / waitlist */}
+      <div className="space-y-3 p-4 rounded-lg border bg-secondary/30">
+        <div className="flex items-center gap-2">
+          <Switch
+            id="form-is-upcoming"
+            checked={formIsUpcoming}
+            onCheckedChange={setFormIsUpcoming}
+          />
+          <Label htmlFor="form-is-upcoming" className="text-base font-medium">Coming soon (waitlist)</Label>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Hides enrollment on the course page and shows a waitlist signup form instead.
+        </p>
+        {formIsUpcoming && (
+          <div>
+            <Label htmlFor="form-launch-date">Expected launch date</Label>
+            <Input
+              id="form-launch-date"
+              type="date"
+              value={formLaunchDate}
+              onChange={(e) => setFormLaunchDate(e.target.value)}
+            />
+          </div>
+        )}
+      </div>
+
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Switch
@@ -797,6 +853,7 @@ const AdminCourses = () => {
           <Label htmlFor="form-is-published">Published</Label>
         </div>
       </div>
+
 
       <div className="flex justify-end gap-2 pt-4 sticky bottom-0 bg-background pb-2">
         <Button variant="outline" onClick={() => {
