@@ -82,6 +82,8 @@ export function VideoPlayer({
   onLessonChange,
   userEmail,
   lessonTitle,
+  previewLimitSeconds = null,
+  onPreviewLimitReached,
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -98,6 +100,26 @@ export function VideoPlayer({
   const [buffered, setBuffered] = useState(0);
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(true);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
+  const [previewEnded, setPreviewEnded] = useState(false);
+
+  const hasPreviewCap = typeof previewLimitSeconds === 'number' && previewLimitSeconds > 0;
+
+  // Reset preview gate when the lesson changes
+  useEffect(() => {
+    setPreviewEnded(false);
+  }, [lesson.id, previewLimitSeconds]);
+
+  const enforcePreviewLimit = useCallback((time: number) => {
+    if (!hasPreviewCap || time < (previewLimitSeconds as number)) return false;
+    const video = videoRef.current;
+    if (video && !video.paused) video.pause();
+    ytPlayerRef.current?.pause();
+    setIsPlaying(false);
+    setPreviewEnded(true);
+    onPreviewLimitReached?.();
+    return true;
+  }, [hasPreviewCap, previewLimitSeconds, onPreviewLimitReached]);
+
 
   const currentIndex = lessons.findIndex(l => l.id === lesson.id);
   const hasPrevious = currentIndex > 0;
