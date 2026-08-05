@@ -53,6 +53,7 @@ const sidebarGroups: SidebarGroup[] = [
     items: [
       { icon: BookOpen, label: 'Courses', href: '/admin/courses' },
       { icon: Ticket, label: 'Course Promo Codes', href: '/admin/promo-codes' },
+      { icon: BellRing, label: 'Course Waitlist', href: '/admin/waitlist' },
     ],
   },
   {
