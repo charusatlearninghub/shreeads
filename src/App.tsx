@@ -199,6 +199,14 @@ const App = () => (
                 }
               />
               <Route
+                path="/admin/waitlist"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminWaitlist />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/admin/users"
                 element={
                   <ProtectedRoute requireAdmin>
