@@ -238,7 +238,7 @@ const CourseLesson = () => {
           <div className="p-4 lg:p-6" data-sensitive="true">
             {previewLocked ? (
               <div className="aspect-video w-full rounded-lg bg-muted flex flex-col items-center justify-center text-center p-6">
-                <Lock className="w-8 h-8 text-muted-foreground mb-3" />
+                <LockIcon className="w-8 h-8 text-muted-foreground mb-3" />
                 <h2 className="font-semibold mb-1">This lesson is locked</h2>
                 <p className="text-sm text-muted-foreground max-w-sm mb-4">
                   {allowedPreviewLessonIds.length > 0
