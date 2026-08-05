@@ -487,6 +487,7 @@ export function VideoPlayer({
                 const v = e.currentTarget;
                 setCurrentTime(v.currentTime);
                 if (v.buffered.length > 0) setBuffered(v.buffered.end(v.buffered.length - 1));
+                enforcePreviewLimit(v.currentTime);
               }}
               onContextMenu={(e) => e.preventDefault()}
               onError={(e) => {
