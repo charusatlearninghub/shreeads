@@ -205,6 +205,10 @@ const AdminCourses = () => {
   const [formDiscountPrice, setFormDiscountPrice] = useState('');
   const [formIsFree, setFormIsFree] = useState(true);
   const [formAffiliateCommission, setFormAffiliateCommission] = useState('');
+  const [formIsUpcoming, setFormIsUpcoming] = useState(false);
+  const [formLaunchDate, setFormLaunchDate] = useState('');
+  const [formPreviewLessonLimit, setFormPreviewLessonLimit] = useState('1');
+  const [formPreviewSecondsLimit, setFormPreviewSecondsLimit] = useState('300');
 
   // Lesson form state
   const [lessonTitle, setLessonTitle] = useState('');
