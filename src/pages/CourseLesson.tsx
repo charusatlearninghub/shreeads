@@ -235,15 +235,30 @@ const CourseLesson = () => {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Video Player */}
           <div className="p-4 lg:p-6" data-sensitive="true">
-            <VideoPlayer
-              lesson={currentLesson}
-              lessons={lessons}
-              initialProgress={initialProgress}
-              onProgressUpdate={handleProgressUpdate}
-              onLessonChange={handleLessonChange}
-              userEmail={profile?.email}
-            />
+            {previewLocked ? (
+              <div className="aspect-video w-full rounded-lg bg-muted flex flex-col items-center justify-center text-center p-6">
+                <Lock className="w-8 h-8 text-muted-foreground mb-3" />
+                <h2 className="font-semibold mb-1">This lesson is locked</h2>
+                <p className="text-sm text-muted-foreground max-w-sm mb-4">
+                  {allowedPreviewLessonIds.length > 0
+                    ? `Only ${allowedPreviewLessonIds.length} free preview lesson${allowedPreviewLessonIds.length > 1 ? 's are' : ' is'} available. Enroll to unlock the full course.`
+                    : 'Enroll in this course to start watching.'}
+                </p>
+                <Button onClick={() => navigate(`/course/${courseId}`)}>Enroll Now</Button>
+              </div>
+            ) : (
+              <VideoPlayer
+                lesson={currentLesson}
+                lessons={lessons}
+                initialProgress={isPreviewMode ? 0 : initialProgress}
+                onProgressUpdate={handleProgressUpdate}
+                onLessonChange={handleLessonChange}
+                userEmail={profile?.email}
+                previewLimitSeconds={isPreviewMode ? previewSecondsLimit : null}
+              />
+            )}
           </div>
+
 
           {/* Lesson Info */}
           <div className="p-4 lg:p-6 pt-0 flex-1 overflow-auto">
