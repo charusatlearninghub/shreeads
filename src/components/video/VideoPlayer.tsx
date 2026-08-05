@@ -109,16 +109,8 @@ export function VideoPlayer({
     setPreviewEnded(false);
   }, [lesson.id, previewLimitSeconds]);
 
-  const enforcePreviewLimit = useCallback((time: number) => {
-    if (!hasPreviewCap || time < (previewLimitSeconds as number)) return false;
-    const video = videoRef.current;
-    if (video && !video.paused) video.pause();
-    ytPlayerRef.current?.pause();
-    setIsPlaying(false);
-    setPreviewEnded(true);
-    onPreviewLimitReached?.();
-    return true;
-  }, [hasPreviewCap, previewLimitSeconds, onPreviewLimitReached]);
+
+
 
 
   const currentIndex = lessons.findIndex(l => l.id === lesson.id);
