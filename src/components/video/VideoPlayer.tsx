@@ -40,6 +40,10 @@ interface VideoPlayerProps {
   onLessonChange: (lessonId: string) => void;
   userEmail?: string;
   lessonTitle?: string;
+  /** When set, playback stops after this many seconds (free preview cap). */
+  previewLimitSeconds?: number | null;
+  /** Called when the free preview limit is reached. */
+  onPreviewLimitReached?: () => void;
 }
 
 // YouTube Player Component with API integration
