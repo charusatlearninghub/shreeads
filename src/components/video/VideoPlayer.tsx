@@ -265,6 +265,7 @@ export function VideoPlayer({
   }, [isYouTube]);
 
   const togglePlay = () => {
+    if (previewEnded) return;
     if (videoRef.current) {
       if (isPlaying) videoRef.current.pause();
       else videoRef.current.play();
