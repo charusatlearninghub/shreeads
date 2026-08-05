@@ -24,6 +24,7 @@ import Certificates from "./pages/dashboard/Certificates";
 import Settings from "./pages/dashboard/Settings";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import AdminCourses from "./pages/admin/AdminCourses";
+import AdminWaitlist from "./pages/admin/AdminWaitlist";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
