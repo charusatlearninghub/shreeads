@@ -71,6 +71,10 @@ interface Course {
   discount_price: number | null;
   is_free: boolean | null;
   affiliate_commission_percent?: number | null;
+  is_upcoming?: boolean | null;
+  launch_date?: string | null;
+  preview_lesson_limit?: number | null;
+  preview_seconds_limit?: number | null;
   _count?: { lessons: number; enrollments: number };
 }
 
@@ -205,6 +209,10 @@ const AdminCourses = () => {
   const [formDiscountPrice, setFormDiscountPrice] = useState('');
   const [formIsFree, setFormIsFree] = useState(true);
   const [formAffiliateCommission, setFormAffiliateCommission] = useState('');
+  const [formIsUpcoming, setFormIsUpcoming] = useState(false);
+  const [formLaunchDate, setFormLaunchDate] = useState('');
+  const [formPreviewLessonLimit, setFormPreviewLessonLimit] = useState('1');
+  const [formPreviewSecondsLimit, setFormPreviewSecondsLimit] = useState('300');
 
   // Lesson form state
   const [lessonTitle, setLessonTitle] = useState('');
@@ -269,6 +277,10 @@ const AdminCourses = () => {
     setFormDiscountPrice('');
     setFormIsFree(true);
     setFormAffiliateCommission('');
+    setFormIsUpcoming(false);
+    setFormLaunchDate('');
+    setFormPreviewLessonLimit('1');
+    setFormPreviewSecondsLimit('300');
   }, []);
 
   const loadCourseForm = useCallback((course: Course) => {
@@ -282,6 +294,10 @@ const AdminCourses = () => {
     setFormDiscountPrice(course.discount_price?.toString() || '');
     setFormIsFree(course.is_free ?? true);
     setFormAffiliateCommission(course.affiliate_commission_percent?.toString() || '');
+    setFormIsUpcoming(course.is_upcoming ?? false);
+    setFormLaunchDate(course.launch_date ? course.launch_date.slice(0, 10) : '');
+    setFormPreviewLessonLimit((course.preview_lesson_limit ?? 1).toString());
+    setFormPreviewSecondsLimit((course.preview_seconds_limit ?? 300).toString());
   }, []);
 
   const resetLessonForm = useCallback(() => {
@@ -306,6 +322,10 @@ const AdminCourses = () => {
       discount_price: formDiscountPrice ? parseFloat(formDiscountPrice) : null,
       is_free: formIsFree,
       affiliate_commission_percent: Math.max(0, Math.min(100, parseFloat(formAffiliateCommission) || 0)),
+      is_upcoming: formIsUpcoming,
+      launch_date: formLaunchDate ? new Date(formLaunchDate).toISOString() : null,
+      preview_lesson_limit: Math.max(0, parseInt(formPreviewLessonLimit, 10) || 0),
+      preview_seconds_limit: Math.max(0, parseInt(formPreviewSecondsLimit, 10) || 0),
     };
 
     try {
@@ -767,6 +787,62 @@ const AdminCourses = () => {
         />
       </div>
 
+      {/* Free preview limits */}
+      <div className="space-y-3 p-4 rounded-lg border bg-secondary/30">
+        <Label className="text-base font-medium">Free Preview Limits</Label>
+        <p className="text-xs text-muted-foreground">
+          Controls what non-enrolled students can watch. Only lessons marked as "Preview" are eligible.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="form-preview-lesson-limit">Max preview lessons</Label>
+            <Input
+              id="form-preview-lesson-limit"
+              type="number" min="0" step="1"
+              value={formPreviewLessonLimit}
+              onChange={(e) => setFormPreviewLessonLimit(e.target.value)}
+              placeholder="1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="form-preview-seconds-limit">Preview seconds per lesson</Label>
+            <Input
+              id="form-preview-seconds-limit"
+              type="number" min="0" step="10"
+              value={formPreviewSecondsLimit}
+              onChange={(e) => setFormPreviewSecondsLimit(e.target.value)}
+              placeholder="300"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Upcoming course / waitlist */}
+      <div className="space-y-3 p-4 rounded-lg border bg-secondary/30">
+        <div className="flex items-center gap-2">
+          <Switch
+            id="form-is-upcoming"
+            checked={formIsUpcoming}
+            onCheckedChange={setFormIsUpcoming}
+          />
+          <Label htmlFor="form-is-upcoming" className="text-base font-medium">Coming soon (waitlist)</Label>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Hides enrollment on the course page and shows a waitlist signup form instead.
+        </p>
+        {formIsUpcoming && (
+          <div>
+            <Label htmlFor="form-launch-date">Expected launch date</Label>
+            <Input
+              id="form-launch-date"
+              type="date"
+              value={formLaunchDate}
+              onChange={(e) => setFormLaunchDate(e.target.value)}
+            />
+          </div>
+        )}
+      </div>
+
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Switch
@@ -777,6 +853,7 @@ const AdminCourses = () => {
           <Label htmlFor="form-is-published">Published</Label>
         </div>
       </div>
+
 
       <div className="flex justify-end gap-2 pt-4 sticky bottom-0 bg-background pb-2">
         <Button variant="outline" onClick={() => {

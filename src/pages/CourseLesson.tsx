@@ -10,7 +10,8 @@ import {
   Play,
   Clock,
   BookOpen,
-  Award
+  Award,
+  Lock as LockIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -55,6 +56,9 @@ const CourseLesson = () => {
   const [showSidebar, setShowSidebar] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(true);
+  const [previewLessonLimit, setPreviewLessonLimit] = useState(1);
+  const [previewSecondsLimit, setPreviewSecondsLimit] = useState(300);
   // Content Protection Agreement bypassed so users can start video/course immediately
   const [termsAccepted] = useState(true);
   
@@ -71,11 +75,26 @@ const CourseLesson = () => {
         // Fetch course
         const { data: courseData } = await supabase
           .from('courses')
-          .select('id, title')
+          .select('id, title, preview_lesson_limit, preview_seconds_limit')
           .eq('id', courseId)
           .maybeSingle();
 
         setCourse(courseData);
+        setPreviewLessonLimit((courseData as any)?.preview_lesson_limit ?? 1);
+        setPreviewSecondsLimit((courseData as any)?.preview_seconds_limit ?? 300);
+
+        // Enrollment check (drives free-preview gating)
+        if (user) {
+          const { data: enrollment } = await supabase
+            .from('enrollments')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('course_id', courseId)
+            .maybeSingle();
+          setIsEnrolled(!!enrollment);
+        } else {
+          setIsEnrolled(false);
+        }
 
         // Fetch all lessons
         const { data: lessonsData } = await supabase
@@ -157,6 +176,14 @@ const CourseLesson = () => {
 
   const currentIndex = lessons.findIndex(l => l.id === lessonId);
 
+  // Free preview gating for non-enrolled visitors
+  const allowedPreviewLessonIds = lessons
+    .filter(l => l.is_preview)
+    .slice(0, Math.max(0, previewLessonLimit))
+    .map(l => l.id);
+  const isPreviewMode = !isEnrolled;
+  const previewLocked = isPreviewMode && !allowedPreviewLessonIds.includes(lessonId || '');
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -209,15 +236,30 @@ const CourseLesson = () => {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Video Player */}
           <div className="p-4 lg:p-6" data-sensitive="true">
-            <VideoPlayer
-              lesson={currentLesson}
-              lessons={lessons}
-              initialProgress={initialProgress}
-              onProgressUpdate={handleProgressUpdate}
-              onLessonChange={handleLessonChange}
-              userEmail={profile?.email}
-            />
+            {previewLocked ? (
+              <div className="aspect-video w-full rounded-lg bg-muted flex flex-col items-center justify-center text-center p-6">
+                <LockIcon className="w-8 h-8 text-muted-foreground mb-3" />
+                <h2 className="font-semibold mb-1">This lesson is locked</h2>
+                <p className="text-sm text-muted-foreground max-w-sm mb-4">
+                  {allowedPreviewLessonIds.length > 0
+                    ? `Only ${allowedPreviewLessonIds.length} free preview lesson${allowedPreviewLessonIds.length > 1 ? 's are' : ' is'} available. Enroll to unlock the full course.`
+                    : 'Enroll in this course to start watching.'}
+                </p>
+                <Button onClick={() => navigate(`/course/${courseId}`)}>Enroll Now</Button>
+              </div>
+            ) : (
+              <VideoPlayer
+                lesson={currentLesson}
+                lessons={lessons}
+                initialProgress={isPreviewMode ? 0 : initialProgress}
+                onProgressUpdate={handleProgressUpdate}
+                onLessonChange={handleLessonChange}
+                userEmail={profile?.email}
+                previewLimitSeconds={isPreviewMode ? previewSecondsLimit : null}
+              />
+            )}
           </div>
+
 
           {/* Lesson Info */}
           <div className="p-4 lg:p-6 pt-0 flex-1 overflow-auto">
