@@ -55,6 +55,9 @@ const CourseLesson = () => {
   const [showSidebar, setShowSidebar] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(true);
+  const [previewLessonLimit, setPreviewLessonLimit] = useState(1);
+  const [previewSecondsLimit, setPreviewSecondsLimit] = useState(300);
   // Content Protection Agreement bypassed so users can start video/course immediately
   const [termsAccepted] = useState(true);
   
@@ -71,11 +74,26 @@ const CourseLesson = () => {
         // Fetch course
         const { data: courseData } = await supabase
           .from('courses')
-          .select('id, title')
+          .select('id, title, preview_lesson_limit, preview_seconds_limit')
           .eq('id', courseId)
           .maybeSingle();
 
         setCourse(courseData);
+        setPreviewLessonLimit((courseData as any)?.preview_lesson_limit ?? 1);
+        setPreviewSecondsLimit((courseData as any)?.preview_seconds_limit ?? 300);
+
+        // Enrollment check (drives free-preview gating)
+        if (user) {
+          const { data: enrollment } = await supabase
+            .from('enrollments')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('course_id', courseId)
+            .maybeSingle();
+          setIsEnrolled(!!enrollment);
+        } else {
+          setIsEnrolled(false);
+        }
 
         // Fetch all lessons
         const { data: lessonsData } = await supabase
