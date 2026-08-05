@@ -450,7 +450,10 @@ export function VideoPlayer({
             videoId={youtubeVideoId}
             lessonId={lesson.id}
             initialProgress={initialProgress}
-            onProgressUpdate={onProgressUpdate}
+            onProgressUpdate={(watched, completed) => {
+              if (enforcePreviewLimit(watched)) return;
+              onProgressUpdate(watched, completed);
+            }}
             lessonDuration={lesson.duration_seconds}
           />
           <DynamicWatermark data={watermarkData} visible={!isProtected && hasAcceptedTerms} />
