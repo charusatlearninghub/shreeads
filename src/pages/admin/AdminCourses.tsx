@@ -273,6 +273,10 @@ const AdminCourses = () => {
     setFormDiscountPrice('');
     setFormIsFree(true);
     setFormAffiliateCommission('');
+    setFormIsUpcoming(false);
+    setFormLaunchDate('');
+    setFormPreviewLessonLimit('1');
+    setFormPreviewSecondsLimit('300');
   }, []);
 
   const loadCourseForm = useCallback((course: Course) => {
@@ -286,6 +290,10 @@ const AdminCourses = () => {
     setFormDiscountPrice(course.discount_price?.toString() || '');
     setFormIsFree(course.is_free ?? true);
     setFormAffiliateCommission(course.affiliate_commission_percent?.toString() || '');
+    setFormIsUpcoming(course.is_upcoming ?? false);
+    setFormLaunchDate(course.launch_date ? course.launch_date.slice(0, 10) : '');
+    setFormPreviewLessonLimit((course.preview_lesson_limit ?? 1).toString());
+    setFormPreviewSecondsLimit((course.preview_seconds_limit ?? 300).toString());
   }, []);
 
   const resetLessonForm = useCallback(() => {
@@ -310,6 +318,10 @@ const AdminCourses = () => {
       discount_price: formDiscountPrice ? parseFloat(formDiscountPrice) : null,
       is_free: formIsFree,
       affiliate_commission_percent: Math.max(0, Math.min(100, parseFloat(formAffiliateCommission) || 0)),
+      is_upcoming: formIsUpcoming,
+      launch_date: formLaunchDate ? new Date(formLaunchDate).toISOString() : null,
+      preview_lesson_limit: Math.max(0, parseInt(formPreviewLessonLimit, 10) || 0),
+      preview_seconds_limit: Math.max(0, parseInt(formPreviewSecondsLimit, 10) || 0),
     };
 
     try {
