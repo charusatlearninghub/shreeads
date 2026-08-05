@@ -71,6 +71,10 @@ interface Course {
   discount_price: number | null;
   is_free: boolean | null;
   affiliate_commission_percent?: number | null;
+  is_upcoming?: boolean | null;
+  launch_date?: string | null;
+  preview_lesson_limit?: number | null;
+  preview_seconds_limit?: number | null;
   _count?: { lessons: number; enrollments: number };
 }
 
