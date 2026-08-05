@@ -23,7 +23,6 @@ import {
   Megaphone,
   FileImage,
   Share2,
-  BellRing,
   X
 } from 'lucide-react';
 import { AdminNotifications } from './AdminNotifications';
@@ -54,7 +53,6 @@ const sidebarGroups: SidebarGroup[] = [
     items: [
       { icon: BookOpen, label: 'Courses', href: '/admin/courses' },
       { icon: Ticket, label: 'Course Promo Codes', href: '/admin/promo-codes' },
-      { icon: BellRing, label: 'Course Waitlist', href: '/admin/waitlist' },
     ],
   },
   {

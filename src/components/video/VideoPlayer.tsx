@@ -40,10 +40,6 @@ interface VideoPlayerProps {
   onLessonChange: (lessonId: string) => void;
   userEmail?: string;
   lessonTitle?: string;
-  /** When set, playback stops after this many seconds (free preview cap). */
-  previewLimitSeconds?: number | null;
-  /** Called when the free preview limit is reached. */
-  onPreviewLimitReached?: () => void;
 }
 
 // YouTube Player Component with API integration
@@ -82,8 +78,6 @@ export function VideoPlayer({
   onLessonChange,
   userEmail,
   lessonTitle,
-  previewLimitSeconds = null,
-  onPreviewLimitReached,
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -100,18 +94,6 @@ export function VideoPlayer({
   const [buffered, setBuffered] = useState(0);
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(true);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
-  const [previewEnded, setPreviewEnded] = useState(false);
-
-  const hasPreviewCap = typeof previewLimitSeconds === 'number' && previewLimitSeconds > 0;
-
-  // Reset preview gate when the lesson changes
-  useEffect(() => {
-    setPreviewEnded(false);
-  }, [lesson.id, previewLimitSeconds]);
-
-
-
-
 
   const currentIndex = lessons.findIndex(l => l.id === lesson.id);
   const hasPrevious = currentIndex > 0;
@@ -151,20 +133,6 @@ export function VideoPlayer({
 
   // Reference to YouTube player for auto-pause
   const ytPlayerRef = useRef<{ pause: () => void } | null>(null);
-
-  // Stop playback once the free-preview cap is hit
-  const enforcePreviewLimit = useCallback((time: number) => {
-    if (!hasPreviewCap || time < (previewLimitSeconds as number)) return false;
-    const video = videoRef.current;
-    if (video && !video.paused) video.pause();
-    ytPlayerRef.current?.pause();
-    setIsPlaying(false);
-    setPreviewEnded(true);
-    onPreviewLimitReached?.();
-    return true;
-  }, [hasPreviewCap, previewLimitSeconds, onPreviewLimitReached]);
-
-
 
   // Pause video (native + YouTube) when protection is active
   useEffect(() => {
@@ -265,7 +233,6 @@ export function VideoPlayer({
   }, [isYouTube]);
 
   const togglePlay = () => {
-    if (previewEnded) return;
     if (videoRef.current) {
       if (isPlaying) videoRef.current.pause();
       else videoRef.current.play();
@@ -442,17 +409,6 @@ export function VideoPlayer({
         </div>
       )}
 
-      {/* Free preview ended */}
-      {previewEnded && (
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 p-6 text-center">
-          <p className="text-white text-lg font-semibold mb-1">Free preview ended</p>
-          <p className="text-white/80 text-sm max-w-sm">
-            You've watched the free {Math.round((previewLimitSeconds || 0) / 60) || 1}-minute preview. Enroll in this course to continue watching the full lesson.
-          </p>
-        </div>
-      )}
-
-
       {/* YouTube Embed */}
       {isYouTube && youtubeVideoId ? (
         <div key={youtubeVideoId} className={cn("w-full h-full relative", isProtected && "blur-xl pointer-events-none")}>
@@ -461,10 +417,7 @@ export function VideoPlayer({
             videoId={youtubeVideoId}
             lessonId={lesson.id}
             initialProgress={initialProgress}
-            onProgressUpdate={(watched, completed) => {
-              if (enforcePreviewLimit(watched)) return;
-              onProgressUpdate(watched, completed);
-            }}
+            onProgressUpdate={onProgressUpdate}
             lessonDuration={lesson.duration_seconds}
           />
           <DynamicWatermark data={watermarkData} visible={!isProtected && hasAcceptedTerms} />
@@ -498,7 +451,6 @@ export function VideoPlayer({
                 const v = e.currentTarget;
                 setCurrentTime(v.currentTime);
                 if (v.buffered.length > 0) setBuffered(v.buffered.end(v.buffered.length - 1));
-                enforcePreviewLimit(v.currentTime);
               }}
               onContextMenu={(e) => e.preventDefault()}
               onError={(e) => {
