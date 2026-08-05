@@ -23,6 +23,7 @@ import {
   Megaphone,
   FileImage,
   Share2,
+  BellRing,
   X
 } from 'lucide-react';
 import { AdminNotifications } from './AdminNotifications';
