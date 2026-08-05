@@ -152,6 +152,20 @@ export function VideoPlayer({
   // Reference to YouTube player for auto-pause
   const ytPlayerRef = useRef<{ pause: () => void } | null>(null);
 
+  // Stop playback once the free-preview cap is hit
+  const enforcePreviewLimit = useCallback((time: number) => {
+    if (!hasPreviewCap || time < (previewLimitSeconds as number)) return false;
+    const video = videoRef.current;
+    if (video && !video.paused) video.pause();
+    ytPlayerRef.current?.pause();
+    setIsPlaying(false);
+    setPreviewEnded(true);
+    onPreviewLimitReached?.();
+    return true;
+  }, [hasPreviewCap, previewLimitSeconds, onPreviewLimitReached]);
+
+
+
   // Pause video (native + YouTube) when protection is active
   useEffect(() => {
     if (isProtected) {
