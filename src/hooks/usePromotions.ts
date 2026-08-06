@@ -95,7 +95,7 @@ export const useActivePromotionForCourse = (courseId: string) => {
         .rpc('get_active_promotion_for_course', { _course_id: courseId });
       
       if (error) throw error;
-      return data?.[0] as ActivePromotion | undefined;
+      return (data?.[0] as ActivePromotion | undefined) ?? null;
     },
     enabled: !!courseId,
   });
@@ -109,7 +109,7 @@ export const useActivePromotionForSoftware = (productId: string) => {
         .rpc('get_active_promotion_for_software', { _product_id: productId });
       
       if (error) throw error;
-      return data?.[0] as ActivePromotion | undefined;
+      return (data?.[0] as ActivePromotion | undefined) ?? null;
     },
     enabled: !!productId,
   });

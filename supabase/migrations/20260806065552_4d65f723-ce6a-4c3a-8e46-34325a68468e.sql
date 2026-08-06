@@ -1,0 +1,16 @@
+CREATE INDEX IF NOT EXISTS idx_certificates_course_id ON public.certificates(course_id);
+CREATE INDEX IF NOT EXISTS idx_enrollments_promo_code_id ON public.enrollments(promo_code_id);
+CREATE INDEX IF NOT EXISTS idx_promo_code_usage_promo_code_id ON public.promo_code_usage(promo_code_id);
+CREATE INDEX IF NOT EXISTS idx_promo_code_usage_course_id ON public.promo_code_usage(course_id);
+CREATE INDEX IF NOT EXISTS idx_software_purchases_product_id ON public.software_purchases(product_id);
+CREATE INDEX IF NOT EXISTS idx_software_downloads_purchase_id ON public.software_downloads(purchase_id);
+CREATE INDEX IF NOT EXISTS idx_software_downloads_version_id ON public.software_downloads(version_id);
+CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON public.messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_package_purchases_package_id ON public.package_purchases(package_id);
+CREATE INDEX IF NOT EXISTS idx_package_promo_codes_package_id ON public.package_promo_codes(package_id);
+CREATE INDEX IF NOT EXISTS idx_promotion_courses_course_id ON public.promotion_courses(course_id);
+CREATE INDEX IF NOT EXISTS idx_promotion_software_product_id ON public.promotion_software(product_id);
+CREATE INDEX IF NOT EXISTS idx_affiliate_sales_package_id ON public.affiliate_sales(package_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer_id ON public.referrals(referrer_id);
+CREATE INDEX IF NOT EXISTS idx_software_promo_codes_product_id ON public.software_promo_codes(product_id);
+CREATE INDEX IF NOT EXISTS idx_price_history_course_id ON public.price_history(course_id);
