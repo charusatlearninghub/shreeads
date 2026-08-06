@@ -283,6 +283,53 @@ export type Database = {
         }
         Relationships: []
       }
+      course_waitlist: {
+        Row: {
+          course_id: string
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          notified_at: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          notified_at?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          notified_at?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_waitlist_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           affiliate_commission_percent: number
@@ -295,6 +342,10 @@ export type Database = {
           id: string
           is_free: boolean | null
           is_published: boolean | null
+          is_upcoming: boolean
+          launch_date: string | null
+          preview_lesson_limit: number
+          preview_seconds_limit: number
           price: number | null
           thumbnail_url: string | null
           title: string
@@ -311,6 +362,10 @@ export type Database = {
           id?: string
           is_free?: boolean | null
           is_published?: boolean | null
+          is_upcoming?: boolean
+          launch_date?: string | null
+          preview_lesson_limit?: number
+          preview_seconds_limit?: number
           price?: number | null
           thumbnail_url?: string | null
           title: string
@@ -327,6 +382,10 @@ export type Database = {
           id?: string
           is_free?: boolean | null
           is_published?: boolean | null
+          is_upcoming?: boolean
+          launch_date?: string | null
+          preview_lesson_limit?: number
+          preview_seconds_limit?: number
           price?: number | null
           thumbnail_url?: string | null
           title?: string
