@@ -3,7 +3,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { SeoHead } from "@/components/common/SeoHead";
 import { HeroSection } from "@/components/home/HeroSection";
-import { FeaturesSection } from "@/components/home/FeaturesSection";
+
 import { CoursesPreview } from "@/components/home/CoursesPreview";
 import { PackagesPreview } from "@/components/home/PackagesPreview";
 import { SoftwarePreview } from "@/components/home/SoftwarePreview";
@@ -35,7 +35,7 @@ const Index = () => {
       <Header />
       <main>
         <HeroSection />
-        <FeaturesSection />
+        
         <CoursesPreview />
         <PackagesPreview />
         <SoftwarePreview />
