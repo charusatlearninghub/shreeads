@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import FloatingWhatsApp from "@/components/common/FloatingWhatsApp";
 import FloatingDownloadApp from "@/components/common/FloatingDownloadApp";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import RouteTransition from "@/components/common/RouteTransition";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -75,6 +76,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <RouteTransition />
           <div className="min-h-screen pb-20 md:pb-0">
             <Routes>
               <Route path="/" element={<Index />} />
