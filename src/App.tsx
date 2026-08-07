@@ -76,6 +76,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <RouteTransition />
           <div className="min-h-screen pb-20 md:pb-0">
             <Routes>
               <Route path="/" element={<Index />} />
