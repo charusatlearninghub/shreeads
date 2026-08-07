@@ -41,7 +41,7 @@ export function RouteTransition() {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/90 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/90 backdrop-blur-sm"
       role="status"
       aria-live="polite"
       aria-label="Loading page"
