@@ -205,7 +205,7 @@ const Login = () => {
                   variant="hero" 
                   className="w-full" 
                   size="lg"
-                  disabled={isLoading || isGoogleLoading || isAppleLoading}
+                  disabled={isLoading}
                 >
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
