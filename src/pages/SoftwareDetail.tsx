@@ -15,6 +15,8 @@ import {
   Ticket
 } from 'lucide-react';
 import { formatPrice } from '@/lib/price-utils';
+import { isExternalFileUrl, triggerDownload } from '@/lib/download-utils';
+
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { PricingCard, PromoCodeInput, MobileBottomBar } from '@/components/shared';
@@ -147,9 +149,16 @@ const SoftwareDetail = () => {
     }
 
     try {
-      // Free software: skip edge function and open direct file URL
-      if (isFree) {
-        window.open(fileUrl, '_blank');
+      // External link (Mediafire, Telegram, etc.) — open directly
+      if (isExternalFileUrl(fileUrl)) {
+        if (purchase) {
+          await supabase.from('software_downloads').insert({
+            user_id: user.id,
+            purchase_id: purchase.id,
+            version_id: versionId,
+          });
+        }
+        triggerDownload(fileUrl);
         toast.success('Download started!');
         return;
       }
@@ -163,21 +172,22 @@ const SoftwareDetail = () => {
         });
       }
 
-      // Get signed URL
+      // Storage file — get signed URL from edge function
       const { data, error } = await supabase.functions.invoke('get-software-download', {
         body: { versionId, productId },
       });
 
       if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      if (data?.error) throw new Error(data.error);
+      if (!data?.url) throw new Error('Download link unavailable');
 
-      // Open download link
-      window.open(data.url, '_blank');
+      triggerDownload(data.url);
       toast.success('Download started!');
     } catch (error: any) {
       toast.error(error.message || 'Failed to start download');
     }
   };
+
 
   const formatFileSize = (bytes: number | null) => {
     if (!bytes) return 'Unknown size';

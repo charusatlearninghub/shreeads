@@ -83,10 +83,19 @@ Deno.serve(async (req) => {
       );
     }
 
+    // External / absolute URL — return as-is
+    if (/^https?:\/\//i.test(version.file_url)) {
+      return new Response(
+        JSON.stringify({ url: version.file_url }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Generate signed URL (valid for 1 hour)
     const { data: signedUrl, error: urlError } = await supabase.storage
       .from('software-files')
-      .createSignedUrl(version.file_url, 3600);
+      .createSignedUrl(version.file_url, 3600, { download: true });
+
 
     if (urlError || !signedUrl) {
       console.error('Failed to generate signed URL:', urlError);

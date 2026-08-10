@@ -13,6 +13,8 @@ import {
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { isExternalFileUrl, triggerDownload } from '@/lib/download-utils';
+
 
 const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   android: Smartphone,
@@ -76,15 +78,6 @@ const MySoftware = () => {
     purchaseId: string
   ) => {
     try {
-      const isFree = product?.is_free === true || (product?.price != null && product.price === 0);
-
-      // Free software: skip edge function and open direct file URL
-      if (isFree) {
-        window.open(version.file_url, '_blank');
-        toast.success('Download started!');
-        return;
-      }
-
       // Log download
       await supabase.from('software_downloads').insert({
         user_id: user!.id,
@@ -92,20 +85,29 @@ const MySoftware = () => {
         version_id: version.id,
       });
 
+      // External link (Mediafire, Telegram, etc.) — open directly
+      if (isExternalFileUrl(version.file_url)) {
+        triggerDownload(version.file_url);
+        toast.success('Download started!');
+        return;
+      }
+
       // Get signed URL
       const { data, error } = await supabase.functions.invoke('get-software-download', {
         body: { versionId: version.id, productId },
       });
 
       if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      if (data?.error) throw new Error(data.error);
+      if (!data?.url) throw new Error('Download link unavailable');
 
-      window.open(data.url, '_blank');
+      triggerDownload(data.url);
       toast.success('Download started!');
     } catch (error: any) {
       toast.error(error.message || 'Failed to start download');
     }
   };
+
 
   return (
     <DashboardLayout 
