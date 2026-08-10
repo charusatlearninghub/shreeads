@@ -15,6 +15,8 @@ import {
   Ticket
 } from 'lucide-react';
 import { formatPrice } from '@/lib/price-utils';
+import { isExternalFileUrl, triggerDownload } from '@/lib/download-utils';
+
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { PricingCard, PromoCodeInput, MobileBottomBar } from '@/components/shared';
