@@ -13,6 +13,8 @@ import {
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { isExternalFileUrl, triggerDownload } from '@/lib/download-utils';
+
 
 const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   android: Smartphone,
