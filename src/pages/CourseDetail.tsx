@@ -30,6 +30,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CourseReviewForm } from '@/components/course/CourseReviewForm';
 import { CourseReviews } from '@/components/course/CourseReviews';
+import { CourseMaterials } from '@/components/course/CourseMaterials';
 import { CoursePriceDisplay } from '@/components/course/CoursePriceDisplay';
 import { PromotionalBanner } from '@/components/promotions/PromotionalBanner';
 import { LegalAgreementNote } from '@/components/common/LegalAgreementNote';
