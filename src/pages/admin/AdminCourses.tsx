@@ -19,7 +19,8 @@ import {
   GripVertical,
   Percent,
   XCircle,
-  EyeOff
+  EyeOff,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +35,7 @@ import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { CourseMaterialsManager } from '@/components/admin/CourseMaterialsManager';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -188,6 +190,7 @@ const AdminCourses = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCourseDialog, setShowCourseDialog] = useState(false);
   const [showLessonsDialog, setShowLessonsDialog] = useState(false);
+  const [showMaterialsDialog, setShowMaterialsDialog] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -863,6 +866,7 @@ const AdminCourses = () => {
                     actions={
                       <>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openLessonsDialog(course)}><Video className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedCourse(course); setShowMaterialsDialog(true); }}><FileText className="w-4 h-4" /></Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditCourse(course)}><Edit className="w-4 h-4" /></Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDuplicateCourse(course)}><Copy className="w-4 h-4" /></Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteCourse(course.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
@@ -927,6 +931,7 @@ const AdminCourses = () => {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
                           <Button variant="ghost" size="icon" onClick={() => openLessonsDialog(course)} title="Manage lessons"><Video className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => { setSelectedCourse(course); setShowMaterialsDialog(true); }} title="Manage PDFs"><FileText className="w-4 h-4" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => openEditCourse(course)} title="Edit course"><Edit className="w-4 h-4" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleDuplicateCourse(course)} title="Duplicate course"><Copy className="w-4 h-4" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleDeleteCourse(course.id)} title="Delete course"><Trash2 className="w-4 h-4 text-destructive" /></Button>
@@ -952,6 +957,17 @@ const AdminCourses = () => {
             <DialogTitle>{editingCourse ? 'Edit Course' : 'Create Course'}</DialogTitle>
           </DialogHeader>
           {courseFormContent}
+        </DialogContent>
+      </Dialog>
+
+      {/* Materials Dialog */}
+      <Dialog open={showMaterialsDialog} onOpenChange={setShowMaterialsDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Course Materials (PDFs)</DialogTitle>
+            <DialogDescription>{selectedCourse?.title}</DialogDescription>
+          </DialogHeader>
+          {selectedCourse && <CourseMaterialsManager courseId={selectedCourse.id} />}
         </DialogContent>
       </Dialog>
 

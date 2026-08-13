@@ -30,6 +30,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CourseReviewForm } from '@/components/course/CourseReviewForm';
 import { CourseReviews } from '@/components/course/CourseReviews';
+import { CourseMaterials } from '@/components/course/CourseMaterials';
 import { CoursePriceDisplay } from '@/components/course/CoursePriceDisplay';
 import { PromotionalBanner } from '@/components/promotions/PromotionalBanner';
 import { LegalAgreementNote } from '@/components/common/LegalAgreementNote';
@@ -412,6 +413,11 @@ const CourseDetail = () => {
       {/* Course Content */}
       <section className="py-8 sm:py-12 lg:py-16 pb-40 sm:pb-12 lg:pb-16">
         <div className="container mx-auto px-4">
+          <CourseMaterials
+            courseId={course.id}
+            hasAccess={isEnrolled || course.is_free === true || (course.price != null && Number(course.price) === 0)}
+          />
+
           <h2 className="text-2xl font-display font-bold mb-8">
             What's Included in This Course
           </h2>
