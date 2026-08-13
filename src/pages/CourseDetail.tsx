@@ -412,6 +412,11 @@ const CourseDetail = () => {
       {/* Course Content */}
       <section className="py-8 sm:py-12 lg:py-16 pb-40 sm:pb-12 lg:pb-16">
         <div className="container mx-auto px-4">
+          <CourseMaterials
+            courseId={course.id}
+            hasAccess={isEnrolled || course.is_free === true || (course.price != null && Number(course.price) === 0)}
+          />
+
           <h2 className="text-2xl font-display font-bold mb-8">
             What's Included in This Course
           </h2>
