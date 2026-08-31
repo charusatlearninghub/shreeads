@@ -43,12 +43,12 @@ export const Header = () => {
   };
   const displayName = profile?.full_name || profile?.email?.split('@')[0] || 'User';
   const initials = displayName.charAt(0).toUpperCase();
-  return <header className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border/50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+  return <header className="fixed top-0 left-0 right-0 z-[10000] w-full bg-card/80 backdrop-blur-xl border-b border-border/50 md:sticky" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+      <div className="container mx-auto px-2 sm:px-4">
+        <div className="flex items-center justify-between gap-2 h-[64px] sm:h-16 lg:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <img alt="SHREE ADS" className="h-14 sm:h-16 lg:h-20 w-auto object-contain" src={logo} />
+          <Link to="/" className="flex min-w-0 items-center gap-2 group">
+            <img alt="SHREE ADS" className="h-10 w-auto max-w-[110px] object-contain sm:h-12 sm:max-w-[130px] lg:h-20 lg:max-w-none" src={logo} />
           </Link>
 
           {/* Desktop Navigation */}
@@ -99,25 +99,25 @@ export const Header = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center gap-2">
+          <div className="lg:hidden flex items-center gap-1.5 sm:gap-2 min-w-0">
             {!isLoading && !user && (
               <Button
                 size="sm"
                 variant="default"
-                className="h-9 px-3 rounded-lg"
+                className="h-8 px-2.5 text-xs rounded-lg sm:h-9 sm:px-3 sm:text-sm"
                 asChild
               >
-                <Link to="/login">
+                <Link to="/login" className="whitespace-nowrap">
                   Login
                 </Link>
               </Button>
             )}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg hover:bg-secondary transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-secondary transition-colors shrink-0"
               aria-label={isOpen ? "Close menu" : "Open menu"}
             >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
           </div>
         </div>

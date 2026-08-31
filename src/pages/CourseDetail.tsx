@@ -242,11 +242,10 @@ const CourseDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PromotionalBanner variant="compact" />
       <Header />
 
       {/* Hero Section */}
-      <section className="relative pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12 lg:pb-16 bg-gradient-to-br from-primary/10 via-background to-accent/10">
+      <section className="relative pb-8 sm:pb-12 lg:pb-16 bg-gradient-to-br from-primary/10 via-background to-accent/10">
         <div className="container mx-auto px-4">
           <Link 
             to="/courses" 
@@ -411,7 +410,7 @@ const CourseDetail = () => {
       </section>
 
       {/* Course Content */}
-      <section className="py-8 sm:py-12 lg:py-16 pb-40 sm:pb-12 lg:pb-16">
+      <section className="py-8 pb-32 sm:py-12 sm:pb-24 lg:py-16 lg:pb-16">
         <div className="container mx-auto px-4">
           <CourseMaterials
             courseId={course.id}

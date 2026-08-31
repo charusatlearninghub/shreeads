@@ -8,7 +8,7 @@ import { usePlatformStats, formatStat } from "@/hooks/usePlatformStats";
 export const HeroSection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { stats: platformStats } = usePlatformStats();
+  const { data: platformStats, isLoading, isError } = usePlatformStats();
 
   const handleStartLearning = () => {
     navigate(user ? "/dashboard/courses" : "/login");
@@ -23,13 +23,21 @@ export const HeroSection = () => {
   };
 
   const stats = [
-    { icon: Users, value: formatStat(platformStats.activeStudents), label: "Active Students" },
-    { icon: BookOpen, value: formatStat(platformStats.videoLessons), label: "Video Lessons" },
-    { icon: Award, value: formatStat(platformStats.expertCourses), label: "Expert Courses" },
+    { icon: Users, value: platformStats?.activeStudents, label: "Active Students" },
+    { icon: BookOpen, value: platformStats?.videoLessons, label: "Video Lessons" },
+    { icon: Award, value: platformStats?.expertCourses, label: "Expert Courses" },
   ];
 
+  const renderStat = (value: number | undefined) => {
+    if (isLoading) {
+      return <span className="inline-block h-6 w-12 animate-pulse rounded bg-current/20 align-middle" aria-label="Loading" />;
+    }
+    if (isError || value === undefined) return <span className="text-sm text-muted-foreground">Unavailable</span>;
+    return formatStat(value);
+  };
+
   return (
-    <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+    <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-surface" />
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -113,7 +121,7 @@ export const HeroSection = () => {
                 >
                   <div className="flex items-center gap-2 justify-center lg:justify-start mb-1">
                     <stat.icon className="w-5 h-5 text-primary" />
-                    <span className="font-display text-lg sm:text-2xl font-bold">{stat.value}</span>
+                    <span className="font-display text-lg sm:text-2xl font-bold">{renderStat(stat.value)}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
                 </motion.div>
@@ -137,7 +145,7 @@ export const HeroSection = () => {
                       <Play className="w-10 h-10 text-primary-foreground" />
                     </div>
                     <h3 className="font-display text-2xl font-bold mb-2">Start Watching</h3>
-                    <p className="text-muted-foreground">{formatStat(platformStats.videoLessons)} Video Lessons Available</p>
+                    <p className="text-muted-foreground">{renderStat(platformStats?.videoLessons)} Video Lessons Available</p>
                   </div>
                 </div>
                 <div className="p-6 border-t border-border/50">
@@ -151,7 +159,7 @@ export const HeroSection = () => {
                       ))}
                     </div>
                     <div>
-                      <p className="font-semibold">Join {formatStat(platformStats.activeStudents)} Students</p>
+                      <p className="font-semibold">Join {renderStat(platformStats?.activeStudents)} Students</p>
                       <p className="text-sm text-muted-foreground">Learning right now</p>
                     </div>
                   </div>

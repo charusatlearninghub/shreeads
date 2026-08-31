@@ -403,9 +403,8 @@ const Courses = () => {
   // Public layout for non-logged-in users
   return (
     <div className="min-h-screen bg-background">
-      <PromotionalBanner variant="compact" />
       <Header />
-      <main className="pt-20 lg:pt-24 pb-16">
+      <main className="pb-16 lg:pt-4">
         <div className="container mx-auto px-4">
           <PromotionalBanner variant="full" className="mb-8 rounded-2xl overflow-hidden" />
           <motion.div

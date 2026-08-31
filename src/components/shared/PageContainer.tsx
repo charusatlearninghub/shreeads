@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 interface PageContainerProps {
   children: ReactNode;
   className?: string;
-  /** Adds the standard pt-24/28/32 top padding for fixed header. Default true. */
+  /** Adds the page-specific top spacing only when explicitly needed. Default false to avoid duplicate fixed-header offsets. */
   withTopPadding?: boolean;
   /** Adds bottom padding so content clears the mobile bottom nav / sticky bar. */
   withBottomPadding?: boolean;
@@ -27,7 +27,7 @@ const sizeMap = {
 export function PageContainer({
   children,
   className,
-  withTopPadding = true,
+  withTopPadding = false,
   withBottomPadding = true,
   size = "xl",
 }: PageContainerProps) {
@@ -36,8 +36,8 @@ export function PageContainer({
       className={cn(
         "container mx-auto px-4 sm:px-6 lg:px-8",
         sizeMap[size],
-        withTopPadding && "pt-24 sm:pt-28 lg:pt-32",
-        withBottomPadding && "pb-24 md:pb-16",
+        withTopPadding && "pt-4 sm:pt-6",
+        withBottomPadding && "pb-28 sm:pb-24 md:pb-16",
         className
       )}
     >

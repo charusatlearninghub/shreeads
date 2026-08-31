@@ -31,9 +31,9 @@ const Index = () => {
         title="ShreeAds – Learn Digital Marketing & Software Skills"
         description="ShreeAds offers professional courses in digital marketing, software skills, and career development. Enroll now and learn from experts with certificates and hands-on projects."
       />
-      <PromotionalBanner variant="compact" />
       <Header />
       <main>
+        <PromotionalBanner variant="compact" />
         <HeroSection />
         
         <CoursesPreview />

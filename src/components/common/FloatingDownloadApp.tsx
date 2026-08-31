@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 const FloatingDownloadApp = () => {
   const location = useLocation();
-  
+
   if (location.pathname !== '/') return null;
 
   return (
@@ -17,11 +17,14 @@ const FloatingDownloadApp = () => {
       transition={{ delay: 0.8, type: "spring", stiffness: 180 }}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      className="fixed bottom-[calc(5rem+3.5rem)] md:bottom-[calc(1.5rem+3.5rem+0.75rem)] right-4 md:right-6 z-40 h-[50px] px-5 rounded-full bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow-lg shadow-purple-500/30 flex items-center gap-2 font-semibold text-sm hover:shadow-xl hover:shadow-purple-500/40 transition-shadow"
+      className="download-app-button flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow-lg shadow-purple-500/30 transition-shadow hover:shadow-xl hover:shadow-purple-500/40 h-11 px-3 text-xs md:h-[50px] md:px-5 md:text-sm"
       aria-label="Download App"
+      style={{
+        maxWidth: 'calc(100vw - 24px)',
+      }}
     >
-      <Download className="w-5 h-5" />
-      <span>Download App</span>
+      <Download className="h-4 w-4 shrink-0 md:h-5 md:w-5" />
+      <span className="truncate whitespace-nowrap">Download App</span>
 
       {/* Pulse glow ring */}
       <span className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-blue-500 animate-[pulse-glow_4s_ease-in-out_infinite] opacity-0 pointer-events-none" />

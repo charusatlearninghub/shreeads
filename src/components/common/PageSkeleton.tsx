@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 export function PageSkeleton() {
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 pb-16">
       {/* Hero */}
       <div className="space-y-4">
         <Skeleton className="h-8 w-40 rounded-full motion-reduce:animate-none" />

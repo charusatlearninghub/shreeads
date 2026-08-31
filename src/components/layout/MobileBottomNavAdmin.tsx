@@ -42,7 +42,7 @@ export default function MobileBottomNavAdmin() {
   const isActive = (href: string) => location.pathname === href;
 
   const baseBtn =
-    "min-h-11 flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-xl transition-colors";
+    "min-h-11 flex flex-col items-center justify-center gap-1 px-1 py-2 rounded-xl transition-colors min-w-0 flex-1";
   const activeBtn = "text-primary";
   const inactiveBtn = "text-muted-foreground hover:text-foreground";
 
@@ -58,17 +58,18 @@ export default function MobileBottomNavAdmin() {
   return (
     <div
       ref={rootRef}
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card md:hidden h-16"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card md:hidden h-[4.25rem]"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className="mx-auto h-full w-full max-w-2xl px-2 pb-[calc(env(safe-area-inset-bottom,0px)+6px)] overflow-visible">
+      <div className="mx-auto h-full w-full max-w-2xl px-2 overflow-visible">
         <div className="grid h-full grid-cols-6 gap-1 items-center overflow-visible">
           <Link
             to="/admin"
             className={cn(baseBtn, isActive("/admin") ? activeBtn : inactiveBtn)}
             aria-label="Admin Dashboard"
           >
-            <LayoutDashboard className="w-5 h-5" />
-            <span className="text-[11px] font-medium">Dashboard</span>
+            <LayoutDashboard className="w-5 h-5 shrink-0" />
+            <span className="text-[10px] sm:text-[11px] font-medium leading-none whitespace-nowrap truncate">Dashboard</span>
           </Link>
 
           <div className="relative isolate z-[999] flex flex-col items-center overflow-visible">
@@ -85,10 +86,10 @@ export default function MobileBottomNavAdmin() {
               aria-label="Course Management"
               aria-expanded={open === "courses"}
             >
-              <BookOpen className="w-5 h-5" />
-              <span className="text-[11px] font-medium flex items-center gap-1">
+              <BookOpen className="w-5 h-5 shrink-0" />
+              <span className="text-[10px] sm:text-[11px] font-medium leading-none flex items-center gap-1 whitespace-nowrap">
                 Courses
-                <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open === "courses" && "rotate-180")} />
+                <ChevronDown className={cn("w-3 h-3 transition-transform", open === "courses" && "rotate-180")} />
               </span>
             </button>
 
@@ -122,10 +123,10 @@ export default function MobileBottomNavAdmin() {
               aria-label="Software Management"
               aria-expanded={open === "software"}
             >
-              <Package className="w-5 h-5" />
-              <span className="text-[11px] font-medium flex items-center gap-1">
+              <Package className="w-5 h-5 shrink-0" />
+              <span className="text-[10px] sm:text-[11px] font-medium leading-none flex items-center gap-1 whitespace-nowrap">
                 Software
-                <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open === "software" && "rotate-180")} />
+                <ChevronDown className={cn("w-3 h-3 transition-transform", open === "software" && "rotate-180")} />
               </span>
             </button>
 
@@ -160,10 +161,10 @@ export default function MobileBottomNavAdmin() {
               aria-label="User Management"
               aria-expanded={open === "users"}
             >
-              <Users className="w-5 h-5" />
-              <span className="text-[11px] font-medium flex items-center gap-1">
+              <Users className="w-5 h-5 shrink-0" />
+              <span className="text-[10px] sm:text-[11px] font-medium leading-none flex items-center gap-1 whitespace-nowrap">
                 Users
-                <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open === "users" && "rotate-180")} />
+                <ChevronDown className={cn("w-3 h-3 transition-transform", open === "users" && "rotate-180")} />
               </span>
             </button>
 
@@ -202,10 +203,10 @@ export default function MobileBottomNavAdmin() {
               aria-label="Marketing"
               aria-expanded={open === "marketing"}
             >
-              <Megaphone className="w-5 h-5" />
-              <span className="text-[11px] font-medium flex items-center gap-1">
+              <Megaphone className="w-5 h-5 shrink-0" />
+              <span className="text-[10px] sm:text-[11px] font-medium leading-none flex items-center gap-1 whitespace-nowrap">
                 Marketing
-                <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open === "marketing" && "rotate-180")} />
+                <ChevronDown className={cn("w-3 h-3 transition-transform", open === "marketing" && "rotate-180")} />
               </span>
             </button>
 
@@ -244,10 +245,10 @@ export default function MobileBottomNavAdmin() {
               aria-label="Analytics"
               aria-expanded={open === "analytics"}
             >
-              <BarChart3 className="w-5 h-5" />
-              <span className="text-[11px] font-medium flex items-center gap-1">
+              <BarChart3 className="w-5 h-5 shrink-0" />
+              <span className="text-[10px] sm:text-[11px] font-medium leading-none flex items-center gap-1 whitespace-nowrap">
                 Analytics
-                <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open === "analytics" && "rotate-180")} />
+                <ChevronDown className={cn("w-3 h-3 transition-transform", open === "analytics" && "rotate-180")} />
               </span>
             </button>
 

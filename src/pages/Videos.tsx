@@ -48,7 +48,7 @@ const Videos = () => {
         description="Watch free marketing video tutorials and learn digital marketing from experts. Browse our video library and improve your skills with ShreeAds."
       />
       <Header />
-      <main className="pt-24 sm:pt-28 lg:pt-32 pb-16">
+      <main className="pb-16">
         <div className="container mx-auto px-4">
           {/* Page Header */}
           <motion.div

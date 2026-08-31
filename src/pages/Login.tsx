@@ -8,8 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/new-logo.png";
+import { formatStat, usePlatformStats } from "@/hooks/usePlatformStats";
 
 const Login = () => {
+  const { data: platformStats, isLoading: isStatsLoading, isError: isStatsError } = usePlatformStats();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -108,7 +110,9 @@ const Login = () => {
                 <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
                   <span className="text-lg">📚</span>
                 </div>
-                <span>Access 500+ Video Lessons</span>
+                <span>
+                  Access {isStatsLoading ? "our" : isStatsError || !platformStats ? "available" : formatStat(platformStats.videoLessons)} video lessons
+                </span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">

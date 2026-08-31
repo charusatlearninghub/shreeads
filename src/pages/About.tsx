@@ -5,6 +5,7 @@ import { Target, Eye, Heart, Users, Award, BookOpen, Sparkles, TrendingUp, Shiel
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import logo from "@/assets/new-logo.png";
+import { formatStat, usePlatformStats } from "@/hooks/usePlatformStats";
 const values = [{
   icon: Target,
   title: "Our Mission",
@@ -43,24 +44,24 @@ const features = [{
   title: "Career Growth",
   description: "Skills that directly translate to better job opportunities and career advancement."
 }];
-const stats = [{
-  value: "1000+",
-  label: "Happy Students"
-}, {
-  value: "50+",
-  label: "Expert Courses"
-}, {
-  value: "95%",
-  label: "Success Rate"
-}, {
-  value: "24/7",
-  label: "Support"
-}];
 const About = () => {
+  const { data: platformStats, isLoading, isError } = usePlatformStats();
+  const stats = [
+    { value: platformStats?.activeStudents, label: "Active Students" },
+    { value: platformStats?.videoLessons, label: "Video Lessons" },
+    { value: platformStats?.expertCourses, label: "Expert Courses" },
+  ];
+
+  const renderStat = (value: number | undefined) => {
+    if (isLoading) return "Loading...";
+    if (isError || value === undefined) return "Unavailable";
+    return formatStat(value);
+  };
+
   return <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="pt-20 lg:pt-24">
+      <main>
         {/* Hero Section */}
         <section className="relative py-20 lg:py-32 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-purple-500/5" />
@@ -169,7 +170,7 @@ const About = () => {
         {/* Stats Section */}
         <section className="py-16 bg-gradient-to-r from-primary to-purple-600">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               {stats.map((stat, index) => <motion.div key={stat.label} initial={{
               opacity: 0,
               y: 20
@@ -183,7 +184,7 @@ const About = () => {
               delay: index * 0.1
             }} className="text-center">
                   <div className="text-4xl sm:text-5xl font-bold text-white mb-2">
-                    {stat.value}
+                    {renderStat(stat.value)}
                   </div>
                   <div className="text-white/80 text-sm sm:text-base">
                     {stat.label}

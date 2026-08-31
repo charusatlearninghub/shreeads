@@ -4,10 +4,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Sparkles, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatStat, usePlatformStats } from "@/hooks/usePlatformStats";
 
 export const CTASection = forwardRef<HTMLElement>((_, ref) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { data: platformStats, isLoading, isError } = usePlatformStats();
 
   const handleGetStarted = () => {
     navigate(user ? "/dashboard/courses" : "/login");
@@ -56,7 +58,7 @@ export const CTASection = forwardRef<HTMLElement>((_, ref) => {
               {/* Description */}
               <p className="text-lg opacity-90 max-w-2xl mx-auto mb-10">
                 Get access to exclusive promo codes and enroll in premium courses. 
-                Join our community of 10,000+ successful learners.
+                Join our growing community of learners.
               </p>
 
               {/* Buttons */}
@@ -85,25 +87,26 @@ export const CTASection = forwardRef<HTMLElement>((_, ref) => {
               </div>
 
               {/* Trust Badges */}
-              <div className="mt-8 sm:mt-12 grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-4 sm:gap-8 opacity-80">
+              <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 items-center justify-center gap-4 sm:gap-8 opacity-80">
                 <div className="text-center">
-                  <div className="text-xl sm:text-2xl font-bold">10,000+</div>
-                  <div className="text-sm opacity-80">Students</div>
+                  <div className="text-xl sm:text-2xl font-bold">
+                    {isLoading ? "Loading..." : isError || !platformStats ? "Unavailable" : formatStat(platformStats.activeStudents)}
+                  </div>
+                  <div className="text-sm opacity-80">Active Students</div>
                 </div>
                 <div className="hidden sm:block w-px h-10 bg-white/30" />
                 <div className="text-center">
-                  <div className="text-xl sm:text-2xl font-bold">50+</div>
-                  <div className="text-sm opacity-80">Courses</div>
+                  <div className="text-xl sm:text-2xl font-bold">
+                    {isLoading ? "Loading..." : isError || !platformStats ? "Unavailable" : formatStat(platformStats.expertCourses)}
+                  </div>
+                  <div className="text-sm opacity-80">Expert Courses</div>
                 </div>
                 <div className="hidden sm:block w-px h-10 bg-white/30" />
                 <div className="text-center">
-                  <div className="text-xl sm:text-2xl font-bold">4.9★</div>
-                  <div className="text-sm opacity-80">Rating</div>
-                </div>
-                <div className="hidden sm:block w-px h-10 bg-white/30" />
-                <div className="text-center">
-                  <div className="text-xl sm:text-2xl font-bold">500+</div>
-                  <div className="text-sm opacity-80">Videos</div>
+                  <div className="text-xl sm:text-2xl font-bold">
+                    {isLoading ? "Loading..." : isError || !platformStats ? "Unavailable" : formatStat(platformStats.videoLessons)}
+                  </div>
+                  <div className="text-sm opacity-80">Video Lessons</div>
                 </div>
               </div>
             </div>

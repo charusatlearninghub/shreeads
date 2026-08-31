@@ -419,7 +419,7 @@ const Register = () => {
               Start Your Success<br />Story Today
             </h1>
             <p className="text-lg opacity-90 mb-8 max-w-md">
-              Join our community of 10,000+ learners and transform your career with premium video courses.
+              Join our community of learners and transform your career with premium video courses.
             </p>
 
             <div className="space-y-4">

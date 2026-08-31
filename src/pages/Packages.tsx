@@ -55,7 +55,7 @@ export default function Packages() {
         description="Save more with curated learning bundles combining multiple courses and software tools at a discounted price."
       />
       <Header />
-      <main className="pt-32 md:pt-28 pb-20">
+      <main className="pb-20">
         <section className="container mx-auto px-4">
           <div className="text-center mb-10">
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">

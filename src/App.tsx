@@ -77,7 +77,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <RouteTransition />
-          <div className="min-h-screen pb-20 md:pb-0">
+          <div className="app-shell min-h-screen md:pb-0">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />

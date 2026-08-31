@@ -125,7 +125,7 @@ const Contact = () => {
       <Header />
 
       {/* Hero Section — padding clears fixed header (logo row h-16 / lg:h-20) */}
-      <section className="relative pt-28 sm:pt-32 lg:pt-32 pb-8 sm:pb-12 lg:pb-16 bg-gradient-to-br from-primary/10 via-background to-accent/10">
+      <section className="relative pt-6 sm:pt-8 lg:pt-8 pb-8 sm:pb-12 lg:pb-16 bg-gradient-to-br from-primary/10 via-background to-accent/10">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
