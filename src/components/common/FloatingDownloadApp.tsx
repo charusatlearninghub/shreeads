@@ -9,7 +9,7 @@ const FloatingDownloadApp = () => {
 
   return (
     <motion.a
-      href="https://t.me/shree_ads"
+      href="https://github.com/charusatlearninghub/shreeads/releases/download/v1.0.0/ShreeAds.apk"
       target="_blank"
       rel="noopener noreferrer"
       initial={{ y: 40, opacity: 0 }}
