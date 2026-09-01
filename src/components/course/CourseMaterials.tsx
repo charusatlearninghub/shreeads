@@ -85,8 +85,16 @@ export function CourseMaterials({ courseId, hasAccess }: Props) {
   const handlePreview = async (material: CourseMaterial) => {
     setPreviewingId(material.id);
     try {
-      const url = await getSignedUrl(material, false);
-      setPreview({ title: material.title, url });
+      const [url, downloadUrl] = await Promise.all([
+        getSignedUrl(material, false),
+        getSignedUrl(material, true),
+      ]);
+      setPreview({
+        title: material.title,
+        url,
+        downloadUrl,
+        fileName: material.file_name || `${material.title}.pdf`,
+      });
     } catch (err: any) {
       toast({
         title: 'Preview unavailable',
