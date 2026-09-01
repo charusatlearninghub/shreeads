@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Download, Eye, FileText, Loader2, Lock, ExternalLink } from 'lucide-react';
+import { Download, Eye, FileText, Loader2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatFileSize, type CourseMaterial } from '@/components/admin/CourseMaterialsManager';
+import { PdfPreviewDialog, type PdfPreviewTarget } from '@/components/common/PdfPreviewDialog';
 
 interface Props {
   courseId: string;
@@ -20,7 +20,7 @@ export function CourseMaterials({ courseId, hasAccess }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [previewingId, setPreviewingId] = useState<string | null>(null);
-  const [preview, setPreview] = useState<{ title: string; url: string } | null>(null);
+  const [preview, setPreview] = useState<PdfPreviewTarget | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -85,8 +85,16 @@ export function CourseMaterials({ courseId, hasAccess }: Props) {
   const handlePreview = async (material: CourseMaterial) => {
     setPreviewingId(material.id);
     try {
-      const url = await getSignedUrl(material, false);
-      setPreview({ title: material.title, url });
+      const [url, downloadUrl] = await Promise.all([
+        getSignedUrl(material, false),
+        getSignedUrl(material, true),
+      ]);
+      setPreview({
+        title: material.title,
+        url,
+        downloadUrl,
+        fileName: material.file_name || `${material.title}.pdf`,
+      });
     } catch (err: any) {
       toast({
         title: 'Preview unavailable',
@@ -161,32 +169,7 @@ export function CourseMaterials({ courseId, hasAccess }: Props) {
         ))}
       </div>
 
-      <Dialog open={!!preview} onOpenChange={(open) => !open && setPreview(null)}>
-        <DialogContent className="max-w-4xl w-[95vw] h-[85vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="p-4 pb-3 border-b">
-            <DialogTitle className="truncate pr-8 text-left">{preview?.title}</DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 min-h-0 bg-muted">
-            {preview && (
-              <iframe
-                src={`${preview.url}#toolbar=0`}
-                title={preview.title}
-                className="w-full h-full border-0"
-              />
-            )}
-          </div>
-          <div className="p-3 border-t flex justify-end">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => preview && window.open(preview.url, '_blank', 'noopener,noreferrer')}
-            >
-              <ExternalLink className="w-4 h-4 mr-1" />
-              Open in new tab
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PdfPreviewDialog target={preview} onClose={() => setPreview(null)} />
     </div>
   );
 }
