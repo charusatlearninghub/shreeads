@@ -169,32 +169,7 @@ export function CourseMaterials({ courseId, hasAccess }: Props) {
         ))}
       </div>
 
-      <Dialog open={!!preview} onOpenChange={(open) => !open && setPreview(null)}>
-        <DialogContent className="max-w-4xl w-[95vw] h-[85vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="p-4 pb-3 border-b">
-            <DialogTitle className="truncate pr-8 text-left">{preview?.title}</DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 min-h-0 bg-muted">
-            {preview && (
-              <iframe
-                src={`${preview.url}#toolbar=0`}
-                title={preview.title}
-                className="w-full h-full border-0"
-              />
-            )}
-          </div>
-          <div className="p-3 border-t flex justify-end">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => preview && window.open(preview.url, '_blank', 'noopener,noreferrer')}
-            >
-              <ExternalLink className="w-4 h-4 mr-1" />
-              Open in new tab
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PdfPreviewDialog target={preview} onClose={() => setPreview(null)} />
     </div>
   );
 }
