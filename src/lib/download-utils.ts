@@ -28,13 +28,9 @@ export const triggerDownload = (url: string) => {
  * attachment, the page itself never navigates away.
  */
 export const startAttachmentDownload = (url: string) => {
-  try {
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = url;
-    document.body.appendChild(iframe);
-    setTimeout(() => iframe.remove(), 60_000);
-  } catch {
-    window.location.href = url;
-  }
+  // Navigating the current document is the most reliable cross-browser way to
+  // fetch an attachment response (desktop Chrome/Edge, Android Chrome, iOS).
+  // The page does not actually navigate because the server responds with
+  // Content-Disposition: attachment.
+  window.location.href = url;
 };
