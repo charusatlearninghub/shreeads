@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Download, Eye, FileText, Loader2, Lock, ExternalLink } from 'lucide-react';
+import { Download, Eye, FileText, Loader2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatFileSize, type CourseMaterial } from '@/components/admin/CourseMaterialsManager';
+import { PdfPreviewDialog, type PdfPreviewTarget } from '@/components/common/PdfPreviewDialog';
 
 interface Props {
   courseId: string;
@@ -20,7 +20,7 @@ export function CourseMaterials({ courseId, hasAccess }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [previewingId, setPreviewingId] = useState<string | null>(null);
-  const [preview, setPreview] = useState<{ title: string; url: string } | null>(null);
+  const [preview, setPreview] = useState<PdfPreviewTarget | null>(null);
 
   useEffect(() => {
     let active = true;
