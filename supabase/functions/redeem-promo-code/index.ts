@@ -207,7 +207,8 @@ Deno.serve(async (req) => {
       finalPricePaid,
     });
 
-    const { error: updateError } = await supabaseClient
+    // Atomic claim: only succeeds while the code is still unused (guards concurrent redeems)
+    const { data: claimed, error: updateError } = await supabaseClient
       .from('promo_codes')
       .update({
         is_used: true,
@@ -215,15 +216,18 @@ Deno.serve(async (req) => {
         used_at: new Date().toISOString(),
       })
       .eq('id', promoCode.id)
-      .eq('is_used', false);
+      .eq('is_used', false)
+      .select('id');
 
     if (updateError) {
       console.error('Error updating promo code:', updateError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to redeem promo code' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return fail('CLAIM_FAILED', 'Unable to redeem promo code. Please try again.', 500);
     }
+
+    if (!claimed || claimed.length === 0) {
+      return fail('PROMO_ALREADY_USED', 'This promo code has already been used.', 409);
+    }
+
 
     // Create the enrollment (DB trigger fills pricing if any column is missing / zero)
     const { data: enrollment, error: enrollmentError } = await supabaseClient
