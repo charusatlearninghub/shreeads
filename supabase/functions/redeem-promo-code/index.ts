@@ -30,46 +30,72 @@ function singleEmbed<T>(v: T | T[] | null | undefined): T | null {
   return v;
 }
 
+const json = (body: Record<string, unknown>, status: number) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+
+/** Uniform error shape so the client can always surface a safe, specific message. */
+const fail = (code: string, message: string, status: number) =>
+  json({ success: false, code, error: message, message }, status);
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (req.method !== 'POST') {
+    return fail('METHOD_NOT_ALLOWED', 'Unsupported request method.', 405);
+  }
+
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    // Get the authorization header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'No authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY');
+      return fail(
+        'SERVER_MISCONFIGURED',
+        'Unable to redeem promo code. Please try again.',
+        500,
       );
     }
 
-    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
-    
-    const token = authHeader.replace('Bearer ', '');
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization') ?? req.headers.get('authorization');
+    const token = authHeader?.replace(/^Bearer\s+/i, '').trim();
+    if (!token) {
+      return fail('UNAUTHENTICATED', 'Please login again to redeem your promo code.', 401);
+    }
+
+    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
     const { data: { user: authUser }, error: userError } = await supabaseClient.auth.getUser(token);
-    
+
     if (userError || !authUser) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      console.warn('[redeem-promo-code] auth rejected:', userError?.message);
+      return fail(
+        'SESSION_EXPIRED',
+        'Your session has expired. Please login again and retry.',
+        401,
       );
     }
 
     const user = { id: authUser.id };
 
-    const { code, referral_code }: RedeemRequest = await req.json();
+    let body: RedeemRequest;
+    try {
+      body = await req.json();
+    } catch {
+      return fail('INVALID_BODY', 'Please enter a promo code.', 400);
+    }
+    const { code, referral_code } = body ?? ({} as RedeemRequest);
 
-    if (!code || typeof code !== 'string') {
-      return new Response(
-        JSON.stringify({ error: 'Promo code is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!code || typeof code !== 'string' || !code.trim()) {
+      return fail('CODE_REQUIRED', 'Please enter a promo code.', 400);
     }
 
     // Normalize the code
@@ -84,33 +110,25 @@ Deno.serve(async (req) => {
 
     if (promoError) {
       console.error('Error fetching promo code:', promoError);
-      return new Response(
-        JSON.stringify({ error: 'Error validating promo code' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return fail('DB_ERROR', 'Unable to redeem promo code. Please try again.', 500);
     }
 
     if (!promoCode) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid promo code' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return fail('PROMO_NOT_FOUND', 'Invalid promo code.', 404);
     }
 
     // Check if code is already used
     if (promoCode.is_used) {
-      return new Response(
-        JSON.stringify({ error: 'This promo code has already been used' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return fail('PROMO_ALREADY_USED', 'This promo code has already been used.', 409);
     }
 
     // Check if code is expired
     if (promoCode.expires_at && new Date(promoCode.expires_at) < new Date()) {
-      return new Response(
-        JSON.stringify({ error: 'This promo code has expired' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return fail('PROMO_EXPIRED', 'This promo code has expired.', 400);
+    }
+
+    if (!promoCode.course_id) {
+      return fail('COURSE_NOT_FOUND', 'The course for this promo code is unavailable.', 404);
     }
 
     // Check if user is already enrolled in this course
@@ -122,11 +140,10 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (existingEnrollment) {
-      return new Response(
-        JSON.stringify({ error: 'You are already enrolled in this course' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return fail('ALREADY_ENROLLED', 'You are already enrolled in this course.', 409);
     }
+
+
 
     const courseData = singleEmbed(
       promoCode.courses as
