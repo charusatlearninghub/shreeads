@@ -144,7 +144,6 @@ Deno.serve(async (req) => {
     }
 
 
-
     const courseData = singleEmbed(
       promoCode.courses as
         | {
