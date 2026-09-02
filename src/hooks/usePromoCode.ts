@@ -35,63 +35,84 @@ export function usePromoCode() {
     setIsRedeeming(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      // Use a fresh access token — a stale/expired one is the most common cause
+      // of the generic "Edge Function returned a non-2xx status code" error.
+      let { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        const refreshed = await supabase.auth.refreshSession();
+        session = refreshed.data.session;
+      }
+
+      if (!session?.access_token) {
         toast({
-          title: 'Error',
-          description: 'Please sign in to redeem a promo code',
+          title: 'Please login again',
+          description: 'Your session has expired. Sign in and retry your promo code.',
           variant: 'destructive',
         });
         return null;
       }
 
       const ref = getStoredAffiliateRef();
-      const response = await supabase.functions.invoke('redeem-promo-code', {
-        body: { code: code.trim(), referral_code: ref ?? null },
-      });
 
-      // Handle edge function errors
-      if (response.error) {
-        // Try to parse the error message from the response
-        const errorMessage = response.error.message || 'Failed to redeem promo code';
-        throw new Error(errorMessage);
+      // Direct fetch (instead of functions.invoke) so we can read the JSON body
+      // of non-2xx responses and show the real backend message.
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/redeem-promo-code`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ code: code.trim(), referral_code: ref ?? null }),
+        },
+      );
+
+      let result: any = null;
+      try {
+        result = await res.json();
+      } catch {
+        result = null;
       }
 
-      const result = response.data;
+      if (!res.ok || !result?.success) {
+        const message =
+          result?.error ||
+          result?.message ||
+          'Unable to redeem promo code. Please try again.';
 
-      // Check if response contains an error field
-      if (result?.error) {
-        toast({
-          title: 'Error',
-          description: result.error,
-          variant: 'destructive',
-        });
-        return null;
-      }
-
-      if (result?.success) {
-        if (import.meta.env.DEV && result.enrollment) {
-          console.debug('[redeem-promo-code] enrollment snapshot', {
-            final_price_paid: result.enrollment.final_price_paid,
-            promo_price: result.enrollment.promo_price,
-            original_price: result.enrollment.original_price,
-          });
+        if (res.status === 401) {
+          await supabase.auth.refreshSession();
         }
-        if (result.affiliate_credited) clearStoredAffiliateRef();
+
         toast({
-          title: 'Success!',
-          description: result.message,
-        });
-        return result as RedeemResult;
-      } else {
-        toast({
-          title: 'Error',
-          description: result?.message || 'Failed to redeem promo code',
+          title:
+            res.status === 401
+              ? 'Please login again'
+              : res.status === 409
+                ? 'Cannot redeem'
+                : 'Error',
+          description: message,
           variant: 'destructive',
         });
         return null;
       }
+
+      if (import.meta.env.DEV && result.enrollment) {
+        console.debug('[redeem-promo-code] enrollment snapshot', {
+          final_price_paid: result.enrollment.final_price_paid,
+          promo_price: result.enrollment.promo_price,
+          original_price: result.enrollment.original_price,
+        });
+      }
+      if (result.affiliate_credited) clearStoredAffiliateRef();
+      toast({
+        title: 'Success!',
+        description: result.message,
+      });
+      return result as RedeemResult;
+
     } catch (error: any) {
       const message = error.message || 'Failed to redeem promo code';
       toast({
