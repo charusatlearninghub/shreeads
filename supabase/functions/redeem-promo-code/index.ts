@@ -155,7 +155,11 @@ Deno.serve(async (req) => {
         | null
         | undefined,
     );
+    if (!courseData) {
+      return fail('COURSE_NOT_FOUND', 'The course for this promo code is unavailable.', 404);
+    }
     const courseTitle = courseData?.title ?? 'Course';
+
     // Catalog list price at redeem time (snapshot). Do not zero this just because is_free is true,
     // so promo enrollments on mis-tagged courses still record original_price + paid promo amount.
     const listPrice =
