@@ -175,10 +175,7 @@ Deno.serve(async (req) => {
 
     if (pricingErr || !promoPricing) {
       console.error('promo_codes pricing fetch failed:', pricingErr);
-      return new Response(
-        JSON.stringify({ error: 'Failed to load promo code pricing' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return fail('PRICING_ERROR', 'Unable to redeem promo code. Please try again.', 500);
     }
 
     const promoRow = promoCode as { promo_price?: unknown; code: string };
@@ -192,14 +189,13 @@ Deno.serve(async (req) => {
         promo_code_id: promoCode.id,
         listPrice,
       });
-      return new Response(
-        JSON.stringify({
-          error:
-            'This promo code is not configured with a purchase price. Ask an admin to set the promo price on this code.',
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      return fail(
+        'PROMO_PRICE_MISSING',
+        'This promo code is not configured with a purchase price. Ask an admin to set the promo price on this code.',
+        400,
       );
     }
+
 
     console.log('[redeem-promo-code] pricing', {
       promo_code_id: promoCode.id,
