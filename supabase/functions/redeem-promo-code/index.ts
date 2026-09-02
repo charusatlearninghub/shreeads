@@ -463,9 +463,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return fail('UNEXPECTED', 'Unable to redeem promo code. Please try again.', 500);
   }
+
 });
