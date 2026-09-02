@@ -326,10 +326,8 @@ Deno.serve(async (req) => {
         })
         .eq('id', promoCode.id);
 
-      return new Response(
-        JSON.stringify({ error: 'Failed to record promo code usage' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return fail('USAGE_LOG_FAILED', 'Unable to redeem promo code. Please try again.', 500);
+
     }
 
     // Ensure paid amounts persisted (covers trigger/cache edge cases)
