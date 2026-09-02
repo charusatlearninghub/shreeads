@@ -258,10 +258,11 @@ Deno.serve(async (req) => {
         })
         .eq('id', promoCode.id);
 
-      return new Response(
-        JSON.stringify({ error: 'Failed to create enrollment' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      const duplicate = (enrollmentError as { code?: string }).code === '23505';
+      return duplicate
+        ? fail('ALREADY_ENROLLED', 'You are already enrolled in this course.', 409)
+        : fail('ENROLLMENT_FAILED', 'Unable to redeem promo code. Please try again.', 500);
+
     }
 
     const { data: profile } = await supabaseClient
