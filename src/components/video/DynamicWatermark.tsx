@@ -84,66 +84,18 @@ export function DynamicWatermark({ data, visible }: DynamicWatermarkProps) {
         </motion.div>
       </AnimatePresence>
 
-      {/* Dense diagonal repeating pattern */}
-      <div className="absolute inset-0" style={{ transform: 'rotate(-30deg) scale(2)', transformOrigin: 'center' }}>
-        {Array.from({ length: 12 }).map((_, row) => (
-          <div key={row} className="flex gap-24 mb-16" style={{ marginLeft: row % 2 === 0 ? '0' : '80px' }}>
-            {Array.from({ length: 8 }).map((_, col) => (
-              <span key={col} className="text-white text-sm font-mono whitespace-nowrap" style={{ opacity: bgOpacity }}>
+      {/* Light diagonal pattern (subtle, non-intrusive) */}
+      <div className="absolute inset-0" style={{ transform: 'rotate(-30deg) scale(1.5)', transformOrigin: 'center' }}>
+        {Array.from({ length: 4 }).map((_, row) => (
+          <div key={row} className="flex gap-40 mb-40" style={{ marginLeft: row % 2 === 0 ? '0' : '120px' }}>
+            {Array.from({ length: 3 }).map((_, col) => (
+              <span key={col} className="text-white text-xs font-mono whitespace-nowrap" style={{ opacity: Math.min(bgOpacity, 0.05) }}>
                 {watermarkText}
               </span>
             ))}
           </div>
         ))}
       </div>
-
-      {/* Second layer - offset pattern with session ID */}
-      <div className="absolute inset-0" style={{ transform: 'rotate(-50deg) scale(2)', transformOrigin: 'center' }}>
-        {Array.from({ length: 8 }).map((_, row) => (
-          <div key={row} className="flex gap-32 mb-24" style={{ marginLeft: row % 2 === 0 ? '40px' : '0' }}>
-            {Array.from({ length: 6 }).map((_, col) => (
-              <span key={col} className="text-white text-xs font-mono whitespace-nowrap" style={{ opacity: secondLayerOpacity }}>
-                {data.name || watermarkText} • {data.ip} • {sessionShort}
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      {/* Forensic layer - micro text */}
-      <div className="absolute inset-0" style={{ transform: 'rotate(-15deg) scale(2.5)', transformOrigin: 'center' }}>
-        {Array.from({ length: 20 }).map((_, row) => (
-          <div key={row} className="flex gap-10 mb-6" style={{ marginLeft: row % 3 === 0 ? '20px' : row % 3 === 1 ? '60px' : '0' }}>
-            {Array.from({ length: 18 }).map((_, col) => (
-              <span key={col} className="text-white text-[7px] font-mono whitespace-nowrap" style={{ opacity: forensicOpacity }}>
-                {userId}-{sessionShort}
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      {/* Extra dense pixel-level layer */}
-      <div className="absolute inset-0" style={{ transform: 'rotate(-5deg) scale(3)', transformOrigin: 'center' }}>
-        {Array.from({ length: 25 }).map((_, row) => (
-          <div key={row} className="flex gap-6 mb-4" style={{ marginLeft: (row % 5) * 15 }}>
-            {Array.from({ length: 30 }).map((_, col) => (
-              <span key={col} className="text-white text-[5px] font-mono whitespace-nowrap" style={{ opacity: Math.max(forensicOpacity * 0.6, 0.01) }}>
-                {userId}
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      {/* Anti-recording stripe overlay - visible in screen recordings */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: 'repeating-linear-gradient(135deg, transparent, transparent 50px, rgba(255,255,255,0.006) 50px, rgba(255,255,255,0.006) 100px)',
-          mixBlendMode: 'overlay',
-        }}
-      />
     </div>
   );
 }
