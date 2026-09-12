@@ -30,6 +30,7 @@ import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminReviews from "./pages/admin/AdminReviews";
+import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminPromotions from "./pages/admin/AdminPromotions";
 import AdminPriceHistory from "./pages/admin/AdminPriceHistory";
 import AdminCertificates from "./pages/admin/AdminCertificates";
@@ -237,6 +238,14 @@ const App = () => (
                 element={
                   <ProtectedRoute requireAdmin>
                     <AdminReviews />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/testimonials"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminTestimonials />
                   </ProtectedRoute>
                 }
               />
