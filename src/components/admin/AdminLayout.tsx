@@ -23,6 +23,7 @@ import {
   Megaphone,
   FileImage,
   Share2,
+  Star,
   X
 } from 'lucide-react';
 import { AdminNotifications } from './AdminNotifications';
@@ -89,6 +90,7 @@ const sidebarGroups: SidebarGroup[] = [
     items: [
       { icon: Tag, label: 'Promotions', href: '/admin/promotions' },
       { icon: MessageSquare, label: 'Reviews', href: '/admin/reviews' },
+      { icon: Star, label: 'Testimonials', href: '/admin/testimonials' },
       { icon: Youtube, label: 'YouTube Videos', href: '/admin/videos' },
     ],
   },
