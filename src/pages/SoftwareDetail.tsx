@@ -20,6 +20,7 @@ import { isExternalFileUrl, triggerDownload } from '@/lib/download-utils';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { PricingCard, PromoCodeInput, MobileBottomBar } from '@/components/shared';
+import { TestimonialsBlock } from '@/components/shared/TestimonialsBlock';
 
 const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   android: Smartphone,
@@ -380,6 +381,11 @@ const SoftwareDetail = () => {
               )}
             </PricingCard>
           </div>
+        </div>
+
+        {/* Admin-curated testimonials for this software */}
+        <div className="mt-10">
+          <TestimonialsBlock softwareId={product.id} title="Featured Testimonials" />
         </div>
       </div>
 

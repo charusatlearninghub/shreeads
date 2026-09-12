@@ -9,6 +9,7 @@ import { PackagesPreview } from "@/components/home/PackagesPreview";
 import { SoftwarePreview } from "@/components/home/SoftwarePreview";
 import { VideoGalleryPreview } from "@/components/home/VideoGalleryPreview";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
+import { TestimonialsBlock } from "@/components/shared/TestimonialsBlock";
 import { CTASection } from "@/components/home/CTASection";
 import { PromotionalBanner } from "@/components/promotions/PromotionalBanner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,6 +41,11 @@ const Index = () => {
         <PackagesPreview />
         <SoftwarePreview />
         <VideoGalleryPreview />
+        <section className="py-16 lg:py-24">
+          <div className="container mx-auto px-4">
+            <TestimonialsBlock title="Loved by Our Learners" limit={6} />
+          </div>
+        </section>
         <TestimonialsSection />
         <CTASection />
       </main>

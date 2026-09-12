@@ -30,6 +30,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CourseReviewForm } from '@/components/course/CourseReviewForm';
 import { CourseReviews } from '@/components/course/CourseReviews';
+import { TestimonialsBlock } from '@/components/shared/TestimonialsBlock';
 import { CourseMaterials } from '@/components/course/CourseMaterials';
 import { CoursePriceDisplay } from '@/components/course/CoursePriceDisplay';
 import { PromotionalBanner } from '@/components/promotions/PromotionalBanner';
@@ -562,6 +563,18 @@ const CourseDetail = () => {
                 courseId={course.id} 
                 refreshTrigger={reviewRefreshTrigger}
               />
+            </motion.div>
+          )}
+
+          {/* Admin-curated testimonials for this course */}
+          {course && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.45 }}
+              className="mt-10"
+            >
+              <TestimonialsBlock courseId={course.id} title="Featured Testimonials" />
             </motion.div>
           )}
         </div>
