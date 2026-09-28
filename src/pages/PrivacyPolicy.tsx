@@ -1,7 +1,7 @@
 import { LegalDocumentLayout } from "@/components/layout/LegalDocumentLayout";
 import { SeoHead } from "@/components/common/SeoHead";
 import { motion } from "framer-motion";
-import { Shield, Phone, Mail, MapPin } from "lucide-react";
+import { Shield } from "lucide-react";
 
 const PrivacyPolicy = () => {
   return (
@@ -27,16 +27,16 @@ const PrivacyPolicy = () => {
 
           <div className="legal-intro rounded-xl border border-border bg-card/90 backdrop-blur-[2px] p-6 sm:p-8 mb-6 sm:mb-8 shadow-sm">
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-              ShreeAds (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) respects your privacy and is committed to protecting your
-              personal information. This Privacy Policy explains how we collect, use, and safeguard your data when you
-              use our website and services.
+              SHREE ADS (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) respects your privacy and is committed to protecting your personal
+              information. This Privacy Policy explains how we collect, use, and protect information when you use the
+              SHREE ADS application and related services.
             </p>
           </div>
 
           <div className="space-y-6 sm:space-y-8">
             <PolicySection title="Information We Collect">
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-4">
-                We collect information needed to operate our platform and deliver our services.
+                Depending on how you use the application, SHREE ADS may collect the following information:
               </p>
 
               <h3 className="font-semibold text-foreground text-sm sm:text-base mb-2">Personal Information</h3>
@@ -44,58 +44,56 @@ const PrivacyPolicy = () => {
                 <li>Full Name</li>
                 <li>Email Address</li>
                 <li>Phone Number</li>
-                <li>Billing Information</li>
+                <li>Account login information</li>
               </ul>
-
-              <h3 className="font-semibold text-foreground text-sm sm:text-base mb-2">Payment Information</h3>
-              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-5">
-                Payments are processed through secure third-party payment gateways. SHREE ADS does not store sensitive
-                payment information such as full card details.
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+                This information may be used to create and manage your account, provide course access, communicate with
+                you, and provide customer support.
               </p>
+            </PolicySection>
 
-              <h3 className="font-semibold text-foreground text-sm sm:text-base mb-2">Technical Information</h3>
-              <ul className="list-disc list-outside ml-5 sm:ml-6 space-y-1.5 text-muted-foreground text-sm sm:text-base">
-                <li>IP address</li>
-                <li>Device type</li>
-                <li>Browser type</li>
-                <li>Website usage data</li>
-              </ul>
+            <PolicySection title="Course Enrollment">
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-3">
+                Students who want to enroll in a course can contact SHREE ADS through the available WhatsApp contact
+                option. SHREE ADS may provide an enrollment or promotional code to the student.
+              </p>
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+                The student can enter the provided promo code in the application. If the code is valid and applicable, the
+                student can enroll in the relevant course.
+              </p>
             </PolicySection>
 
             <PolicySection title="How We Use Your Information">
-              <p className="text-muted-foreground text-sm sm:text-base mb-3">We use your information to:</p>
+              <p className="text-muted-foreground text-sm sm:text-base mb-3">We may use collected information to:</p>
               <ul className="list-disc list-outside ml-5 sm:ml-6 space-y-1.5 text-muted-foreground text-sm sm:text-base">
-                <li>Provide access to purchased courses</li>
-                <li>Process payments and transactions</li>
-                <li>Send course updates and important notifications</li>
-                <li>Improve platform performance and services</li>
+                <li>Create and manage user accounts</li>
+                <li>Provide access to enrolled courses</li>
+                <li>Process and validate course promo codes</li>
+                <li>Track course enrollment and learning progress</li>
                 <li>Provide customer support</li>
-                <li>Prevent fraud and misuse</li>
+                <li>Send important account and course-related notifications</li>
+                <li>Improve the application and learning experience</li>
+                <li>Maintain the security and proper functioning of the platform</li>
               </ul>
             </PolicySection>
 
-            <PolicySection title="Cookies">
-              <p className="text-muted-foreground text-sm sm:text-base mb-3">Our website may use cookies and similar technologies to:</p>
-              <ul className="list-disc list-outside ml-5 sm:ml-6 space-y-1.5 text-muted-foreground text-sm sm:text-base mb-4">
-                <li>Improve user experience</li>
-                <li>Understand website traffic</li>
-                <li>Analyze user behavior</li>
-              </ul>
+            <PolicySection title="WhatsApp Communication">
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-3">
+                The application may provide a WhatsApp contact button so students can contact SHREE ADS regarding
+                courses, enrollment, support, or other queries.
+              </p>
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-                Users may disable cookies through browser settings, but some website features may not work properly.
+                When you use the WhatsApp button, communication takes place through WhatsApp and is subject to
+                WhatsApp&apos;s own privacy policy and terms. SHREE ADS does not control how WhatsApp processes information
+                shared through its service.
               </p>
             </PolicySection>
 
-            <PolicySection title="Third-Party Services">
-              <p className="text-muted-foreground text-sm sm:text-base mb-3">We may use trusted third-party services such as:</p>
-              <ul className="list-disc list-outside ml-5 sm:ml-6 space-y-1.5 text-muted-foreground text-sm sm:text-base mb-4">
-                <li>Payment gateways</li>
-                <li>Analytics tools</li>
-                <li>Email communication services</li>
-                <li>Marketing tools</li>
-              </ul>
+            <PolicySection title="Cookies and Similar Technologies">
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-                These providers have their own privacy policies for handling personal data.
+                The SHREE ADS website or related services may use cookies or similar technologies to improve user
+                experience and website functionality. The availability and use of cookies may depend on the specific
+                website or service being accessed.
               </p>
             </PolicySection>
 
@@ -109,51 +107,47 @@ const PrivacyPolicy = () => {
               </p>
             </PolicySection>
 
-            <PolicySection title="User Responsibilities">
+            <PolicySection title="Account Security">
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-                Users must keep their login credentials secure. SHREE ADS is not responsible for unauthorized access
-                caused by sharing account credentials.
+                Users are responsible for keeping their account credentials and promo codes secure. Users should not
+                share their login credentials or personal enrollment information with unauthorized persons.
               </p>
             </PolicySection>
 
-            <PolicySection title="Changes to Privacy Policy">
+            <PolicySection title="Data Retention">
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-3">
+                SHREE ADS retains personal information only for as long as reasonably necessary to provide the services,
+                maintain user accounts, manage course enrollment, comply with applicable requirements, and resolve
+                disputes or support requests.
+              </p>
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-                SHREE ADS may update this Privacy Policy from time to time. Updated versions will be posted on this page
-                with the revised date.
+                When information is no longer required, it may be deleted or securely disposed of where appropriate.
               </p>
             </PolicySection>
 
-            <div className="legal-intro rounded-xl border border-border/60 bg-card/90 backdrop-blur-[2px] p-6 sm:p-8 shadow-sm">
-              <h2 className="font-display text-lg sm:text-xl font-semibold mb-4 text-foreground">Contact Information</h2>
-              <div className="space-y-4 text-sm sm:text-base">
-                <a
-                  href="tel:+919265106657"
-                  className="flex items-start gap-3 text-muted-foreground hover:text-primary transition-colors"
-                >
-                  <Phone className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                  <span>Phone / WhatsApp: +91 9265106657</span>
-                </a>
-                <a
-                  href="mailto:shreeadsmall@gmail.com"
-                  className="flex items-start gap-3 text-muted-foreground hover:text-primary transition-colors break-all"
-                >
-                  <Mail className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                  <span>Email: shreeadsmall@gmail.com</span>
-                </a>
-                <div className="flex items-start gap-3 text-muted-foreground">
-                  <MapPin className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                  <span>
-                    Address:
-                    <br />
-                    Mahuva, Bhavnagar
-                    <br />
-                    Gujarat – 364290
-                    <br />
-                    India
-                  </span>
-                </div>
-              </div>
-            </div>
+            <PolicySection title="Children's Privacy">
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+                SHREE ADS is an educational platform. Users should provide accurate information when creating an
+                account. If a parent or guardian believes that personal information has been provided by a child without
+                appropriate consent, they may contact SHREE ADS so that the matter can be reviewed and appropriate action
+                can be taken.
+              </p>
+            </PolicySection>
+
+            <PolicySection title="Changes to This Privacy Policy">
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+                SHREE ADS may update this Privacy Policy from time to time. If changes are made, the updated Privacy
+                Policy will be published on this page with the revised date.
+              </p>
+            </PolicySection>
+
+            <PolicySection title="Contact Us">
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+                If you have questions, concerns, or requests regarding this Privacy Policy or your personal information,
+                you can contact SHREE ADS through the contact options provided within the application or on the official
+                SHREE ADS website.
+              </p>
+            </PolicySection>
           </div>
       </motion.article>
     </LegalDocumentLayout>
