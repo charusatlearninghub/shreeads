@@ -66,8 +66,8 @@ const Contact = () => {
     {
       icon: Mail,
       title: "Email",
-      content: "shreeadsmall@gmail.com",
-      link: "mailto:shreeadsmall@gmail.com"
+      content: "shreeads.business@gmail.com",
+      link: "mailto:shreeads.business@gmail.com"
     },
     {
       icon: Clock,

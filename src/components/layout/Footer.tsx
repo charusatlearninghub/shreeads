@@ -246,10 +246,10 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
                 <div className="min-w-0">
                   <span className="font-medium text-foreground/85 text-xs uppercase tracking-wide block mb-1">Email</span>
                   <a
-                    href="mailto:shreeadsmall@gmail.com"
+                    href="mailto:shreeads.business@gmail.com"
                     className="text-muted-foreground hover:text-primary transition-colors break-all"
                   >
-                    shreeadsmall@gmail.com
+                    shreeads.business@gmail.com
                   </a>
                 </div>
               </li>

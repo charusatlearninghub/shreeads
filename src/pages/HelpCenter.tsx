@@ -132,11 +132,11 @@ const HelpCenter = () => {
                   <span>Phone / WhatsApp: +91 9265106657</span>
                 </a>
                 <a
-                  href="mailto:shreeadsmall@gmail.com"
+                  href="mailto:shreeads.business@gmail.com"
                   className="flex items-start gap-3 text-muted-foreground hover:text-primary transition-colors text-sm sm:text-base"
                 >
                   <Mail className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                  <span>Email: shreeadsmall@gmail.com</span>
+                  <span>Email: shreeads.business@gmail.com</span>
                 </a>
                 <div className="flex items-start gap-3 text-muted-foreground text-sm sm:text-base">
                   <MapPin className="w-5 h-5 text-primary shrink-0 mt-0.5" />

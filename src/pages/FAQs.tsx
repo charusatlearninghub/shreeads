@@ -135,11 +135,11 @@ const FAQs = () => {
                 <span>Phone: +91 9265106657</span>
               </a>
               <a
-                href="mailto:shreeadsmall@gmail.com"
+                href="mailto:shreeads.business@gmail.com"
                 className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm sm:text-base"
               >
                 <Mail className="w-5 h-5 text-primary shrink-0" />
-                <span>Email: shreeadsmall@gmail.com</span>
+                <span>Email: shreeads.business@gmail.com</span>
               </a>
             </div>
           </div>
