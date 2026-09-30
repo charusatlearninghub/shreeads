@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Phone, Loader2, CheckCircle2, XCircle, Ticket } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Phone, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,8 +19,7 @@ async function quickFingerprint(): Promise<string> {
 import logo from "@/assets/new-logo.png";
 
 const Register = () => {
-  const [searchParams] = useSearchParams();
-  const prefilledRef = (searchParams.get("ref") || "").toUpperCase();
+  const fixedReferralCode = "SHREE08";
 
   const [formData, setFormData] = useState({
     name: "",
@@ -28,15 +27,10 @@ const Register = () => {
     phone: "",
     password: "",
     confirmPassword: "",
-    referralCode: prefilledRef,
+    referralCode: fixedReferralCode,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Referral validation
-  const [refStatus, setRefStatus] = useState<"idle" | "checking" | "valid" | "invalid">(prefilledRef ? "checking" : "idle");
-  const [refSponsorName, setRefSponsorName] = useState<string>("");
-  const [refError, setRefError] = useState<string>("");
 
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -44,39 +38,8 @@ const Register = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: name === "referralCode" ? value.toUpperCase() : value }));
-    if (name === "referralCode") {
-      setRefStatus("idle");
-      setRefSponsorName("");
-      setRefError("");
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
-
-  // Debounced referral validation
-  useEffect(() => {
-    const code = formData.referralCode.trim();
-    if (!code) { setRefStatus("idle"); return; }
-    setRefStatus("checking");
-    const t = setTimeout(async () => {
-      try {
-        const { data, error } = await supabase.rpc("validate_referral_code", { _code: code });
-        if (error) throw error;
-        const result = data as any;
-        if (result?.valid) {
-          setRefStatus("valid");
-          setRefSponsorName(result.sponsor_name || "");
-          setRefError("");
-        } else {
-          setRefStatus("invalid");
-          setRefError(result?.error || "Invalid referral code");
-        }
-      } catch (e: any) {
-        setRefStatus("invalid");
-        setRefError("Could not verify referral code. Please try again.");
-      }
-    }, 450);
-    return () => clearTimeout(t);
-  }, [formData.referralCode]);
 
   const validateForm = () => {
     if (!formData.name.trim()) {
@@ -115,24 +78,6 @@ const Register = () => {
       return false;
     }
 
-    if (!formData.referralCode.trim()) {
-      toast({
-        title: "Referral code required",
-        description: "You need a sponsor's referral code to create an account.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (refStatus !== "valid") {
-      toast({
-        title: "Invalid referral code",
-        description: refError || "Please enter a valid sponsor code.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
     return true;
   };
 
@@ -144,7 +89,7 @@ const Register = () => {
     setIsLoading(true);
 
     const fp = await quickFingerprint();
-    const refCode = formData.referralCode.trim().toUpperCase();
+    const refCode = fixedReferralCode;
     
     const { error } = await signUp(
       formData.email.trim(),
@@ -323,33 +268,19 @@ const Register = () => {
                     <Input
                       type="text"
                       name="referralCode"
-                      placeholder="Enter your sponsor's referral code"
-                      value={formData.referralCode}
-                      onChange={handleChange}
+                      value={fixedReferralCode}
                       className="pl-12 pr-10 uppercase"
                       required
-                      disabled={isLoading}
+                      readOnly
                       autoComplete="off"
                     />
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      {refStatus === "checking" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-                      {refStatus === "valid" && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-                      {refStatus === "invalid" && <XCircle className="w-4 h-4 text-destructive" />}
+                      <Lock className="w-4 h-4 text-muted-foreground" aria-label="Fixed referral code" />
                     </div>
                   </div>
-                  {refStatus === "valid" && (
-                    <p className="text-xs text-green-600 dark:text-green-400">
-                      ✓ Sponsor: <span className="font-semibold">{refSponsorName}</span>
-                    </p>
-                  )}
-                  {refStatus === "invalid" && (
-                    <p className="text-xs text-destructive">{refError}</p>
-                  )}
-                  {refStatus === "idle" && (
-                    <p className="text-xs text-muted-foreground">
-                      A valid sponsor referral code is required to sign up.
-                    </p>
-                  )}
+                  <p className="text-xs text-muted-foreground">
+                    A valid sponsor referral code is required to sign up.
+                  </p>
                 </div>
 
                 <Button 
