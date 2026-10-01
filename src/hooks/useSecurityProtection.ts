@@ -5,18 +5,14 @@ interface SecurityProtectionOptions {
   enabled: boolean;
   userId?: string;
   userEmail?: string;
-  userName?: string;
 }
 
-export function useSecurityProtection({ enabled, userId, userEmail, userName }: SecurityProtectionOptions) {
+export function useSecurityProtection({ enabled, userId, userEmail }: SecurityProtectionOptions) {
   const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
   const [isScreenRecording, setIsScreenRecording] = useState(false);
   const [isTabBlurred, setIsTabBlurred] = useState(false);
   const [showSecurityWarning, setShowSecurityWarning] = useState(false);
   const [securityMessage, setSecurityMessage] = useState('');
-  const [watermarkPosition, setWatermarkPosition] = useState({ x: 20, y: 20 });
-  const [watermarkTimestamp, setWatermarkTimestamp] = useState(() => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }));
-  const [watermarkCorner, setWatermarkCorner] = useState(0); // 0=TL, 1=TR, 2=BL, 3=BR
   const [userIp, setUserIp] = useState('');
   const [sessionId] = useState(() => crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`);
   const incidentLogged = useRef<Set<string>>(new Set());
@@ -392,49 +388,11 @@ export function useSecurityProtection({ enabled, userId, userEmail, userName }: 
     };
   }, [enabled, triggerAlert, logIncident]);
 
-  // Dynamic watermark: timestamp updates every 3s; corner position rotates every 10s (top-left, top-right, bottom-left, bottom-right)
-  useEffect(() => {
-    if (!enabled) return;
-    const tsInterval = setInterval(() => {
-      setWatermarkTimestamp(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }));
-    }, 3000);
-    return () => clearInterval(tsInterval);
-  }, [enabled]);
-
-  useEffect(() => {
-    if (!enabled) return;
-    const cornerInterval = setInterval(() => {
-      setWatermarkCorner((c) => (c + 1) % 4);
-    }, 10000);
-    return () => clearInterval(cornerInterval);
-  }, [enabled]);
-
-  useEffect(() => {
-    if (!enabled) return;
-    const interval = setInterval(() => {
-      setWatermarkPosition({
-        x: Math.random() * 60 + 10,
-        y: Math.random() * 60 + 10,
-      });
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [enabled]);
-
   const dismissWarning = useCallback(() => {
     setShowSecurityWarning(false);
     setIsScreenRecording(false);
     setIsDevToolsOpen(false);
   }, []);
-
-  const watermarkData = {
-    email: userEmail || '',
-    name: userName || '',
-    ip: userIp,
-    timestamp: watermarkTimestamp,
-    position: watermarkPosition,
-    corner: watermarkCorner,
-    sessionId,
-  };
 
   return {
     isDevToolsOpen,
@@ -442,9 +400,7 @@ export function useSecurityProtection({ enabled, userId, userEmail, userName }: 
     isTabBlurred,
     showSecurityWarning,
     securityMessage,
-    watermarkData,
     dismissWarning,
-    sessionId,
     isProtected: isDevToolsOpen || isScreenRecording || isTabBlurred,
   };
 }

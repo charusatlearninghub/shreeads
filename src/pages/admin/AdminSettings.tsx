@@ -7,9 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
-import { Shield, Bell, Globe, Database, RefreshCw, Eye } from 'lucide-react';
+import { Shield, Bell, Globe, Database, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -61,8 +60,6 @@ export default function AdminSettings() {
   const [autoApproveReviews, setAutoApproveReviews] = useState(false);
 
   // Security
-  const [bgOpacity, setBgOpacity] = useState(0.06);
-  const [centerOpacity, setCenterOpacity] = useState(0.18);
   const [sessionTimeout, setSessionTimeout] = useState(60);
 
   // Notifications
@@ -75,8 +72,6 @@ export default function AdminSettings() {
     setWhatsappNumber(parseSetting(settings, 'whatsapp_number', '919265106657').replace(/^"|"$/g, ''));
     setMaintenanceMode(parseBool(settings, 'maintenance_mode', false));
     setAutoApproveReviews(parseBool(settings, 'auto_approve_reviews', false));
-    setBgOpacity(parseNum(settings, 'watermark_opacity', 0.06));
-    setCenterOpacity(parseNum(settings, 'watermark_center_opacity', 0.18));
     setSessionTimeout(parseNum(settings, 'session_timeout_minutes', 60));
     setEmailNotifications(parseBool(settings, 'email_notifications', true));
   }, [settings]);
@@ -123,8 +118,6 @@ export default function AdminSettings() {
   const saveSecurityMutation = useMutation({
     mutationFn: async () => {
       await Promise.all([
-        saveSetting('watermark_opacity', String(bgOpacity)),
-        saveSetting('watermark_center_opacity', String(centerOpacity)),
         saveSetting('session_timeout_minutes', String(sessionTimeout)),
       ]);
     },
@@ -253,85 +246,6 @@ export default function AdminSettings() {
               </div>
               <Switch defaultChecked disabled />
             </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Video Watermarks</Label>
-                <p className="text-sm text-muted-foreground">Display user email as watermark on videos</p>
-              </div>
-              <Switch defaultChecked disabled />
-            </div>
-
-            <Separator />
-
-            {/* Watermark Opacity Controls */}
-            <div className="space-y-5">
-              <div className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-muted-foreground" />
-                <Label className="text-base font-semibold">Watermark Opacity</Label>
-              </div>
-
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm">Background Pattern Opacity</Label>
-                    <span className="text-sm font-mono text-muted-foreground">{(bgOpacity * 100).toFixed(0)}%</span>
-                  </div>
-                  <Slider
-                    value={[bgOpacity * 100]}
-                    onValueChange={(v) => setBgOpacity(v[0] / 100)}
-                    min={1}
-                    max={30}
-                    step={1}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Controls the diagonal repeating email pattern across the video
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm">Center Watermark Opacity</Label>
-                    <span className="text-sm font-mono text-muted-foreground">{(centerOpacity * 100).toFixed(0)}%</span>
-                  </div>
-                  <Slider
-                    value={[centerOpacity * 100]}
-                    onValueChange={(v) => setCenterOpacity(v[0] / 100)}
-                    min={5}
-                    max={50}
-                    step={1}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Controls the moving center watermark and corner labels
-                  </p>
-                </div>
-              </div>
-
-              {/* Live Preview */}
-              <div className="relative bg-black rounded-lg overflow-hidden h-24">
-                <div className="absolute inset-0 pointer-events-none select-none" style={{ transform: 'rotate(-25deg) scale(1.5)', transformOrigin: 'center' }}>
-                  {Array.from({ length: 4 }).map((_, row) => (
-                    <div key={row} className="flex gap-12 mb-6" style={{ marginLeft: row % 2 === 0 ? '0' : '40px' }}>
-                      {Array.from({ length: 5 }).map((_, col) => (
-                        <span key={col} className="text-white text-[10px] font-mono whitespace-nowrap" style={{ opacity: bgOpacity }}>
-                          user@email.com
-                        </span>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-white text-sm font-bold font-mono" style={{ opacity: centerOpacity }}>
-                    user@email.com
-                  </span>
-                </div>
-                <div className="absolute bottom-1 right-2">
-                  <span className="text-white/50 text-[9px]">Live Preview</span>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
 
             <div className="space-y-2">
               <Label>Session Timeout (minutes)</Label>
