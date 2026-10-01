@@ -1,0 +1,1 @@
+DELETE FROM public.platform_settings WHERE key IN ('watermark_opacity', 'watermark_center_opacity');
