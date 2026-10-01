@@ -125,7 +125,6 @@ export function VideoPlayer({
     enabled: hasAcceptedTerms,
     userId: user?.id,
     userEmail: userEmail || profile?.email || '',
-    userName: profile?.full_name || '',
   });
 
   // Reference to YouTube player for auto-pause
