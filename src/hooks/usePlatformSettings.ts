@@ -20,12 +20,3 @@ export function usePlatformSetting(key: string, defaultValue: string = '') {
   });
 }
 
-export function useWatermarkOpacity() {
-  const { data: bgOpacity } = usePlatformSetting('watermark_opacity', '0.06');
-  const { data: centerOpacity } = usePlatformSetting('watermark_center_opacity', '0.18');
-
-  return {
-    bgOpacity: parseFloat(bgOpacity || '0.06'),
-    centerOpacity: parseFloat(centerOpacity || '0.18'),
-  };
-}

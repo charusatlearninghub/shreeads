@@ -17,7 +17,6 @@ import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { getYouTubeVideoId } from '@/lib/youtube';
 import { useYouTubePlayer } from '@/hooks/useYouTubePlayer';
-import { DynamicWatermark } from './DynamicWatermark';
 import { SecurityWarningModal } from './SecurityWarningModal';
 import { ScreenBlackout } from './ScreenBlackout';
 import { useSecurityProtection } from '@/hooks/useSecurityProtection';
@@ -120,15 +119,12 @@ export function VideoPlayer({
     isTabBlurred,
     showSecurityWarning,
     securityMessage,
-    watermarkData,
     dismissWarning,
-    sessionId,
     isProtected,
   } = useSecurityProtection({
     enabled: hasAcceptedTerms,
     userId: user?.id,
     userEmail: userEmail || profile?.email || '',
-    userName: profile?.full_name || '',
   });
 
   // Reference to YouTube player for auto-pause
@@ -337,46 +333,6 @@ export function VideoPlayer({
         onDismiss={dismissWarning}
       />
 
-      {/* Transparent protection layer - interferes with capture tools */}
-      <div
-        className="video-protection-layer absolute inset-0 z-20 pointer-events-none"
-        style={{
-          background: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 2px, transparent 2px, transparent 4px)',
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Dynamic corner watermark: email • time • ShreeAds — updates every few sec, position every 10s */}
-      {hasAcceptedTerms && !isProtected && watermarkData.email && (
-        <div
-          className="absolute z-30 pointer-events-none select-none text-white/70 text-xs font-mono whitespace-nowrap transition-[left,top] duration-300"
-          style={{
-            left: [0, undefined, 0, undefined][watermarkData.corner ?? 0] ?? 'auto',
-            right: [undefined, 0, undefined, 0][watermarkData.corner ?? 0] ?? 'auto',
-            top: [0, 0, undefined, undefined][watermarkData.corner ?? 0] ?? 'auto',
-            bottom: [undefined, undefined, 0, 0][watermarkData.corner ?? 0] ?? 'auto',
-            margin: '8px',
-            textShadow: '0 0 4px rgba(0,0,0,0.8)',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
-          }}
-        >
-          {watermarkData.email} • {watermarkData.timestamp}
-          {watermarkData.ip ? ` • ${watermarkData.ip}` : ''} • ShreeAds
-        </div>
-      )}
-
-      {/* Anti-recording overlay - semi-transparent layer that shows in recordings */}
-      {hasAcceptedTerms && !isProtected && (
-        <div 
-          className="absolute inset-0 z-20 pointer-events-none"
-          style={{
-            background: 'repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.008) 35px, rgba(255,255,255,0.008) 70px)',
-            mixBlendMode: 'overlay',
-          }}
-        />
-      )}
-
       {/* Loading state for secure URL */}
       {!isYouTube && isVideoUrlLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
@@ -420,7 +376,6 @@ export function VideoPlayer({
             onProgressUpdate={onProgressUpdate}
             lessonDuration={lesson.duration_seconds}
           />
-          <DynamicWatermark data={watermarkData} visible={!isProtected && hasAcceptedTerms} />
         </div>
       ) : (
         <>
@@ -483,7 +438,6 @@ export function VideoPlayer({
             </>
           )}
 
-          <DynamicWatermark data={watermarkData} visible={!isProtected && hasAcceptedTerms} />
 
           {/* Play overlay when paused */}
           {!isPlaying && !isVideoUrlLoading && (

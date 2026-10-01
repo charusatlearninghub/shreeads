@@ -44,7 +44,7 @@ const features = [
   {
     icon: Lock,
     title: "Content Protection",
-    description: "Dynamic watermarking and secure video playback to protect course content.",
+    description: "Secure video playback and protected course access for enrolled learners.",
     color: "destructive",
   },
   {
